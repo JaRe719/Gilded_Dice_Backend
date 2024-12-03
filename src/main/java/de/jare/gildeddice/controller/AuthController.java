@@ -20,6 +20,8 @@ public class AuthController {
         this.userService = userService;
     }
 
+
+
     @PostMapping(value = "/register")
     public ResponseEntity<Void> newUserRegister(@RequestBody @Valid UserRegisterRequestDTO dto) {
         try {

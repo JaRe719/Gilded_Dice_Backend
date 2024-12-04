@@ -2,6 +2,7 @@ package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
+import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
 import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
@@ -64,5 +65,10 @@ public class CharDetailsService {
         charDetails.setAvatar(avatarUrl);
         charDetails = charDetailsRepository.save(charDetails);
         return charDetails.getAvatar();
+    }
+
+    public MoneyResponseDTO getAllFinancial(Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
     }
 }

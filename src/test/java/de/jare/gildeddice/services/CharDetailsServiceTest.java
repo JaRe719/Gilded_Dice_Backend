@@ -2,6 +2,7 @@ package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
+import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
 import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
@@ -199,6 +200,35 @@ class CharDetailsServiceTest {
         // Verifiziere, dass die Mock-Methoden korrekt aufgerufen wurden
         verify(userService, times(1)).getUserProfile(auth);
         verify(charDetailsRepository, times(1)).save(any(CharDetails.class));
+    }
+
+    @Test
+    void testGetAllFinancial_Success() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+
+        CharDetails charDetailsMock = new CharDetails();
+        charDetailsMock.setId(1L);
+        charDetailsMock.setIncome(1000);
+        charDetailsMock.setOutcome(500);
+        charDetailsMock.setInvest(200);
+        charDetailsMock.setMoney(50000);
+
+        Profile profileMock = new Profile();
+        profileMock.setId(1L);
+        profileMock.setCharDetails(charDetailsMock);
+
+        when(userService.getUserProfile(auth)).thenReturn(profileMock);
+
+        // Act
+        MoneyResponseDTO actualMoneyResponseDTO = charDetailsService.getAllFinancial(auth);
+
+        // Assert
+        assertNotNull(actualMoneyResponseDTO);
+        assertEquals(1000, actualMoneyResponseDTO.income());
+        assertEquals(500, actualMoneyResponseDTO.outcome());
+        assertEquals(200, actualMoneyResponseDTO.invest());
+        assertEquals(50000, actualMoneyResponseDTO.money());
     }
 
 }

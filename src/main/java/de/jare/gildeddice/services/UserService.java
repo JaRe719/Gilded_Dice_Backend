@@ -5,9 +5,14 @@ import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.repositories.ProfileRepository;
 import de.jare.gildeddice.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -39,4 +44,8 @@ public class UserService {
     }
 
 
+    public void deleteUser(Authentication auth) {
+        User existingUser = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found:"));
+        userRepository.deleteById(existingUser.getId());
+    }
 }

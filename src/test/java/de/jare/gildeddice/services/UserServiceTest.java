@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -21,6 +23,9 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private Authentication authentication;
 
     @Mock
     private UserRepository userRepository;
@@ -75,4 +80,42 @@ class UserServiceTest {
         verify(userRepository, times(0)).save(any(User.class));
     }
 
+
+    @Test
+    void testDeleteUser_Success() {
+        // Arrange
+        String email = "test@example.com";
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn(email);
+
+        User userMock = new User();
+        userMock.setId(1L);
+        userMock.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(userMock));
+
+        // Act
+        assertDoesNotThrow(() -> userService.deleteUser(auth));
+
+        // Assert
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(userRepository, times(1)).deleteById(userMock.getId());
+    }
+
+    @Test
+    void testDeleteUser_UserNotFound() {
+        // Arrange
+        String email = "notfound@example.com";
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> userService.deleteUser(auth));
+        assertEquals("User not found:", exception.getMessage());
+
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(userRepository, times(0)).deleteById(anyLong());
+    }
 }

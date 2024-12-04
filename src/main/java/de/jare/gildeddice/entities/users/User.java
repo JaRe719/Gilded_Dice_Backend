@@ -28,7 +28,7 @@ public class User implements UserDetails {
     @NotBlank
     private String password;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.ALL})
     private Profile profile;
 
     @Override

@@ -55,8 +55,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/v1/**").permitAll()
-                        //.requestMatchers("").hasAnyAuthority("SCOPE_USER")
-                        //.anyRequest().authenticated()
+                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority("SCOPE_ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

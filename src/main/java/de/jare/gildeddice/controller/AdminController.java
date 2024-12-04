@@ -1,19 +1,14 @@
 package de.jare.gildeddice.controller;
 
 import de.jare.gildeddice.dtos.games.ChoiceUpdateDTO;
-import de.jare.gildeddice.dtos.games.NpcCreateDTO;
 import de.jare.gildeddice.dtos.games.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.StoryUpdateDTO;
 import de.jare.gildeddice.entities.Npc;
-import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.games.storys.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Iterator;
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/admin")
@@ -62,6 +57,7 @@ public class AdminController {
         gameService.createNpc(npcName);
         return ResponseEntity.ok().build();
     }
+
     //------
 
     @GetMapping(value = "/choice")

@@ -1,6 +1,5 @@
 package de.jare.gildeddice.entities.character;
 
-import de.jare.gildeddice.entities.character.Avatar;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -33,6 +32,5 @@ public class CharDetails {
 
     private int simplification = 0;
     private int complication = 0;
-    @OneToOne
-    private Avatar avatar;
+    private String avatar;
 }

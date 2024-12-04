@@ -21,7 +21,9 @@ public class AdminController {
 
     private GameService gameService;
 
-
+    public AdminController(GameService gameService) {
+        this.gameService = gameService;
+    }
 
     @GetMapping(value = "/storys")
     public ResponseEntity<Iterable<Story>> getAllStorys() {

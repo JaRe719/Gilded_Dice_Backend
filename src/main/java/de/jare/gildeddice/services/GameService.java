@@ -28,8 +28,13 @@ public class GameService {
     private NpcRepository npcRepository;
     private UserService userService;
 
-
-
+    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, UserService userService) {
+        this.gameRepository = gameRepository;
+        this.storyRepository = storyRepository;
+        this.choiceRepository = choiceRepository;
+        this.npcRepository = npcRepository;
+        this.userService = userService;
+    }
 
     public Iterable<Story> getAllStorys() {
         return storyRepository.findAll();
@@ -56,6 +61,8 @@ public class GameService {
             choiceEntity.setLoseMessage(choice.loseMessage());
             choiceEntity.setCritMessage(choice.critMessage());
             choiceEntity.setNpc(npcRepository.findById(choice.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
+
+            choiceEntity = choiceRepository.save(choiceEntity);
             choiceEntities.add(choiceEntity);
         }
 

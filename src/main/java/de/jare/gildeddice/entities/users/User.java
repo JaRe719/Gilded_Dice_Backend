@@ -32,12 +32,13 @@ public class User implements UserDetails {
     @OneToOne(cascade = {CascadeType.ALL})
     private Profile profile;
 
-    private Role role =  Role.USER;
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority("SCOPE_" + role));
+        grantedAuthorities.add(new SimpleGrantedAuthority("SCOPE_" + this.role));
         return grantedAuthorities;
     }
 

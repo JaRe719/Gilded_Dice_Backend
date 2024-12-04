@@ -21,6 +21,6 @@ public class Choice {
     private String loseMessage;
     private String critMessage;
 
-    @OneToOne
+    @ManyToOne
     private Npc npc;
 }

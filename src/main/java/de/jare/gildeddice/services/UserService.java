@@ -1,6 +1,7 @@
 package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.dtos.UserRegisterRequestDTO;
+import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.repositories.ProfileRepository;
@@ -29,7 +30,7 @@ public class UserService {
 
 
     public User getUser(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found:"));
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return user;
     }
 
@@ -63,4 +64,10 @@ public class UserService {
     }
 
 
+    public void setUserCharToProfile(CharDetails charDetails, Authentication auth) {
+        User user = getUser(auth);
+        Profile profile = user.getProfile();
+        profile.setCharDetails(charDetails);
+        profileRepository.save(profile);
+    }
 }

@@ -1,10 +1,13 @@
 package de.jare.gildeddice.services;
 
+import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
+import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.mapper.CharMapper;
 import de.jare.gildeddice.repositories.CharDetailsRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +28,28 @@ public class CharDetailsService {
         Profile userProfile = userService.getUserProfile(auth);
 
         return CharMapper.charToResponseDTO(userProfile.getCharDetails());
+    }
+
+    @Transactional
+    public CharDetailsResponseDTO createOrUpdateCharDetails(CharDetailsRequestDTO dto, Authentication auth) {
+        User user = userService.getUser(auth);
+        Profile userProfile = user.getProfile();
+
+        CharDetails charDetails = userProfile.getCharDetails();
+        if (charDetails == null) {
+            charDetails = new CharDetails();
+        }
+
+        charDetails.setIntelligence(dto.intelligence());
+        charDetails.setNegotiate(dto.negotiate());
+        charDetails.setAbility(dto.ability());
+        charDetails.setPlanning(dto.planning());
+        charDetails.setStamina(dto.stamina());
+        charDetails.setAvatar(dto.avatar());
+
+        charDetails = charDetailsRepository.save(charDetails);
+        userService.setUserCharToProfile(charDetails, auth);
+
+        return CharMapper.charToResponseDTO(charDetails);
     }
 }

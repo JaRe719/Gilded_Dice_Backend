@@ -127,4 +127,50 @@ class CharDetailsServiceTest {
         verify(userService, times(1)).setUserCharToProfile(existingCharDetails, auth);
     }
 
+    @Test
+    void testGetUserAvatar_Success() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        String avatarUrl = "avatar_url";
+        Profile profileMock = new Profile();
+        CharDetails charDetailsMock = new CharDetails();
+        charDetailsMock.setId(1L);
+        charDetailsMock.setAvatar(avatarUrl);
+        profileMock.setId(1L);
+        profileMock.setCharDetails(charDetailsMock);
+
+
+        when(userService.getUserProfile(auth)).thenReturn(profileMock);
+
+        // Act
+        String actualAvatarUrl = charDetailsService.getUserAvatar(auth);
+
+        // Assert
+        assertEquals(avatarUrl, actualAvatarUrl);
+
+        verify(userService, times(1)).getUserProfile(auth);
+    }
+
+    @Test
+    void testGetUserAvatar_noAvatar_Url() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile profileMock = new Profile();
+        CharDetails charDetailsMock = new CharDetails();
+        charDetailsMock.setId(1L);
+        profileMock.setId(1L);
+        profileMock.setCharDetails(charDetailsMock);
+
+
+        when(userService.getUserProfile(auth)).thenReturn(profileMock);
+
+        // Act
+        String actualAvatarUrl = charDetailsService.getUserAvatar(auth);
+
+        // Assert
+        assertNull(actualAvatarUrl);
+
+        verify(userService, times(1)).getUserProfile(auth);
+    }
+
 }

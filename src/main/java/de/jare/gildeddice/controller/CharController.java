@@ -34,4 +34,14 @@ public class CharController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
+    @GetMapping(value ="/avatar")
+    public ResponseEntity<String> getAvatar(Authentication auth) {
+        try {
+            return ResponseEntity.ok(charDetailsService.getUserAvatar(auth));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

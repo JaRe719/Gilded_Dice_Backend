@@ -52,4 +52,9 @@ public class CharDetailsService {
 
         return CharMapper.charToResponseDTO(charDetails);
     }
+
+    public String getUserAvatar(Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        return userProfile.getCharDetails().getAvatar();
+    }
 }

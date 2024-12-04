@@ -27,6 +27,19 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+
+    public User getUser(Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found:"));
+        return user;
+    }
+
+    public Profile getUserProfile(Authentication auth) {
+        User user = getUser(auth);
+        return user.getProfile();
+    }
+
+
+
     @Transactional
     public void newUserRegister(UserRegisterRequestDTO dto) {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
@@ -45,7 +58,9 @@ public class UserService {
 
 
     public void deleteUser(Authentication auth) {
-        User existingUser = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found:"));
+        User existingUser = getUser(auth);
         userRepository.deleteById(existingUser.getId());
     }
+
+
 }

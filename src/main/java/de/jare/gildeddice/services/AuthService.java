@@ -13,6 +13,9 @@ public class AuthService {
     }
 
     public AuthResponseDTO getToken(Authentication auth) {
+        if (auth == null) {
+            throw new IllegalArgumentException("Authentication object cannot be null");
+        }
         return new AuthResponseDTO(tokenService.generateToken(auth));
     }
 

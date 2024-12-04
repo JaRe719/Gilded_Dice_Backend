@@ -1,6 +1,7 @@
 package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.dtos.UserRegisterRequestDTO;
+import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.repositories.ProfileRepository;
@@ -21,8 +22,6 @@ import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
-    @InjectMocks
-    private UserService userService;
 
     @Mock
     private Authentication authentication;
@@ -35,6 +34,9 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private UserService userService;
 
     public UserServiceTest() {
         MockitoAnnotations.openMocks(this);
@@ -118,4 +120,53 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByEmail(email);
         verify(userRepository, times(0)).deleteById(anyLong());
     }
+
+
+    @Test
+    void testSetUserCharToProfile_Success() {
+        // Arrange
+        String email = "test@example.com";
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn(email);
+
+        CharDetails charDetails = new CharDetails();
+
+        Profile profileMock = new Profile();
+        profileMock.setId(1L);
+
+        User userMock = new User();
+        userMock.setEmail(email);
+        userMock.setProfile(profileMock);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(userMock));
+        when(profileRepository.save(any(Profile.class))).thenReturn(profileMock);
+
+        // Act
+        assertDoesNotThrow(() -> userService.setUserCharToProfile(charDetails, auth));
+
+        // Assert
+        assertEquals(charDetails, profileMock.getCharDetails());
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(profileRepository, times(1)).save(profileMock);
+    }
+
+    @Test
+    void testSetUserCharToProfile_UserNotFound() {
+        // Arrange
+        String email = "notfound@example.com";
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn(email);
+        CharDetails charDetails = new CharDetails();
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class,
+                () -> userService.setUserCharToProfile(charDetails, auth));
+        assertEquals("User not found", exception.getMessage());
+
+        verify(userRepository, times(1)).findByEmail(email);
+        verifyNoInteractions(profileRepository);
+    }
+
 }

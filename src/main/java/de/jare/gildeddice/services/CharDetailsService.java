@@ -57,4 +57,12 @@ public class CharDetailsService {
         Profile userProfile = userService.getUserProfile(auth);
         return userProfile.getCharDetails().getAvatar();
     }
+
+    public String setUserAvatar(String avatarUrl, Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        CharDetails charDetails = userProfile.getCharDetails();
+        charDetails.setAvatar(avatarUrl);
+        charDetails = charDetailsRepository.save(charDetails);
+        return charDetails.getAvatar();
+    }
 }

@@ -161,7 +161,6 @@ class CharDetailsServiceTest {
         profileMock.setId(1L);
         profileMock.setCharDetails(charDetailsMock);
 
-
         when(userService.getUserProfile(auth)).thenReturn(profileMock);
 
         // Act
@@ -169,8 +168,37 @@ class CharDetailsServiceTest {
 
         // Assert
         assertNull(actualAvatarUrl);
-
         verify(userService, times(1)).getUserProfile(auth);
+    }
+
+    @Test
+    void testSetUserAvatar_Success() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        String avatarUrl = "new_avatar_url";
+
+        CharDetails charDetailsMock = new CharDetails();
+        charDetailsMock.setId(1L);
+
+        Profile profileMock = new Profile();
+        profileMock.setId(1L);
+        profileMock.setCharDetails(charDetailsMock);
+
+        when(userService.getUserProfile(auth)).thenReturn(profileMock);
+        when(charDetailsRepository.save(any(CharDetails.class))).thenAnswer(invocation -> {
+            return invocation.<CharDetails>getArgument(0); // Rückgabe des gleichen Objekts nach "Speichern"
+        });
+
+        // Act
+        String actualAvatarUrl = charDetailsService.setUserAvatar(avatarUrl, auth);
+
+        // Assert
+        assertNotNull(actualAvatarUrl, "Avatar URL sollte nicht null sein");
+        assertEquals(avatarUrl, actualAvatarUrl, "Avatar URL sollte aktualisiert werden");
+
+        // Verifiziere, dass die Mock-Methoden korrekt aufgerufen wurden
+        verify(userService, times(1)).getUserProfile(auth);
+        verify(charDetailsRepository, times(1)).save(any(CharDetails.class));
     }
 
 }

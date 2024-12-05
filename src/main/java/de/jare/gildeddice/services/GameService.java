@@ -121,15 +121,14 @@ public class GameService {
             game = new Game();
             game.setUser(user);
             game.setPhase(1);
-
-
         }
 
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
+            GamePhaseDTO error = new GamePhaseDTO("Story not found for phase " + game.getPhase(), new ArrayList<>());
             game.setPhase(1);
             gameRepository.save(game);
-            return new GamePhaseDTO("Story not found for phase " + game.getPhase(), new ArrayList<>());
+            return error;
         }
 
         String finalPrompt = createCompletedPrompt(story, user);

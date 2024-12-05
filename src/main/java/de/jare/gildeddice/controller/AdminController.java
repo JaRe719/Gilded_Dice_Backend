@@ -8,6 +8,7 @@ import de.jare.gildeddice.entities.games.storys.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,8 @@ public class AdminController {
     }
 
     @GetMapping(value = "/storys")
-    public ResponseEntity<Iterable<Story>> getAllStorys() {
+    public ResponseEntity<Iterable<Story>> getAllStorys(Authentication auth) {
+        System.out.println(auth.getAuthorities());
         return ResponseEntity.ok(gameService.getAllStorys());
     }
 

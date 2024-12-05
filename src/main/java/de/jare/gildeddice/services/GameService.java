@@ -120,21 +120,36 @@ public class GameService {
         if (game == null) {
             game = new Game();
             game.setUser(user);
-            gameRepository.save(game);
             game.setPhase(1);
+
+
         }
 
         Story story = storyRepository.findByPhase(game.getPhase());
-        System.out.println(createCompletedPrompt(story, user));
-        KSuitAiResponseDTO responseDTO = aiService.callApi("...");
+        if (story == null) {
+            return new GamePhaseDTO("Story not found for phase " + game.getPhase(), new ArrayList<>());
+        }
+
+        String finalPrompt = createCompletedPrompt(story, user);
+        System.out.println(finalPrompt);
+        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+        System.out.println(responseDTO);
+
+        //game.setPhase(game.getPhase() + 1);
+        gameRepository.save(game);
         return GameMapper.toGamePhaseDTO(responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
 
     private String createCompletedPrompt(Story story, User user) {
-        String username = user.getUsername();
+        String username = user.getProfile().getUsername();
         CharDetails charDetails = user.getProfile().getCharDetails();
-        String prompt = story.getPrompt();
-        //prompt += "folgende Information"
-        return prompt;
+
+        String finalPrompt = "Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuelles pnp-intro für folgendes Szenarion, basierend auf den folgenden informationen: ";
+        finalPrompt += "charaktername: " + username;
+        finalPrompt += ", Szenario: " + story.getPrompt();
+        finalPrompt += ", Endscheidung: ";
+        for (Choice choice : story.getChoices()) finalPrompt += choice.getTitle();
+        finalPrompt += "Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Der Spieler wird ge-Dutzt. gebe Entscheidung hilfe (finanzielle und zeitliche aussicht) halte dich kurz";
+        return finalPrompt;
     }
 }

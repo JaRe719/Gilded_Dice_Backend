@@ -35,7 +35,9 @@ public class AiService {
         requestBody.put("messages", List.of(
                 Map.of("role", "user", "content", prompt)
         ));
-        requestBody.put("max_tokens", 100);
+        requestBody.put("max_tokens", 250);
+
+
 
         try {
             return restClient.post()

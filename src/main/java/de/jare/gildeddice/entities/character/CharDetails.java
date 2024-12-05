@@ -26,11 +26,10 @@ public class CharDetails {
     private int invest = 0;
     private int money = 0;
 
-    private boolean property = false;
-    private boolean rentApartment = false;
-    private boolean car = false;
-
     private int simplification = 0;
     private int complication = 0;
     private String avatar;
+
+    @OneToOne(cascade = {CascadeType.ALL})
+    private CharChoices charChoices;
 }

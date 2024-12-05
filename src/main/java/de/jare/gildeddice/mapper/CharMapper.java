@@ -17,9 +17,13 @@ public class CharMapper {
                 charDetails.getAbility(),
                 charDetails.getPlanning(),
                 charDetails.getStamina(),
-                charDetails.isProperty(),
-                charDetails.isRentApartment(),
-                charDetails.isCar(),
+                charDetails.getCharChoices().isStudy(),
+                charDetails.getCharChoices().isScholarship(),
+                charDetails.getCharChoices().isApprenticeship(),
+                charDetails.getCharChoices().isJob(),
+                charDetails.getCharChoices().isProperty(),
+                charDetails.getCharChoices().isRentApartment(),
+                charDetails.getCharChoices().isCar(),
                 charDetails.getAvatar());
     }
 

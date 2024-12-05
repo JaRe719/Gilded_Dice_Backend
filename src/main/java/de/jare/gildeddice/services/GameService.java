@@ -153,4 +153,9 @@ public class GameService {
         finalPrompt += ", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an";
         return finalPrompt;
     }
+
+    public GameChoiceDTO getChoiceDetails(long choiceId) {
+        Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
+        return GameMapper.toGameChoiceDTO(choice);
+    }
 }

@@ -88,9 +88,10 @@ public class GameService {
         return npcRepository.findAll();
     }
 
-    public void createNpc(String npcName) {
+    public void createNpc(String npcName, String filename) {
         Npc npc = new Npc();
         npc.setName(npcName);
+        npc.setFilename(filename);
         npcRepository.save(npc);
     }
 

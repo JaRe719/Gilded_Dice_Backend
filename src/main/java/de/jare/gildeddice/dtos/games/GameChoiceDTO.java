@@ -5,8 +5,8 @@ public record GameChoiceDTO(
         long id,
         String title,
         String skill,
-        int minDiceValue,
         String startMessage,
-        String npc
+        String npcName,
+        String npcFilename
 ) {
 }

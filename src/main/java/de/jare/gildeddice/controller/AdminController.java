@@ -55,8 +55,8 @@ public class AdminController {
     }
 
     @PostMapping(value = "/npc")
-    public ResponseEntity<Void> createNpc(@RequestParam String npcName) {
-        gameService.createNpc(npcName);
+    public ResponseEntity<Void> createNpc(@RequestParam String npcName, String filename) {
+        gameService.createNpc(npcName, filename);
         return ResponseEntity.ok().build();
     }
 

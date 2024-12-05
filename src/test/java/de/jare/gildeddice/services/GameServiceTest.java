@@ -132,9 +132,10 @@ class GameServiceTest {
     void testCreateNpc() {
         // Arrange
         String npcName = "Test NPC";
+        String filename = "npc.png";
 
         // Act
-        gameService.createNpc(npcName);
+        gameService.createNpc(npcName, filename);
 
         // Assert
         verify(npcRepository, times(1)).save(any(Npc.class));

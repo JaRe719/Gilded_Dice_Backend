@@ -15,4 +15,6 @@ public class Npc {
     private long id;
 
     private String name;
+
+    private String filename;
 }

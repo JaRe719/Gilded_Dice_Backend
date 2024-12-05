@@ -22,9 +22,9 @@ public class GameMapper {
                 choice.getId(),
                 choice.getTitle(),
                 choice.getSkill().name(),
-                choice.getMinDiceValue(),
                 choice.getStartMessage(),
-                choice.getNpc().getName()
+                choice.getNpc().getName(),
+                choice.getNpc().getFilename()
         );
     }
 }

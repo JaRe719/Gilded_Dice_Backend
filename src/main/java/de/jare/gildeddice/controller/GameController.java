@@ -6,6 +6,7 @@ import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +26,7 @@ public class GameController {
     }
 
     @GetMapping(value = "/choice/{choiceId}")
-    public ResponseEntity<GameChoiceDTO> getChoiceDetails(long choiceId) {
+    public ResponseEntity<GameChoiceDTO> getChoiceDetails(@PathVariable long choiceId) {
         try {
             return ResponseEntity.ok(gameService.getChoiceDetails(choiceId));
         } catch (Exception e) {

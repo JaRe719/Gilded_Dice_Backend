@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 class GameServiceTest {
@@ -240,6 +241,45 @@ class GameServiceTest {
         assertEquals("Story not found for phase 2", result.intro());
         verify(gameRepository, times(1)).save(game);
     }
+
+    @Test
+    void testGetChoiceDetails_Success() {
+        // Arrange
+        Choice choice = new Choice();
+        choice.setTitle("Test Choice");
+        choice.setSkill(Skill.INTELLIGENCE);
+        choice.setMinDiceValue(10);
+        choice.setStartMessage("Start Text");
+        choice.setWinMessage("Win Text");
+        choice.setLoseMessage("Lose Text");
+        choice.setCritMessage("Crit Text");
+        Npc npc = new Npc();
+        npc.setId(1L);
+        npc.setName("NPC");
+        choice.setNpc(npc);
+
+        when(choiceRepository.findById(choice.getId())).thenReturn(Optional.of(choice));
+        // Act
+        GameChoiceDTO result = gameService.getChoiceDetails(choice.getId());
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Test Choice", result.title());
+        assertEquals(Skill.INTELLIGENCE.name(), result.skill());
+        assertEquals(10, result.minDiceValue());
+        assertEquals("Start Text", result.startMessage());
+        assertEquals("NPC", result.npc());
+    }
+
+    @Test
+    void testGetChoiceDetails_ChoiceNotFound() {
+        // Arrange
+        when(choiceRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(EntityNotFoundException.class, () -> gameService.getChoiceDetails(1L));
+    }
+
 
 
 

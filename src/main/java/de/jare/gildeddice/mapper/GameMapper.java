@@ -1,5 +1,6 @@
 package de.jare.gildeddice.mapper;
 
+import de.jare.gildeddice.dtos.games.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.GameChoiceShortDTO;
 import de.jare.gildeddice.dtos.games.GamePhaseDTO;
 import de.jare.gildeddice.entities.games.storys.Choice;
@@ -14,5 +15,16 @@ public class GameMapper {
 
     private static GameChoiceShortDTO toGameChoiceShortDTO(Choice choice) {
         return new GameChoiceShortDTO(choice.getId(), choice.getTitle());
+    }
+
+    public static GameChoiceDTO toGameChoiceDTO(Choice choice) {
+        return new GameChoiceDTO(
+                choice.getId(),
+                choice.getTitle(),
+                choice.getSkill().name(),
+                choice.getMinDiceValue(),
+                choice.getStartMessage(),
+                choice.getNpc().getName()
+        );
     }
 }

@@ -127,6 +127,8 @@ public class GameService {
 
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
+            game.setPhase(1);
+            gameRepository.save(game);
             return new GamePhaseDTO("Story not found for phase " + game.getPhase(), new ArrayList<>());
         }
 
@@ -135,7 +137,7 @@ public class GameService {
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
         System.out.println(responseDTO);
 
-        //game.setPhase(game.getPhase() + 1);
+        game.setPhase(game.getPhase() + 1);
         gameRepository.save(game);
         return GameMapper.toGamePhaseDTO(responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
@@ -149,7 +151,7 @@ public class GameService {
         finalPrompt += ", Szenario: " + story.getPrompt();
         finalPrompt += ", Endscheidung: ";
         for (Choice choice : story.getChoices()) finalPrompt += choice.getTitle();
-        finalPrompt += "Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Der Spieler wird ge-Dutzt. gebe Entscheidung hilfe (finanzielle und zeitliche aussicht) halte dich kurz";
+        finalPrompt += ", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an";
         return finalPrompt;
     }
 }

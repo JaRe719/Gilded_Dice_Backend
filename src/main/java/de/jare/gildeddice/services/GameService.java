@@ -1,13 +1,16 @@
 package de.jare.gildeddice.services;
 
+import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
 import de.jare.gildeddice.dtos.games.*;
 import de.jare.gildeddice.entities.Npc;
+import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
 import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.games.storys.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.entities.users.User;
+import de.jare.gildeddice.mapper.GameMapper;
 import de.jare.gildeddice.repositories.ChoiceRepository;
 import de.jare.gildeddice.repositories.GameRepository;
 import de.jare.gildeddice.repositories.NpcRepository;
@@ -122,9 +125,16 @@ public class GameService {
         }
 
         Story story = storyRepository.findByPhase(game.getPhase());
-        System.out.println(aiService.callApi(story, user));
+        System.out.println(createCompletedPrompt(story, user));
+        KSuitAiResponseDTO responseDTO = aiService.callApi("...");
+        return GameMapper.toGamePhaseDTO(responseDTO.choices().getFirst().message().content(), story.getChoices());
+    }
 
-
-        return null;
+    private String createCompletedPrompt(Story story, User user) {
+        String username = user.getUsername();
+        CharDetails charDetails = user.getProfile().getCharDetails();
+        String prompt = story.getPrompt();
+        //prompt += "folgende Information"
+        return prompt;
     }
 }

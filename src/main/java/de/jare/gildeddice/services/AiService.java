@@ -27,13 +27,13 @@ public class AiService {
         this.restClient = restClient;
     }
 
-    public KSuitAiResponseDTO callApi(Story story, User user) {
+    public KSuitAiResponseDTO callApi(String prompt) {
         String endpoint = "/1/ai/" + PRODUCT_ID + "/openai/chat/completions";
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "mixtral");
         requestBody.put("messages", List.of(
-                Map.of("role", "user", "content", story.getPrompt())
+                Map.of("role", "user", "content", prompt)
         ));
         requestBody.put("max_tokens", 100);
 
@@ -48,6 +48,7 @@ public class AiService {
             System.err.println("API-Error: " + e.getMessage());
             return null;
         }
+
     }
 
 }

@@ -1,5 +1,6 @@
 package de.jare.gildeddice.controller;
 
+import de.jare.gildeddice.dtos.games.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.GamePhaseDTO;
 import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;
@@ -22,4 +23,16 @@ public class GameController {
     public ResponseEntity<GamePhaseDTO> getGamePhase(Authentication auth) {
         return ResponseEntity.ok(gameService.getGamePhase(auth));
     }
+
+    @GetMapping(value = "/choice/{choiceId}")
+    public ResponseEntity<GameChoiceDTO> getChoiceDetails(long choiceId) {
+        try {
+            return ResponseEntity.ok(gameService.getChoiceDetails(choiceId));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+
 }

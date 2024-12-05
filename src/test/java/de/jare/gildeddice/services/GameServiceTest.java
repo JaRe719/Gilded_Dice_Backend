@@ -257,6 +257,7 @@ class GameServiceTest {
         Npc npc = new Npc();
         npc.setId(1L);
         npc.setName("NPC");
+        npc.setFilename("file.png");
         choice.setNpc(npc);
 
         when(choiceRepository.findById(choice.getId())).thenReturn(Optional.of(choice));
@@ -267,9 +268,9 @@ class GameServiceTest {
         assertNotNull(result);
         assertEquals("Test Choice", result.title());
         assertEquals(Skill.INTELLIGENCE.name(), result.skill());
-        assertEquals(10, result.minDiceValue());
         assertEquals("Start Text", result.startMessage());
-        assertEquals("NPC", result.npc());
+        assertEquals("NPC", result.npcName());
+        assertEquals("file.png", result.npcFilename());
     }
 
     @Test
@@ -280,7 +281,6 @@ class GameServiceTest {
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> gameService.getChoiceDetails(1L));
     }
-
 
 
 

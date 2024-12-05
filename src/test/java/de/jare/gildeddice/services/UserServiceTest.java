@@ -115,7 +115,7 @@ class UserServiceTest {
 
         // Act & Assert
         UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> userService.deleteUser(auth));
-        assertEquals("User not found:", exception.getMessage());
+        assertEquals("User not found", exception.getMessage());
 
         verify(userRepository, times(1)).findByEmail(email);
         verify(userRepository, times(0)).deleteById(anyLong());

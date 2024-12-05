@@ -32,7 +32,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping(value = "/login")
+    @PostMapping(value = "/login")
     public ResponseEntity<AuthResponseDTO> login(Authentication auth) {
 
         return new ResponseEntity<>(authService.getToken(auth), HttpStatus.OK);

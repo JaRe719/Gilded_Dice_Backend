@@ -18,8 +18,8 @@ public class GameController {
         this.gameService = gameService;
     }
 
-//    @GetMapping
-//    public ResponseEntity<GamePhaseDTO> getGamePhase(Authentication auth) {
-//        return ResponseEntity.ok(gameService.getGamePhase(auth));
-//    }
+    @GetMapping
+    public ResponseEntity<GamePhaseDTO> getGamePhase(Authentication auth) {
+        return ResponseEntity.ok(gameService.getGamePhase(auth));
+    }
 }

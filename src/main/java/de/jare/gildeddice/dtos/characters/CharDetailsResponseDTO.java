@@ -13,6 +13,11 @@ public record CharDetailsResponseDTO(
         int planning,
         int stamina,
 
+        boolean study,
+        boolean scholarship,
+        boolean apprenticeship,
+        boolean job,
+
         boolean property,
         boolean rentApartment,
         boolean car,

@@ -17,6 +17,7 @@ public class Story {
 
     private Category category;
     private String title;
+    private int phase;
     private String prompt;
 
     @OneToMany

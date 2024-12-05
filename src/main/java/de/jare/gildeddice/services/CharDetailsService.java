@@ -3,6 +3,7 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
+import de.jare.gildeddice.entities.character.CharChoices;
 import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
@@ -39,6 +40,7 @@ public class CharDetailsService {
         CharDetails charDetails = userProfile.getCharDetails();
         if (charDetails == null) {
             charDetails = new CharDetails();
+            charDetails.setCharChoices(new CharChoices());
         }
 
         charDetails.setIntelligence(dto.intelligence());

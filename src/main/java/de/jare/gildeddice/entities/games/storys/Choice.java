@@ -15,10 +15,16 @@ public class Choice {
 
     private String title;
     private Skill skill;
+
+    @Column(length = 1024)
     private int minDiceValue;
+    @Column(length = 1024)
     private String startMessage;
+    @Column(length = 1024)
     private String winMessage;
+    @Column(length = 1024)
     private String loseMessage;
+    @Column(length = 1024)
     private String critMessage;
 
     @ManyToOne

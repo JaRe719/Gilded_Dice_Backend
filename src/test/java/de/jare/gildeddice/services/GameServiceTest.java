@@ -1,5 +1,8 @@
 package de.jare.gildeddice.services;
 
+import de.jare.gildeddice.dtos.ai.response.KSuitAiChoicesDTO;
+import de.jare.gildeddice.dtos.ai.response.KSuitAiMessageDTO;
+import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
 import de.jare.gildeddice.dtos.games.*;
 import de.jare.gildeddice.entities.Npc;
 import de.jare.gildeddice.entities.character.CharDetails;
@@ -162,59 +165,105 @@ class GameServiceTest {
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> gameService.updateChoice(dto));
     }
-/*
-    @Test
-    void testGetGamePhase_GameExists() {
-        // Arrange
-        Authentication auth = mock(Authentication.class);
-        User user = new User();
-        user.setId(1L);
-        Profile profile = new Profile();
-        profile.setId(1L);
-        CharDetails charDetails = new CharDetails();
-        charDetails.setId(1L);
-        profile.setCharDetails(charDetails);
-        user.setProfile(profile);
-
-        Game game = new Game();
-        game.setPhase(1);
-        Story story = new Story();
-        story.setPrompt("Story Prompt");
-
-        when(userService.getUser(auth)).thenReturn(user);
-        when(gameRepository.findByUser(user)).thenReturn(game);
-        when(storyRepository.findByPhase(game.getPhase())).thenReturn(story);
-
-        // Act
-        GamePhaseDTO result = gameService.getGamePhase(auth);
-
-        // Assert
-        assertNotNull(result);
-        verify(gameRepository, times(1)).findByUser(user);
-        verify(storyRepository, times(1)).findByPhase(game.getPhase());
-    }
-
-
 
     @Test
-    void testGetGamePhase_NewGame() {
+    void testGetGamePhase_NewGame_StoryFound() {
         // Arrange
         Authentication auth = mock(Authentication.class);
-        User user = new User();
-        Story story = new Story();
-        story.setPrompt("New Story Prompt");
+        User user = createUserWithProfile();
+        Story story = createStoryWithChoices();
 
         when(userService.getUser(auth)).thenReturn(user);
         when(gameRepository.findByUser(user)).thenReturn(null);
         when(storyRepository.findByPhase(1)).thenReturn(story);
 
+        KSuitAiMessageDTO messageDTO = new KSuitAiMessageDTO("assistant", "Response");
+        KSuitAiChoicesDTO choicesDTO = new KSuitAiChoicesDTO(0, messageDTO, null, "stop");
+        KSuitAiResponseDTO responseDTO = new KSuitAiResponseDTO("gpt-model", "id123", "chat.completion", "fingerprint", System.currentTimeMillis(), List.of(choicesDTO));
+        when(aiService.callApi(anyString())).thenReturn(responseDTO);
+
         // Act
         GamePhaseDTO result = gameService.getGamePhase(auth);
 
         // Assert
         assertNotNull(result);
+        assertEquals("Response", result.intro());
         verify(gameRepository, times(1)).save(any(Game.class));
-        verify(storyRepository, times(1)).findByPhase(1);
+        verify(aiService, times(1)).callApi(anyString());
     }
- */
+
+    @Test
+    void testGetGamePhase_ExistingGame_StoryFound() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        User user = createUserWithProfile();
+        Game game = new Game();
+        game.setPhase(1);
+        Story story = createStoryWithChoices();
+
+        when(userService.getUser(auth)).thenReturn(user);
+        when(gameRepository.findByUser(user)).thenReturn(game);
+        when(storyRepository.findByPhase(1)).thenReturn(story);
+
+        KSuitAiMessageDTO messageDTO = new KSuitAiMessageDTO("assistant", "Response");
+        KSuitAiChoicesDTO choicesDTO = new KSuitAiChoicesDTO(0, messageDTO, null, "stop");
+        KSuitAiResponseDTO responseDTO = new KSuitAiResponseDTO("gpt-model", "id123", "chat.completion", "fingerprint", System.currentTimeMillis(), List.of(choicesDTO));
+        when(aiService.callApi(anyString())).thenReturn(responseDTO);
+
+        // Act
+        GamePhaseDTO result = gameService.getGamePhase(auth);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Response", result.intro());
+        verify(gameRepository, times(1)).save(game);
+        verify(aiService, times(1)).callApi(anyString());
+    }
+
+    @Test
+    void testGetGamePhase_StoryNotFound() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        User user = createUserWithProfile();
+        Game game = new Game();
+        game.setPhase(2);
+
+        when(userService.getUser(auth)).thenReturn(user);
+        when(gameRepository.findByUser(user)).thenReturn(game);
+        when(storyRepository.findByPhase(game.getPhase())).thenReturn(null);
+
+        // Act
+        GamePhaseDTO result = gameService.getGamePhase(auth);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Story not found for phase 2", result.intro());
+        verify(gameRepository, times(1)).save(game);
+    }
+
+
+
+
+    private User createUserWithProfile() {
+        User user = new User();
+        Profile profile = new Profile();
+        profile.setUsername("TestUser");
+        CharDetails charDetails = new CharDetails();
+        profile.setCharDetails(charDetails);
+        user.setProfile(profile);
+        return user;
+    }
+
+    private Story createStoryWithChoices() {
+        Story story = new Story();
+        story.setPhase(1);
+        story.setPrompt("Story Prompt");
+        List<Choice> choices = new ArrayList<>();
+        Choice choice1 = new Choice();
+        choice1.setTitle("Choice 1");
+        choices.add(choice1);
+        story.setChoices(choices);
+        return story;
+    }
 }
+

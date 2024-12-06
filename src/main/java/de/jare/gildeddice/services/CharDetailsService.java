@@ -105,29 +105,52 @@ public class CharDetailsService {
 
     public boolean setCharacterStatusLvls(long id, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
         CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+
+        int handicap = 0;
+        int charStresslvl = charDetails.getStressLvl();
+        int charSatisfactionlvl = charDetails.getSatisfactionLvl();
+        int charHealthlvl = charDetails.getHealthLvl();
         boolean gameEnd = false;
 
         if (stressValue != null) {
-            charDetails.setStressLvl(charDetails.getStressLvl() + stressValue);
-            if (charDetails.getStressLvl() == 10) gameEnd = true;
+            charStresslvl = charStresslvl + stressValue;
         }
-//        if (charDetails.getStressLvl() == 5) charDetails.setComplication(charDetails.getComplication() + (-1));
-//        else if (charDetails.getStressLvl() == 8) charDetails.setComplication(charDetails.getComplication() + (-2));
+        charDetails.setStressLvl(charStresslvl);
+
+        //-- Stress
+        if (charStresslvl == 10) gameEnd = true;
+        else if (charStresslvl >= 8 && charStresslvl < 10) {
+            handicap -= 2;
+            charHealthlvl -= 1;
+        }
+        else if (charStresslvl >= 5 && charStresslvl < 8) handicap -= 1;
 
 
+        //-- Satisfaction
         if (satisfactionValue != null) {
-            charDetails.setSatisfactionLvl(charDetails.getSatisfactionLvl() + satisfactionValue);
+            charSatisfactionlvl =  charSatisfactionlvl + satisfactionValue;
         }
-//        if (charDetails.getSatisfactionLvl() == 3)
-//        else if (charDetails.getSatisfactionLvl() == 5) charDetails.setComplication(charDetails.getComplication() + 1);
-//        else if (charDetails.getSatisfactionLvl() == 8) charDetails.setComplication(charDetails.getComplication() + 1);
+        charDetails.setSatisfactionLvl(charSatisfactionlvl);
 
+        if (charSatisfactionlvl <= 2) {
+            handicap -= 2;
+            charHealthlvl -= 1;
+        }
+        else if (charSatisfactionlvl == 3) handicap -= 1;
+        else if (charSatisfactionlvl > 5) handicap += 1;
+
+
+        //-- health
         if (healthValue != null) {
-            charDetails.setHealthLvl(charDetails.getHealthLvl() + healthValue);
-            if (charDetails.getHealthLvl() == 0) gameEnd = true;
+           charHealthlvl = charHealthlvl + healthValue;
         }
+        charDetails.setHealthLvl(charHealthlvl);
+
+        if (charDetails.getHealthLvl() == 0) gameEnd = true;
 
 
+        //-----
+        charDetails.setHandicap(handicap);
         charDetailsRepository.save(charDetails);
         return gameEnd;
     }

@@ -264,7 +264,7 @@ public class GameService {
         User user = userService.getUser(auth);
         CharDetails charDetails = user.getProfile().getCharDetails();
 
-        // Ermittlung der wertes das überwürfelt werden muss
+        // Ermittlung des wertes das überwürfelt werden muss
         MinValueToWinDTO finalMinValueToWin = calculateFinalMinResultToWin(choice, diceResult, charDetails);
 
         // auswertung des wurfes mit dem minWin wert (Lose: -1; win: 0; Crit: 1
@@ -364,10 +364,7 @@ public class GameService {
                 );
                 break;
         }
-
-
         return gameLost;
-
     }
 
 
@@ -392,7 +389,7 @@ public class GameService {
     private MinValueToWinDTO calculateFinalMinResultToWin(Choice choice, int diceResult, CharDetails character) {
         int finalMinResultToWin = choice.getMinDiceValue();
 
-        int handicap = character.getSimplification() + character.getComplication();
+        int handicap = character.getHandicap();
 
         int skillValue = switch (choice.getSkill()) {
             case INTELLIGENCE -> character.getIntelligence();

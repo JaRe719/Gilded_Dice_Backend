@@ -146,17 +146,67 @@ public class GameService {
         String username = user.getProfile().getUsername();
         CharDetails charDetails = user.getProfile().getCharDetails();
 
-        String finalPrompt = "Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuelles pnp-intro für folgendes Szenarion, basierend auf den folgenden informationen: ";
-        finalPrompt += "charaktername: " + username;
-        finalPrompt += ", Szenario: " + story.getPrompt();
-        finalPrompt += ", Endscheidung: ";
-        for (Choice choice : story.getChoices()) finalPrompt += choice.getTitle();
-        finalPrompt += ", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an";
-        return finalPrompt;
+        StringBuilder finalPrompt = new StringBuilder("Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuelles pnp-intro für folgendes Szenarion, basierend auf den folgenden informationen: ");
+        finalPrompt.append("charaktername: ").append(username);
+        finalPrompt.append(", Szenario: ").append(story.getPrompt());
+        finalPrompt.append(", Endscheidung: ");
+        for (Choice choice : story.getChoices()) finalPrompt.append(choice.getTitle());
+        finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
+        return finalPrompt.toString();
     }
 
     public GameChoiceDTO getChoiceDetails(long choiceId) {
         Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
         return GameMapper.toGameChoiceDTO(choice);
+    }
+
+
+
+
+
+    public GameChoiceResultDTO calculateChoiceDiceResult(long choiceId, int diceResult, Authentication auth) {
+        Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
+        User user = userService.getUser(auth);
+        CharDetails charDetails = user.getProfile().getCharDetails();
+
+        int skillValue = switch (choice.getSkill()) {
+            case INTELLIGENCE -> charDetails.getIntelligence();
+            case NEGOTIATE -> charDetails.getNegotiate();
+            case ABILITY -> charDetails.getAbility();
+            case PLANNING -> charDetails.getPlanning();
+            case STAMINA -> charDetails.getStamina();
+        };
+
+        int handicap = charDetails.getSimplification() + charDetails.getComplication();
+
+        int finalMinResultToWin = choice.getMinDiceValue() - skillValue - handicap;
+        String calcPathGoal = "eigentliche Gewinnschwelle: " + choice.getMinDiceValue()
+                + " - " + choice.getSkill().getSkillname() + ": " + skillValue
+                + " - Handicap: " + handicap + " = " + finalMinResultToWin
+                + " Würfelwert: " + diceResult;
+        System.out.println(calcPathGoal);
+
+        String resultMessage;
+        boolean choiceWin;
+
+        if (diceResult == 20) {
+            //kritischer erfolg
+            resultMessage = choice.getCritMessage();
+            choiceWin = true;
+        } else if (diceResult > finalMinResultToWin) {
+            //erfolgreiche Probe
+            resultMessage = choice.getWinMessage();
+            choiceWin = true;
+        } else {
+            //verloren
+            resultMessage = choice.getLoseMessage();
+            choiceWin = false;
+        }
+
+        return new GameChoiceResultDTO(
+                choiceWin,
+                false,
+                resultMessage,
+                calcPathGoal);
     }
 }

@@ -33,12 +33,13 @@ public class GameController {
     }
 
     @PostMapping(value = "/choice/{choiceId}")
-    public ResponseEntity<GameChoiceResultDTO> calculateChoiceDiceValue(@PathVariable long choiceId, @RequestParam int diceResult, Authentication auth) {
-        try {
-            return ResponseEntity.ok(gameService.calculateChoiceDiceResult(choiceId, diceResult, auth));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<GameChoiceResultDTO> playChoice(@PathVariable long choiceId, @RequestParam int diceResult, Authentication auth) {
+        return ResponseEntity.ok(gameService.playChice(choiceId, diceResult, auth));
+//        try {
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().build();
+//        }
     }
 
 

@@ -9,6 +9,7 @@ import de.jare.gildeddice.entities.enums.Skill;
 import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.games.storys.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
+import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.mapper.GameMapper;
 import de.jare.gildeddice.repositories.ChoiceRepository;
@@ -32,14 +33,17 @@ public class GameService {
 
     private AiService aiService;
     private UserService userService;
+    private CharDetailsService charDetailsService;
 
-    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService) {
+
+    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService, CharDetailsService charDetailsService) {
         this.gameRepository = gameRepository;
         this.storyRepository = storyRepository;
         this.choiceRepository = choiceRepository;
         this.npcRepository = npcRepository;
         this.aiService = aiService;
         this.userService = userService;
+        this.charDetailsService = charDetailsService;
     }
 
     public Iterable<Story> getAllStorys() {
@@ -64,9 +68,55 @@ public class GameService {
             choiceEntity.setSkill(Skill.valueOf(choice.skill()));
             choiceEntity.setMinDiceValue(choice.minDiceValue());
             choiceEntity.setStartMessage(choice.startMessage());
+
             choiceEntity.setWinMessage(choice.winMessage());
+            choiceEntity.setWinIncomeValue(choice.winIncomeValue());
+            choiceEntity.setWinOutcomeValue(choice.winOutcomeValue());
+            choiceEntity.setWinOneTimePayment(choice.winOneTimePayment());
+
+            choiceEntity.setWinStudy(choice.winStudy());
+            choiceEntity.setWinScholarship(choice.winScholarship());
+            choiceEntity.setWinApprenticeship(choice.winApprenticeship());
+            choiceEntity.setWinJob(choice.winJob());
+            choiceEntity.setWinProperty(choice.winProperty());
+            choiceEntity.setWinRentApartment(choice.winRentApartment());
+            choiceEntity.setWinCar(choice.winCar());
+
+            choiceEntity.setWinStressValue(choice.winStressValue());
+            choiceEntity.setWinSatisfactionValue(choice.winSatisfactionValue());
+            choiceEntity.setWinHealthValue(choice.winHealthValue());
+
+
             choiceEntity.setLoseMessage(choice.loseMessage());
+            choiceEntity.setLoseIncomeValue(choice.loseIncomeValue());
+            choiceEntity.setLoseOutcomeValue(choice.loseOutcomeValue());
+            choiceEntity.setLoseOneTimePayment(choice.loseOneTimePayment());
+
+            choiceEntity.setLoseStudy(choice.loseStudy());
+            choiceEntity.setLoseScholarship(choice.loseScholarship());
+            choiceEntity.setLoseApprenticeship(choice.loseApprenticeship());
+            choiceEntity.setLoseJob(choice.loseJob());
+            choiceEntity.setLoseProperty(choice.loseProperty());
+            choiceEntity.setLoseRentApartment(choice.loseRentApartment());
+            choiceEntity.setLoseCar(choice.loseCar());
+
+            choiceEntity.setLoseStressValue(choice.loseStressValue());
+            choiceEntity.setLoseSatisfactionValue(choice.loseSatisfactionValue());
+            choiceEntity.setLoseHealthValue(choice.loseHealthValue());
+
+
             choiceEntity.setCritMessage(choice.critMessage());
+            choiceEntity.setCritIncomeValue(choice.critIncomeValue());
+            choiceEntity.setCritOutcomeValue(choice.critOutcomeValue());
+            choiceEntity.setCritOneTimePayment(choice.critOneTimePayment());
+
+            choiceEntity.setCritScholarship(choice.critScholarship());
+
+            choiceEntity.setCritStressValue(choice.critStressValue());
+            choiceEntity.setCritSatisfactionValue(choice.critSatisfactionValue());
+            choiceEntity.setCritHealthValue(choice.critHealthValue());
+
+
             choiceEntity.setNpc(npcRepository.findById(choice.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
 
             choiceEntity = choiceRepository.save(choiceEntity);
@@ -100,27 +150,75 @@ public class GameService {
     }
 
     public void updateChoice(ChoiceUpdateDTO dto) {
-        Choice choice = choiceRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
-        choice.setTitle(dto.title());
-        choice.setSkill(Skill.valueOf(dto.skill()));
-        choice.setMinDiceValue(dto.minDiceValue());
-        choice.setStartMessage(dto.startMessage());
-        choice.setWinMessage(dto.winMessage());
-        choice.setLoseMessage(dto.loseMessage());
-        choice.setCritMessage(dto.critMessage());
-        choice.setNpc(npcRepository.findById(dto.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
-        choiceRepository.save(choice);
+        Choice choiceEntity = choiceRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
+
+        choiceEntity.setTitle(dto.title());
+        choiceEntity.setSkill(Skill.valueOf(dto.skill()));
+        choiceEntity.setMinDiceValue(dto.minDiceValue());
+        choiceEntity.setStartMessage(dto.startMessage());
+
+        choiceEntity.setWinMessage(dto.winMessage());
+        choiceEntity.setWinIncomeValue(dto.winIncomeValue());
+        choiceEntity.setWinOutcomeValue(dto.winOutcomeValue());
+        choiceEntity.setWinOneTimePayment(dto.winOneTimePayment());
+
+        choiceEntity.setWinStudy(dto.winStudy());
+        choiceEntity.setWinScholarship(dto.winScholarship());
+        choiceEntity.setWinApprenticeship(dto.winApprenticeship());
+        choiceEntity.setWinJob(dto.winJob());
+        choiceEntity.setWinProperty(dto.winProperty());
+        choiceEntity.setWinRentApartment(dto.winRentApartment());
+        choiceEntity.setWinCar(dto.winCar());
+
+        choiceEntity.setWinStressValue(dto.winStressValue());
+        choiceEntity.setWinSatisfactionValue(dto.winSatisfactionValue());
+        choiceEntity.setWinHealthValue(dto.winHealthValue());
+
+
+        choiceEntity.setLoseMessage(dto.loseMessage());
+        choiceEntity.setLoseIncomeValue(dto.loseIncomeValue());
+        choiceEntity.setLoseOutcomeValue(dto.loseOutcomeValue());
+        choiceEntity.setLoseOneTimePayment(dto.loseOneTimePayment());
+
+        choiceEntity.setLoseStudy(dto.loseStudy());
+        choiceEntity.setLoseScholarship(dto.loseScholarship());
+        choiceEntity.setLoseApprenticeship(dto.loseApprenticeship());
+        choiceEntity.setLoseJob(dto.loseJob());
+        choiceEntity.setLoseProperty(dto.loseProperty());
+        choiceEntity.setLoseRentApartment(dto.loseRentApartment());
+        choiceEntity.setLoseCar(dto.loseCar());
+
+        choiceEntity.setLoseStressValue(dto.loseStressValue());
+        choiceEntity.setLoseSatisfactionValue(dto.loseSatisfactionValue());
+        choiceEntity.setLoseHealthValue(dto.loseHealthValue());
+
+
+        choiceEntity.setCritMessage(dto.critMessage());
+        choiceEntity.setCritIncomeValue(dto.critIncomeValue());
+        choiceEntity.setCritOutcomeValue(dto.critOutcomeValue());
+        choiceEntity.setCritOneTimePayment(dto.critOneTimePayment());
+
+        choiceEntity.setCritScholarship(dto.critScholarship());
+
+        choiceEntity.setCritStressValue(dto.critStressValue());
+        choiceEntity.setCritSatisfactionValue(dto.critSatisfactionValue());
+        choiceEntity.setCritHealthValue(dto.critHealthValue());
+
+
+        choiceEntity.setNpc(npcRepository.findById(dto.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
+
+        choiceRepository.save(choiceEntity);
     }
     //------
 
 
     public GamePhaseDTO getGamePhase(Authentication auth) {
         User user = userService.getUser(auth);
-        Game game = gameRepository.findByUser(user);
+        Game game = gameRepository.findByUsername(user.getProfile().getUsername());
 
         if (game == null) {
             game = new Game();
-            game.setUser(user);
+            game.setUsername(user.getProfile().getUsername());
             game.setPhase(1);
         }
 
@@ -161,52 +259,162 @@ public class GameService {
     }
 
 
-
-
-
-    public GameChoiceResultDTO calculateChoiceDiceResult(long choiceId, int diceResult, Authentication auth) {
+    public GameChoiceResultDTO playChice(long choiceId, int diceResult, Authentication auth) {
         Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
         User user = userService.getUser(auth);
         CharDetails charDetails = user.getProfile().getCharDetails();
 
+        // Ermittlung der wertes das überwürfelt werden muss
+        MinValueToWinDTO finalMinValueToWin = calculateFinalMinResultToWin(choice, diceResult, charDetails);
+
+        // auswertung des wurfes mit dem minWin wert (Lose: -1; win: 0; Crit: 1
+        int choiceResult = checkResult(diceResult, finalMinValueToWin.value());
+        // ermittlung des ergebnistextes
+        String responseMessage = compareResultForMessage(choiceResult, choice);
+
+        // Ausführung der Aktionen für diese Choice
+        boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
+
+        return new GameChoiceResultDTO(
+                choiceResult >= 0,
+                gameLost,
+                responseMessage,
+                finalMinValueToWin.calculation()
+        );
+
+    }
+
+    private boolean executeChoiceResult(Choice choice, int choiceResult, Profile userProfile) {
+        Game game = gameRepository.findByUsername(userProfile.getUsername());
+        boolean gameLost = false;
+
+        switch (choiceResult) {
+            case 1: //critical
+                gameLost = charDetailsService.setCharacterStatusLvls(
+                        userProfile.getId(),
+                        choice.getCritStressValue(),
+                        choice.getCritSatisfactionValue(),
+                        choice.getCritHealthValue()
+                );
+
+                charDetailsService.setFinancesByChoice(
+                        userProfile.getId(),
+                        choice.getCritIncomeValue(),
+                        choice.getCritOutcomeValue(),
+                        choice.getCritOneTimePayment()
+                );
+                charDetailsService.setInventoryByChoice(
+                        userProfile.getId(),
+                        choice.getWinStudy(),
+                        choice.getCritScholarship(),
+                        choice.getWinApprenticeship(),
+                        choice.getWinJob(),
+                        choice.getWinProperty(),
+                        choice.getWinRentApartment(),
+                        choice.getWinCar()
+                );
+
+                break;
+            case 0: //win
+                gameLost = charDetailsService.setCharacterStatusLvls(
+                        userProfile.getId(),
+                        choice.getWinStressValue(),
+                        choice.getWinSatisfactionValue(),
+                        choice.getWinHealthValue()
+                );
+                charDetailsService.setFinancesByChoice(
+                        userProfile.getId(),
+                        choice.getWinIncomeValue(),
+                        choice.getWinOutcomeValue(),
+                        choice.getWinOneTimePayment()
+                );
+                charDetailsService.setInventoryByChoice(
+                        userProfile.getId(),
+                        choice.getWinStudy(),
+                        choice.getWinScholarship(),
+                        choice.getWinApprenticeship(),
+                        choice.getWinJob(),
+                        choice.getWinProperty(),
+                        choice.getWinRentApartment(),
+                        choice.getWinCar()
+                );
+                break;
+            case -1: //lose
+                gameLost = charDetailsService.setCharacterStatusLvls(
+                        userProfile.getId(),
+                        choice.getLoseStressValue(),
+                        choice.getLoseSatisfactionValue(),
+                        choice.getLoseHealthValue()
+                );
+                charDetailsService.setFinancesByChoice(
+                        userProfile.getId(),
+                        choice.getLoseIncomeValue(),
+                        choice.getLoseOutcomeValue(),
+                        choice.getLoseOneTimePayment()
+                );
+                charDetailsService.setInventoryByChoice(
+                        userProfile.getId(),
+                        choice.getLoseStudy(),
+                        choice.getLoseScholarship(),
+                        choice.getLoseApprenticeship(),
+                        choice.getLoseJob(),
+                        choice.getLoseProperty(),
+                        choice.getLoseRentApartment(),
+                        choice.getLoseCar()
+                );
+                break;
+        }
+
+
+        return gameLost;
+
+    }
+
+
+    private String compareResultForMessage(int choiceResult, Choice choice) {
+        String resultMessage;
+
+        if (choiceResult == 1) resultMessage = choice.getCritMessage();
+        else if (choiceResult == 0) resultMessage = choice.getWinMessage();
+        else resultMessage = choice.getLoseMessage();
+
+        return resultMessage;
+    }
+
+
+    private int checkResult(int diceResult, int minValueToWin) {
+
+        if (diceResult == 20) return 1;
+        else if (diceResult > minValueToWin) return 0;
+        else return -1;
+    }
+
+    private MinValueToWinDTO calculateFinalMinResultToWin(Choice choice, int diceResult, CharDetails character) {
+        int finalMinResultToWin = choice.getMinDiceValue();
+
+        int handicap = character.getSimplification() + character.getComplication();
+
         int skillValue = switch (choice.getSkill()) {
-            case INTELLIGENCE -> charDetails.getIntelligence();
-            case NEGOTIATE -> charDetails.getNegotiate();
-            case ABILITY -> charDetails.getAbility();
-            case PLANNING -> charDetails.getPlanning();
-            case STAMINA -> charDetails.getStamina();
+            case INTELLIGENCE -> character.getIntelligence();
+            case NEGOTIATE -> character.getNegotiate();
+            case ABILITY -> character.getAbility();
+            case PLANNING -> character.getPlanning();
+            case STAMINA -> character.getStamina();
         };
 
-        int handicap = charDetails.getSimplification() + charDetails.getComplication();
+        finalMinResultToWin = finalMinResultToWin - skillValue - handicap;
 
-        int finalMinResultToWin = choice.getMinDiceValue() - skillValue - handicap;
         String calcPathGoal = "eigentliche Gewinnschwelle: " + choice.getMinDiceValue()
                 + " - " + choice.getSkill().getSkillname() + ": " + skillValue
                 + " - Handicap: " + handicap + " = " + finalMinResultToWin
                 + " Würfelwert: " + diceResult;
-        System.out.println(calcPathGoal);
 
-        String resultMessage;
-        boolean choiceWin;
-
-        if (diceResult == 20) {
-            //kritischer erfolg
-            resultMessage = choice.getCritMessage();
-            choiceWin = true;
-        } else if (diceResult > finalMinResultToWin) {
-            //erfolgreiche Probe
-            resultMessage = choice.getWinMessage();
-            choiceWin = true;
-        } else {
-            //verloren
-            resultMessage = choice.getLoseMessage();
-            choiceWin = false;
-        }
-
-        return new GameChoiceResultDTO(
-                choiceWin,
-                false,
-                resultMessage,
-                calcPathGoal);
+        return new MinValueToWinDTO(finalMinResultToWin, calcPathGoal);
     }
+
+
+
+
+
+
 }

@@ -5,5 +5,6 @@ public enum Category {
     WIN,
     LOSE,
     EXTRA,
-    MAIN
+    MAIN,
+    INVESTMENT
 }

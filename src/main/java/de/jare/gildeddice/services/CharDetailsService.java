@@ -5,6 +5,7 @@ import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
 import de.jare.gildeddice.entities.character.CharChoices;
 import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.mapper.CharMapper;
@@ -75,13 +76,24 @@ public class CharDetailsService {
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
     }
 
-    public void setFinancesByChoice(long id, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment){
+    public void setFinancesByChoice(long id, int gamePhase, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment) {
         CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
 
 
         if (incomeValue != null) charDetails.setIncome(incomeValue);
         if (outcomeValue != null) charDetails.setOutcome(charDetails.getOutcome() + outcomeValue);
         if (oneTimePayment != null) charDetails.setMoney(charDetails.getMoney() + (oneTimePayment));
+
+        if (charDetails.getInvest() > 0) {
+            if (gamePhase % 10 != 0) {
+                charDetails.setMoney((int) ((charDetails.getInvest() * charDetails.getInvestmentPercent()) / 100.0f));
+            } else {
+                charDetails.setMoney(charDetails.getMoney() + charDetails.getInvest());
+                charDetails.setInvest(0);
+                charDetails.setInvestmentPercent(0);
+            }
+        }
+
 
         charDetailsRepository.save(charDetails);
         System.out.println(oneTimePayment);
@@ -103,7 +115,7 @@ public class CharDetailsService {
         charDetailsRepository.save(charDetails);
     }
 
-    public boolean setCharacterStatusLvls(long id, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
+    public boolean setCharacterStatusLvls(long id, int gamePhase, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
         CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
 
         int handicap = 0;
@@ -121,7 +133,7 @@ public class CharDetailsService {
         if (charStresslvl == 10) gameEnd = true;
         else if (charStresslvl >= 8 && charStresslvl < 10) {
             handicap -= 2;
-            charHealthlvl -= 1;
+            if (gamePhase % 10 == 0) charHealthlvl -= 1;
         }
         else if (charStresslvl >= 5 && charStresslvl < 8) handicap -= 1;
 
@@ -134,7 +146,7 @@ public class CharDetailsService {
 
         if (charSatisfactionlvl <= 2) {
             handicap -= 2;
-            charHealthlvl -= 1;
+            if (gamePhase % 10 == 0) charHealthlvl -= 1;
         }
         else if (charSatisfactionlvl == 3) handicap -= 1;
         else if (charSatisfactionlvl > 5) handicap += 1;
@@ -153,5 +165,23 @@ public class CharDetailsService {
         charDetails.setHandicap(handicap);
         charDetailsRepository.save(charDetails);
         return gameEnd;
+    }
+
+    public void resetChar(Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        CharDetails charDetails = userProfile.getCharDetails();
+
+        charDetails.setStressLvl(0);
+        charDetails.setSatisfactionLvl(5);
+        charDetails.setHealthLvl(10);
+        charDetails.setHandicap(0);
+        charDetails.setIncome(0);
+        charDetails.setOutcome(0);
+        charDetails.setInvest(0);
+        charDetails.setInvestmentPercent(0);
+        charDetails.setMoney(0);
+
+        charDetails.setCharChoices(new CharChoices());
+        charDetailsRepository.save(charDetails);
     }
 }

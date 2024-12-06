@@ -20,6 +20,8 @@ public class Game {
 
     private String username;
 
+    private boolean gameLost = false;
+
     @OneToMany
     private List<Story> stories = new ArrayList<>();
 

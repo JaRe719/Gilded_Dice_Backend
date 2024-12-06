@@ -48,7 +48,7 @@ public class AiService {
                     .body(KSuitAiResponseDTO.class);
         } catch (HttpClientErrorException e) {
             System.err.println("API-Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-            throw e; // Optional: wirf den Fehler erneut, um den Stacktrace zu behalten
+            throw e;
         }
 
     }

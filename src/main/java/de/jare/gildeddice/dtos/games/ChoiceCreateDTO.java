@@ -50,6 +50,7 @@ public record ChoiceCreateDTO(
         Integer critHealthValue,
 
 
-        long npcId
+        long npcId,
+        boolean phaseEnd
 ) {
 }

@@ -25,7 +25,7 @@ public class Choice {
     private String winMessage;
     private Integer winIncomeValue;
     private Integer winOutcomeValue;
-    private Integer winInvestmentPercent;
+    private Float winInvestmentPercent;
     private Integer winOneTimePayment;
     private Boolean winStudy;
     private Boolean winScholarship;
@@ -43,7 +43,7 @@ public class Choice {
     private String loseMessage;
     private Integer loseIncomeValue;
     private Integer loseOutcomeValue;
-    private Integer loseInvestmentPercent;
+    private Float loseInvestmentPercent;
     private Integer loseOneTimePayment;
     private Boolean loseStudy;
     private Boolean loseScholarship;
@@ -61,7 +61,7 @@ public class Choice {
     private String critMessage;
     private Integer critIncomeValue;
     private Integer critOutcomeValue;
-    private Integer critInvestmentPercent;
+    private Float critInvestmentPercent;
     private Integer critOneTimePayment;
 
     private Boolean critScholarship;

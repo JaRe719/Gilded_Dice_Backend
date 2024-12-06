@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GameService {
@@ -56,6 +57,7 @@ public class GameService {
         story.setTitle(dto.title());
         story.setPhase(dto.phase());
         story.setPrompt(dto.prompt());
+        story.setPhaseEnd(dto.phaseEnd());
         story.setChoices(createStoryList(dto.choices()));
         storyRepository.save(story);
     }
@@ -130,6 +132,7 @@ public class GameService {
         Story story = storyRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Story not found!"));
         story.setTitle(dto.title());
         story.setPhase(dto.phase());
+        story.setPhaseEnd(dto.phaseEnd());
         story.setPrompt(dto.prompt());
         storyRepository.save(story);
     }
@@ -214,18 +217,24 @@ public class GameService {
 
     public GamePhaseDTO getGamePhase(Authentication auth) {
         User user = userService.getUser(auth);
-        Game game = gameRepository.findByUsername(user.getProfile().getUsername());
+        if (user.getProfile().getCharDetails() == null) throw new IllegalStateException("no Char");
+        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
 
-        if (game == null) {
+        Game game;
+
+        if (existingGame.isPresent()) {
+             game = existingGame.get();
+        } else {
             game = new Game();
             game.setUsername(user.getProfile().getUsername());
-            game.setPhase(1);
+            game.setPhase(10);
         }
 
+        if (game.isGameLost()) throw new IllegalStateException("Game is lost");
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             GamePhaseDTO error = new GamePhaseDTO("Story not found for phase " + game.getPhase(), new ArrayList<>());
-            game.setPhase(1);
+            game.setPhase(10);
             gameRepository.save(game);
             return error;
         }
@@ -235,21 +244,39 @@ public class GameService {
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
         System.out.println(responseDTO);
 
-        game.setPhase(game.getPhase() + 1);
+        if (story.isPhaseEnd()) {
+            game.setPhase(((game.getPhase() + 9) / 10) * 10);
+
+        } else game.setPhase(game.getPhase() + 1);
+
         gameRepository.save(game);
         return GameMapper.toGamePhaseDTO(responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
+
+    public void resetGame(Authentication auth) {
+        User user = userService.getUser(auth);
+        Game game = gameRepository.findByUsername(user.getProfile().getUsername()).orElseThrow(() -> new EntityNotFoundException("GameNotFound"));
+
+        game.setPhase(10);
+        game.setGameLost(false);
+
+        gameRepository.save(game);
+
+        charDetailsService.resetChar(auth);
+    }
+
 
     private String createCompletedPrompt(Story story, User user) {
         String username = user.getProfile().getUsername();
         CharDetails charDetails = user.getProfile().getCharDetails();
 
-        StringBuilder finalPrompt = new StringBuilder("Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuelles pnp-intro für folgendes Szenarion, basierend auf den folgenden informationen: ");
+        StringBuilder finalPrompt = new StringBuilder("Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuellen text für folgendes PnP-Szenarion basierend auf den folgenden informationen: ");
         finalPrompt.append("charaktername: ").append(username);
         finalPrompt.append(", Szenario: ").append(story.getPrompt());
         finalPrompt.append(", Endscheidung: ");
         for (Choice choice : story.getChoices()) finalPrompt.append(choice.getTitle());
         finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
+        if (story.getPhase() != 10) finalPrompt.append("ladde die Begrüßung weg und steig gleich in das Szenario ein");
         return finalPrompt.toString();
     }
 
@@ -259,10 +286,13 @@ public class GameService {
     }
 
 
-    public GameChoiceResultDTO playChice(long choiceId, int diceResult, Authentication auth) {
+    public GameChoiceResultDTO playChoice(long choiceId, int diceResult, Authentication auth) {
+
         Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
         User user = userService.getUser(auth);
+        Game game = gameRepository.findByUsername(user.getProfile().getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
         CharDetails charDetails = user.getProfile().getCharDetails();
+        if (charDetails == null) throw new EntityNotFoundException("Character was not fund");
 
         // Ermittlung des wertes das überwürfelt werden muss
         MinValueToWinDTO finalMinValueToWin = calculateFinalMinResultToWin(choice, diceResult, charDetails);
@@ -275,6 +305,11 @@ public class GameService {
         // Ausführung der Aktionen für diese Choice
         boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
 
+        if (gameLost) {
+            game.setGameLost(true);
+        }
+
+        gameRepository.save(game);
         return new GameChoiceResultDTO(
                 choiceResult >= 0,
                 gameLost,
@@ -285,13 +320,14 @@ public class GameService {
     }
 
     private boolean executeChoiceResult(Choice choice, int choiceResult, Profile userProfile) {
-        Game game = gameRepository.findByUsername(userProfile.getUsername());
+        Game game = gameRepository.findByUsername(userProfile.getUsername()).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
         boolean gameLost = false;
 
         switch (choiceResult) {
             case 1: //critical
                 gameLost = charDetailsService.setCharacterStatusLvls(
                         userProfile.getId(),
+                        game.getPhase(),
                         choice.getCritStressValue(),
                         choice.getCritSatisfactionValue(),
                         choice.getCritHealthValue()
@@ -299,6 +335,7 @@ public class GameService {
 
                 charDetailsService.setFinancesByChoice(
                         userProfile.getId(),
+                        game.getPhase(),
                         choice.getCritIncomeValue(),
                         choice.getCritOutcomeValue(),
                         choice.getCritOneTimePayment()
@@ -318,12 +355,14 @@ public class GameService {
             case 0: //win
                 gameLost = charDetailsService.setCharacterStatusLvls(
                         userProfile.getId(),
+                        game.getPhase(),
                         choice.getWinStressValue(),
                         choice.getWinSatisfactionValue(),
                         choice.getWinHealthValue()
                 );
                 charDetailsService.setFinancesByChoice(
                         userProfile.getId(),
+                        game.getPhase(),
                         choice.getWinIncomeValue(),
                         choice.getWinOutcomeValue(),
                         choice.getWinOneTimePayment()
@@ -342,12 +381,14 @@ public class GameService {
             case -1: //lose
                 gameLost = charDetailsService.setCharacterStatusLvls(
                         userProfile.getId(),
+                        game.getPhase(),
                         choice.getLoseStressValue(),
                         choice.getLoseSatisfactionValue(),
                         choice.getLoseHealthValue()
                 );
                 charDetailsService.setFinancesByChoice(
                         userProfile.getId(),
+                        game.getPhase(),
                         choice.getLoseIncomeValue(),
                         choice.getLoseOutcomeValue(),
                         choice.getLoseOneTimePayment()
@@ -408,10 +449,4 @@ public class GameService {
 
         return new MinValueToWinDTO(finalMinResultToWin, calcPathGoal);
     }
-
-
-
-
-
-
 }

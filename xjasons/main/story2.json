@@ -2,6 +2,7 @@
   "category": "MAIN",
   "title": "Lebens-Stil",
   "phase": 11,
+  "phaseEnd": true,
   "prompt": "nachdem der Spieler sich entschieden hat wie es Beruflich weitergeht, ist die Wohnsituation dran.",
   "choices": [
     {

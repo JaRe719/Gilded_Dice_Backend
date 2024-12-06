@@ -2,6 +2,7 @@
   "category": "MAIN",
   "title": "Berufsleben",
   "phase": 10,
+  "phaseEnd": false,
   "prompt": "Spieler hat den Schulabschluss, nun muss er sich entscheiden, wie es Beruflich weiter geht.",
   "choices": [
     {

@@ -24,6 +24,7 @@ public class CharDetails {
     private int income = 0;
     private int outcome = 0;
     private int invest = 0;
+    private float investmentPercent = 0.0f;
     private int money = 300;
 
     private int handicap = 0;

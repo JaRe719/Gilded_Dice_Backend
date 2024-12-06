@@ -23,25 +23,52 @@ public class Choice {
 
     @Column(length = 1024)
     private String winMessage;
-    private int winIncomeValue;
-    private int winOutcomeValue;
-    private int winInvestmentPercent;
+    private Integer winIncomeValue;
+    private Integer winOutcomeValue;
+    private Integer winInvestmentPercent;
+    private Integer winOneTimePayment;
+    private Boolean winStudy;
+    private Boolean winScholarship;
+    private Boolean winApprenticeship;
+    private Boolean winJob;
+    private Boolean winProperty;
+    private Boolean winRentApartment;
+    private Boolean winCar;
+
+    private Integer winStressValue;
+    private Integer winSatisfactionValue;
+    private Integer winHealthValue;
 
     @Column(length = 1024)
     private String loseMessage;
-    private int loseIncomeValue;
-    private int loseOutcomeValue;
-    private int loseInvestmentPercent;
+    private Integer loseIncomeValue;
+    private Integer loseOutcomeValue;
+    private Integer loseInvestmentPercent;
+    private Integer loseOneTimePayment;
+    private Boolean loseStudy;
+    private Boolean loseScholarship;
+    private Boolean loseApprenticeship;
+    private Boolean loseJob;
+    private Boolean loseProperty;
+    private Boolean loseRentApartment;
+    private Boolean loseCar;
+
+    private Integer loseStressValue;
+    private Integer loseSatisfactionValue;
+    private Integer loseHealthValue;
 
     @Column(length = 1024)
     private String critMessage;
-    private int critIncomeValue;
-    private int critOutcomeValue;
-    private int critInvestmentPercent;
+    private Integer critIncomeValue;
+    private Integer critOutcomeValue;
+    private Integer critInvestmentPercent;
+    private Integer critOneTimePayment;
 
-    private int newStressValue;
-    private int newSatisfactionValue;
-    private int newHealthValue;
+    private Boolean critScholarship;
+
+    private Integer critStressValue;
+    private Integer critSatisfactionValue;
+    private Integer critHealthValue;
 
 
     @ManyToOne

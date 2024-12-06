@@ -9,6 +9,7 @@ import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.mapper.CharMapper;
 import de.jare.gildeddice.repositories.CharDetailsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -72,5 +73,62 @@ public class CharDetailsService {
     public MoneyResponseDTO getAllFinancial(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
+    }
+
+    public void setFinancesByChoice(long id, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment){
+        CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+
+
+        if (incomeValue != null) charDetails.setIncome(incomeValue);
+        if (outcomeValue != null) charDetails.setOutcome(charDetails.getOutcome() + outcomeValue);
+        if (oneTimePayment != null) charDetails.setMoney(charDetails.getMoney() + (oneTimePayment));
+
+        charDetailsRepository.save(charDetails);
+        System.out.println(oneTimePayment);
+        System.out.println(charDetails.getMoney());
+    }
+
+    public void setInventoryByChoice(long id, Boolean study, Boolean scholarship, Boolean apprenticeship, Boolean job, Boolean property, Boolean rentApartment, Boolean car) {
+        CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+        CharChoices charChoices = charDetails.getCharChoices();
+
+        if (study != null) charChoices.setStudy(study);
+        if (scholarship!= null) charChoices.setScholarship(scholarship);
+        if (apprenticeship!= null) charChoices.setApprenticeship(apprenticeship);
+        if (job!= null) charChoices.setJob(job);
+        if (property!= null) charChoices.setProperty(property);
+        if (rentApartment!= null) charChoices.setRentApartment(rentApartment);
+        if (car!= null) charChoices.setCar(car);
+
+        charDetailsRepository.save(charDetails);
+    }
+
+    public boolean setCharacterStatusLvls(long id, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
+        CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+        boolean gameEnd = false;
+
+        if (stressValue != null) {
+            charDetails.setStressLvl(charDetails.getStressLvl() + stressValue);
+            if (charDetails.getStressLvl() == 10) gameEnd = true;
+        }
+//        if (charDetails.getStressLvl() == 5) charDetails.setComplication(charDetails.getComplication() + (-1));
+//        else if (charDetails.getStressLvl() == 8) charDetails.setComplication(charDetails.getComplication() + (-2));
+
+
+        if (satisfactionValue != null) {
+            charDetails.setSatisfactionLvl(charDetails.getSatisfactionLvl() + satisfactionValue);
+        }
+//        if (charDetails.getSatisfactionLvl() == 3)
+//        else if (charDetails.getSatisfactionLvl() == 5) charDetails.setComplication(charDetails.getComplication() + 1);
+//        else if (charDetails.getSatisfactionLvl() == 8) charDetails.setComplication(charDetails.getComplication() + 1);
+
+        if (healthValue != null) {
+            charDetails.setHealthLvl(charDetails.getHealthLvl() + healthValue);
+            if (charDetails.getHealthLvl() == 0) gameEnd = true;
+        }
+
+
+        charDetailsRepository.save(charDetails);
+        return gameEnd;
     }
 }

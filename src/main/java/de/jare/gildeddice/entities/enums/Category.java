@@ -6,5 +6,6 @@ public enum Category {
     LOSE,
     EXTRA,
     MAIN,
-    INVESTMENT
+    INVESTMENT,
+    FATE
 }

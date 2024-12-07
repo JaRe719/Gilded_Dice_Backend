@@ -164,6 +164,7 @@ public class GameService {
         choiceEntity.setWinIncomeValue(dto.winIncomeValue());
         choiceEntity.setWinOutcomeValue(dto.winOutcomeValue());
         choiceEntity.setWinOneTimePayment(dto.winOneTimePayment());
+        choiceEntity.setWinInvestmentPercent(dto.winInvestmentPercent());
 
         choiceEntity.setWinStudy(dto.winStudy());
         choiceEntity.setWinScholarship(dto.winScholarship());
@@ -182,6 +183,7 @@ public class GameService {
         choiceEntity.setLoseIncomeValue(dto.loseIncomeValue());
         choiceEntity.setLoseOutcomeValue(dto.loseOutcomeValue());
         choiceEntity.setLoseOneTimePayment(dto.loseOneTimePayment());
+        choiceEntity.setLoseInvestmentPercent(dto.loseInvestmentPercent());
 
         choiceEntity.setLoseStudy(dto.loseStudy());
         choiceEntity.setLoseScholarship(dto.loseScholarship());
@@ -200,6 +202,7 @@ public class GameService {
         choiceEntity.setCritIncomeValue(dto.critIncomeValue());
         choiceEntity.setCritOutcomeValue(dto.critOutcomeValue());
         choiceEntity.setCritOneTimePayment(dto.critOneTimePayment());
+        choiceEntity.setCritInvestmentPercent(dto.critInvestmentPercent());
 
         choiceEntity.setCritScholarship(dto.critScholarship());
 
@@ -233,7 +236,7 @@ public class GameService {
         if (game.isGameLost()) throw new IllegalStateException("Game is lost");
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
-            GamePhaseDTO error = new GamePhaseDTO("Story not found for phase " + game.getPhase(), new ArrayList<>());
+            GamePhaseDTO error = new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), new ArrayList<>());
             game.setPhase(10);
             gameRepository.save(game);
             return error;
@@ -250,7 +253,7 @@ public class GameService {
         } else game.setPhase(game.getPhase() + 1);
 
         gameRepository.save(game);
-        return GameMapper.toGamePhaseDTO(responseDTO.choices().getFirst().message().content(), story.getChoices());
+        return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
 
     public void resetGame(Authentication auth) {
@@ -287,12 +290,13 @@ public class GameService {
 
 
     public GameChoiceResultDTO playChoice(long choiceId, int diceResult, Authentication auth) {
-
-        Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
         User user = userService.getUser(auth);
-        Game game = gameRepository.findByUsername(user.getProfile().getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
         CharDetails charDetails = user.getProfile().getCharDetails();
         if (charDetails == null) throw new EntityNotFoundException("Character was not fund");
+
+        Game game = gameRepository.findByUsername(user.getProfile().getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
+        Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
+
 
         // Ermittlung des wertes das überwürfelt werden muss
         MinValueToWinDTO finalMinValueToWin = calculateFinalMinResultToWin(choice, diceResult, charDetails);

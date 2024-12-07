@@ -12,8 +12,8 @@ public class CharDetails {
     private long id;
 
     private int stressLvl = 0;
-    private int satisfactionLvl = 10;
-    private int healthLvl = 10;
+    private int satisfactionLvl = 5;
+    private int healthLvl = 20;
 
     private int intelligence = 0;
     private int negotiate = 0;
@@ -24,12 +24,13 @@ public class CharDetails {
     private int income = 0;
     private int outcome = 0;
     private int invest = 0;
-    private int money = 0;
+    private float investmentPercent = 0.0f;
+    private int money = 300;
 
-    private int simplification = 0;
-    private int complication = 0;
+    private int handicap = 0;
     private String avatar;
 
     @OneToOne(cascade = {CascadeType.ALL})
     private CharChoices charChoices;
+
 }

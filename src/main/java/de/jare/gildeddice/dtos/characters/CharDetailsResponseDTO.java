@@ -12,6 +12,7 @@ public record CharDetailsResponseDTO(
         int ability,
         int planning,
         int stamina,
+        int handycap,
 
         boolean study,
         boolean scholarship,

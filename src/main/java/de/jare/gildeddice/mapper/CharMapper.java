@@ -17,6 +17,7 @@ public class CharMapper {
                 charDetails.getAbility(),
                 charDetails.getPlanning(),
                 charDetails.getStamina(),
+                charDetails.getHandicap(),
                 charDetails.getCharChoices().isStudy(),
                 charDetails.getCharChoices().isScholarship(),
                 charDetails.getCharChoices().isApprenticeship(),

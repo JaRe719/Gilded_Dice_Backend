@@ -4,7 +4,8 @@ import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.users.User;
 import org.springframework.data.repository.CrudRepository;
 
-public interface GameRepository extends CrudRepository<Game, Long> {
-    Game findByUser(User user);
+import java.util.Optional;
 
+public interface GameRepository extends CrudRepository<Game, Long> {
+    Optional<Game> findByUsername(String username);
 }

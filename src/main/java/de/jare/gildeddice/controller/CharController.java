@@ -29,12 +29,11 @@ public class CharController {
 
     @PostMapping
     public ResponseEntity<CharDetailsResponseDTO> createOrUpdateCharDetails(@RequestBody CharDetailsRequestDTO dto, Authentication auth) {
-        return ResponseEntity.ok(charDetailsService.createOrUpdateCharDetails(dto, auth));
-//        try {
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().build();
-//        }
+        try {
+            return ResponseEntity.ok(charDetailsService.createOrUpdateCharDetails(dto, auth));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 

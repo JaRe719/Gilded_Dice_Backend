@@ -70,4 +70,11 @@ public class UserService {
         profile.setCharDetails(charDetails);
         profileRepository.save(profile);
     }
+
+    public void saveHighScore(Profile profile, int highScore) {
+        if (highScore > profile.getHighScore()) {
+            profile.setHighScore(highScore);
+            profileRepository.save(profile);
+        }
+    }
 }

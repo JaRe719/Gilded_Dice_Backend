@@ -169,4 +169,41 @@ class UserServiceTest {
         verifyNoInteractions(profileRepository);
     }
 
+    @Test
+    void testSaveHighScore_Success() {
+        // Arrange
+        String username = "Player1";
+
+        Profile profileMock = new Profile();
+        profileMock.setId(1L);
+        profileMock.setUsername(username);
+
+        when(profileRepository.save(any(Profile.class))).thenReturn(profileMock);
+
+        // Act
+        assertDoesNotThrow(() -> userService.saveHighScore(profileMock, 1000));
+
+        // Assert
+        verify(profileRepository, times(1)).save(profileMock);
+    }
+
+    @Test
+    void testSaveHighScore_newHighscoreIsLowerAsInProfile() {
+        // Arrange
+        String username = "Player1";
+
+        Profile profileMock = new Profile();
+        profileMock.setId(1L);
+        profileMock.setUsername(username);
+        profileMock.setHighScore(99999999);
+
+        when(profileRepository.save(any(Profile.class))).thenReturn(profileMock);
+
+        // Act
+        assertDoesNotThrow(() -> userService.saveHighScore(profileMock, 1000));
+
+        // Assert
+        verify(profileRepository, times(0)).save(profileMock);
+    }
+
 }

@@ -260,7 +260,7 @@ public class GameService {
     }
 
     private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, Story story) {
-        if (game.isGameLost() || story.isGameEnd()) {
+        if (game.isGameLost()) {
             int highScore = profile.getCharDetails().getMoney();
             if (profile.getHighScore() < highScore) {
                 userService.saveHighScore(profile, highScore);

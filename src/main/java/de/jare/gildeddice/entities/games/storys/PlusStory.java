@@ -20,6 +20,7 @@ public class PlusStory {
     private String title;
     private String prompt;
     private boolean skippable;
+    private boolean oneTime;
 
     @OneToOne(cascade = {CascadeType.ALL})
     private Requirement requirement;

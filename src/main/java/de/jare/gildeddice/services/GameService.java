@@ -36,8 +36,10 @@ public class GameService {
     private UserService userService;
     private CharDetailsService charDetailsService;
 
+    private HighScoreService highScoreService;
 
-    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService, CharDetailsService charDetailsService) {
+
+    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService, CharDetailsService charDetailsService, HighScoreService highScoreService) {
         this.gameRepository = gameRepository;
         this.storyRepository = storyRepository;
         this.choiceRepository = choiceRepository;
@@ -45,6 +47,7 @@ public class GameService {
         this.aiService = aiService;
         this.userService = userService;
         this.charDetailsService = charDetailsService;
+        this.highScoreService = highScoreService;
     }
 
     public Iterable<Story> getAllStorys() {
@@ -232,8 +235,8 @@ public class GameService {
             game.setUsername(user.getProfile().getUsername());
             game.setPhase(10);
         }
-
         if (game.isGameLost()) throw new IllegalStateException("Game is lost");
+
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             GamePhaseDTO error = new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), new ArrayList<>());
@@ -243,17 +246,27 @@ public class GameService {
         }
 
         String finalPrompt = createCompletedPrompt(story, user);
-        System.out.println(finalPrompt);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
-        System.out.println(responseDTO);
 
         if (story.isPhaseEnd()) {
             game.setPhase(((game.getPhase() + 9) / 10) * 10);
 
         } else game.setPhase(game.getPhase() + 1);
 
+        saveHighScoreWhenGameIsEnd(user.getProfile(), game, story);
+
         gameRepository.save(game);
         return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.getChoices());
+    }
+
+    private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, Story story) {
+        if (game.isGameLost() || story.isGameEnd()) {
+            int highScore = profile.getCharDetails().getMoney();
+            if (profile.getHighScore() < highScore) {
+                userService.saveHighScore(profile, highScore);
+                highScoreService.saveHighScore(profile);
+            }
+        }
     }
 
     public void resetGame(Authentication auth) {
@@ -297,17 +310,12 @@ public class GameService {
         Game game = gameRepository.findByUsername(user.getProfile().getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
         Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
 
-
-        // Ermittlung des wertes das überwürfelt werden muss
         MinValueToWinDTO finalMinValueToWin = calculateFinalMinResultToWin(choice, diceResult, charDetails);
-
-        // auswertung des wurfes mit dem minWin wert (Lose: -1; win: 0; Crit: 1
         int choiceResult = checkResult(diceResult, finalMinValueToWin.value());
-        // ermittlung des ergebnistextes
         String responseMessage = compareResultForMessage(choiceResult, choice);
 
-        // Ausführung der Aktionen für diese Choice
         boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
+
 
         if (gameLost) {
             game.setGameLost(true);

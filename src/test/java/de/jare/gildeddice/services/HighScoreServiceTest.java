@@ -1,6 +1,7 @@
 package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.entities.HighScore;
+import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.repositories.HighScoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +11,10 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class HighScoreServiceTest {
@@ -106,4 +109,63 @@ class HighScoreServiceTest {
         assertEquals("Player1", result.get(1).getUsername());
         verify(highScoreRepository, times(1)).findAll();
     }
+
+    @Test
+    void testSaveHighscore_SaveNewHighScore() {
+        // Arrange
+        int highScore = 12345;
+        Profile profile = new Profile();
+        profile.setId(1L);
+        profile.setUsername("tester");
+        profile.setHighScore(highScore);
+
+        HighScore score = new HighScore("tester", highScore);
+        when(highScoreRepository.findByUsername(profile.getUsername())).thenReturn(Optional.empty());
+        when(highScoreRepository.save(score)).thenReturn(score);
+
+        // Act
+        highScoreService.saveHighScore(profile);
+
+        // Assert
+        verify(highScoreRepository, times(1)).save(score);
+    }
+
+    @Test
+    void testSaveHighscore_UpdateExistingHighScore() {
+        // Arrange
+        int highScore = 12345;
+        Profile profile = new Profile();
+        profile.setId(1L);
+        profile.setUsername("tester");
+        profile.setHighScore(highScore);
+
+        HighScore existingScore = new HighScore("tester", 100);
+        when(highScoreRepository.findByUsername(profile.getUsername())).thenReturn(Optional.of(existingScore));
+        when(highScoreRepository.save(existingScore)).thenReturn(existingScore);
+
+        // Act
+        highScoreService.saveHighScore(profile);
+
+        // Assert
+        verify(highScoreRepository, times(1)).save(existingScore);
+    }
+
+    @Test
+    void testSaveHighscore_newHighScoreIsLowerAsinHighscoreEntity() {
+        // Arrange
+        int highScore = 12345;
+        Profile profile = new Profile();
+        profile.setId(1L);
+        profile.setUsername("tester");
+        profile.setHighScore(highScore);
+
+        HighScore existingScore = new HighScore("tester", 15000);
+        when(highScoreRepository.findByUsername(profile.getUsername())).thenReturn(Optional.of(existingScore));
+
+        //Act & Assert
+
+        assertThrows(IllegalStateException.class, () -> highScoreService.saveHighScore(profile));
+        verify(highScoreRepository, never()).save(any(HighScore.class));
+    }
+
 }

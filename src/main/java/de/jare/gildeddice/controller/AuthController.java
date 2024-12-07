@@ -1,7 +1,7 @@
 package de.jare.gildeddice.controller;
 
-import de.jare.gildeddice.dtos.AuthResponseDTO;
-import de.jare.gildeddice.dtos.UserRegisterRequestDTO;
+import de.jare.gildeddice.dtos.user.AuthResponseDTO;
+import de.jare.gildeddice.dtos.user.UserRegisterRequestDTO;
 import de.jare.gildeddice.services.AuthService;
 import de.jare.gildeddice.services.UserService;
 import jakarta.validation.Valid;

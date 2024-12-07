@@ -1,7 +1,7 @@
 package de.jare.gildeddice.services;
 
-import de.jare.gildeddice.dtos.UserRegisterRequestDTO;
-import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.dtos.user.UserRegisterRequestDTO;
+import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.repositories.ProfileRepository;

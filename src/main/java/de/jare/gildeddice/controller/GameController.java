@@ -1,15 +1,13 @@
 package de.jare.gildeddice.controller;
 
-import de.jare.gildeddice.dtos.games.GameChoiceDTO;
-import de.jare.gildeddice.dtos.games.GameChoiceResultDTO;
-import de.jare.gildeddice.dtos.games.GamePhaseDTO;
+import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
+import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
+import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.services.GameService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping(value = "/api/v1/game")

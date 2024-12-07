@@ -1,13 +1,23 @@
 package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
-import de.jare.gildeddice.dtos.games.*;
-import de.jare.gildeddice.entities.Npc;
-import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
+import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
+import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
+import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
+import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
+import de.jare.gildeddice.dtos.games.game.MinValueToWinDTO;
+import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
+import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
+import de.jare.gildeddice.entities.games.storys.Npc;
+import de.jare.gildeddice.entities.games.storys.PlusStory;
+import de.jare.gildeddice.entities.games.storys.Requirement;
+import de.jare.gildeddice.entities.users.character.CharChoices;
+import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
 import de.jare.gildeddice.entities.games.Game;
-import de.jare.gildeddice.entities.games.storys.Choice;
+import de.jare.gildeddice.entities.games.choices.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
@@ -23,6 +33,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -36,10 +48,11 @@ public class GameService {
     private UserService userService;
     private CharDetailsService charDetailsService;
 
+    private PlusStoryService plusStoryService;
+
     private HighScoreService highScoreService;
 
-
-    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService, CharDetailsService charDetailsService, HighScoreService highScoreService) {
+    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService, CharDetailsService charDetailsService, PlusStoryService plusStoryService, HighScoreService highScoreService) {
         this.gameRepository = gameRepository;
         this.storyRepository = storyRepository;
         this.choiceRepository = choiceRepository;
@@ -47,6 +60,7 @@ public class GameService {
         this.aiService = aiService;
         this.userService = userService;
         this.charDetailsService = charDetailsService;
+        this.plusStoryService = plusStoryService;
         this.highScoreService = highScoreService;
     }
 
@@ -245,8 +259,46 @@ public class GameService {
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story);
 
         gameRepository.save(game);
+
+        game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
         return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
+
+    private Set<PlusStory> addNewAvailablePlusStories(User user, Game game) {
+        CharDetails userCharacter = user.getProfile().getCharDetails();
+        Set<PlusStory> availablePlusStories = game.getAvailablePlusStories();
+        Set<Long> usedPlusStories = game.getUsedPlusStories();
+
+        List<PlusStory> allPlusStory = plusStoryService.getAllPlusStory();
+        return allPlusStory.stream()
+                .filter(ps -> !availablePlusStories.contains(ps.getId()))
+                .filter(ps -> !usedPlusStories.contains(ps.getId()))
+                .filter(ps -> meetsRequirements(ps.getRequirement(), userCharacter))
+                .collect(Collectors.toSet());
+    }
+
+    private boolean meetsRequirements(Requirement requirement, CharDetails userCharacter) {
+        CharChoices userChoices = userCharacter.getCharChoices();
+
+        if (requirement == null) {
+            return true;
+        }
+
+        if (requirement.getHasStudied() != null && !userChoices.isStudy()) return false;
+        if (requirement.getHasApprenticeship() != null && !userChoices.isApprenticeship()) return false;
+        if (requirement.getHasJob() != null && !userChoices.isJob()) return false;
+        if (requirement.getHasProperty() != null && !userChoices.isProperty()) return false;
+        if (requirement.getHasRentedApartment() != null && !userChoices.isRentApartment()) return false;
+        if (requirement.getHasCar() != null && !userChoices.isCar()) return false;
+        if (requirement.getHasInvested() != null && userCharacter.getInvest() <= 0) return false;
+
+        if (requirement.getHealthStatusLvl() != null && userCharacter.getHealthLvl() < requirement.getHealthStatusLvl()) return false;
+        if (requirement.getStressStatusLvl() != null && userCharacter.getStressLvl() > requirement.getStressStatusLvl()) return false;
+        if (requirement.getSatisfactionStatusLvl() != null && userCharacter.getSatisfactionLvl() < requirement.getSatisfactionStatusLvl()) return false;
+
+        return true;
+    }
+
 
     private void setNextGamePhase(Story story, Game game) {
         if (story.isPhaseEnd()) game.setPhase(((game.getPhase() + 9) / 10) * 10);

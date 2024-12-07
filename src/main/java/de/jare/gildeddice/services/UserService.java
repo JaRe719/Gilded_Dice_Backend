@@ -1,19 +1,16 @@
 package de.jare.gildeddice.services;
 
-import de.jare.gildeddice.dtos.UserRegisterRequestDTO;
-import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.dtos.user.UserRegisterRequestDTO;
+import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.repositories.ProfileRepository;
 import de.jare.gildeddice.repositories.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class UserService {

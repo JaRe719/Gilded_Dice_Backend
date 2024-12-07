@@ -13,4 +13,11 @@ public class HighScore {
 
     private int score;
 
+    public HighScore() {
+    }
+
+    public HighScore(String username, int score) {
+        this.username = username;
+        this.score = score;
+    }
 }

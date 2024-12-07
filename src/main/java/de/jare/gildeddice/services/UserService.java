@@ -1,6 +1,7 @@
 package de.jare.gildeddice.services;
 
 import de.jare.gildeddice.dtos.UserRegisterRequestDTO;
+import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.repositories.ProfileRepository;
@@ -27,6 +28,19 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+
+    public User getUser(Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return user;
+    }
+
+    public Profile getUserProfile(Authentication auth) {
+        User user = getUser(auth);
+        return user.getProfile();
+    }
+
+
+
     @Transactional
     public void newUserRegister(UserRegisterRequestDTO dto) {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
@@ -45,7 +59,22 @@ public class UserService {
 
 
     public void deleteUser(Authentication auth) {
-        User existingUser = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found:"));
+        User existingUser = getUser(auth);
         userRepository.deleteById(existingUser.getId());
+    }
+
+
+    public void setUserCharToProfile(CharDetails charDetails, Authentication auth) {
+        User user = getUser(auth);
+        Profile profile = user.getProfile();
+        profile.setCharDetails(charDetails);
+        profileRepository.save(profile);
+    }
+
+    public void saveHighScore(Profile profile, int highScore) {
+        if (highScore > profile.getHighScore()) {
+            profile.setHighScore(highScore);
+            profileRepository.save(profile);
+        }
     }
 }

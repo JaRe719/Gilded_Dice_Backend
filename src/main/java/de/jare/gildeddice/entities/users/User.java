@@ -1,5 +1,6 @@
 package de.jare.gildeddice.entities.users;
 
+import de.jare.gildeddice.entities.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -31,10 +32,14 @@ public class User implements UserDetails {
     @OneToOne(cascade = {CascadeType.ALL})
     private Profile profile;
 
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority("SCOPE_USER"));
+        grantedAuthorities.add(new SimpleGrantedAuthority(role.name()));
+        System.out.println(grantedAuthorities.getFirst());
         return grantedAuthorities;
     }
 

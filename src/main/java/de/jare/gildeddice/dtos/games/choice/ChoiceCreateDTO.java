@@ -1,4 +1,4 @@
-package de.jare.gildeddice.dtos.games;
+package de.jare.gildeddice.dtos.games.choice;
 
 public record ChoiceCreateDTO(
         String title,

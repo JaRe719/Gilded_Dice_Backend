@@ -1,10 +1,10 @@
 package de.jare.gildeddice.controller;
 
-import de.jare.gildeddice.dtos.games.ChoiceUpdateDTO;
-import de.jare.gildeddice.dtos.games.StoryCreateDTO;
-import de.jare.gildeddice.dtos.games.StoryUpdateDTO;
-import de.jare.gildeddice.entities.Npc;
-import de.jare.gildeddice.entities.games.storys.Choice;
+import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
+import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
+import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
+import de.jare.gildeddice.entities.games.storys.Npc;
+import de.jare.gildeddice.entities.games.choices.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Data
-public class Story {
+public class PlusStory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,11 +18,13 @@ public class Story {
 
     private Category category;
     private String title;
-    private int phase;
-    private boolean phaseEnd;
     private String prompt;
-    private boolean gameEnd;
+    private boolean skippable;
+    private boolean oneTime;
 
+    @OneToOne(cascade = {CascadeType.ALL})
+    private Requirement requirement;
     @OneToMany
     private List<Choice> choices = new ArrayList<>();
 }
+

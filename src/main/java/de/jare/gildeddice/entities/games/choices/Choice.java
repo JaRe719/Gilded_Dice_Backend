@@ -1,6 +1,6 @@
-package de.jare.gildeddice.entities.games.storys;
+package de.jare.gildeddice.entities.games.choices;
 
-import de.jare.gildeddice.entities.Npc;
+import de.jare.gildeddice.entities.games.storys.Npc;
 import de.jare.gildeddice.entities.enums.Skill;
 import jakarta.persistence.*;
 import lombok.Data;

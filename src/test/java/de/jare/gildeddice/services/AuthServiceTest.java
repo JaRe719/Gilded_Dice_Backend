@@ -1,6 +1,6 @@
 package de.jare.gildeddice.services;
 
-import de.jare.gildeddice.dtos.AuthResponseDTO;
+import de.jare.gildeddice.dtos.user.AuthResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

@@ -14,14 +14,14 @@ public class Requirement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
 
-    boolean hasStudied;
-    boolean hasApprenticeship;
-    boolean hasJob;
-    boolean hasProperty;
-    boolean hasRentedApartment;
-    boolean hasCar;
+    Boolean hasStudied;
+    Boolean hasApprenticeship;
+    Boolean hasJob;
+    Boolean hasProperty;
+    Boolean hasRentedApartment;
+    Boolean hasCar;
 
-    boolean hasInvested;
+    Boolean hasInvested;
 
     Integer HealthStatusLvl;
     Integer StressStatusLvl;

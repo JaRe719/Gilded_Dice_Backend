@@ -2,7 +2,7 @@ package de.jare.gildeddice.mapper;
 
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
-import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.entities.users.character.CharDetails;
 
 public class CharMapper {
 

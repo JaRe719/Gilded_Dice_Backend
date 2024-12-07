@@ -10,7 +10,7 @@ import de.jare.gildeddice.dtos.games.game.MinValueToWinDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
-import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
 import de.jare.gildeddice.entities.games.Game;

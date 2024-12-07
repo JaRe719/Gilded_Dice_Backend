@@ -1,4 +1,4 @@
-package de.jare.gildeddice.entities.character;
+package de.jare.gildeddice.entities.users.character;
 
 import jakarta.persistence.*;
 import lombok.Data;

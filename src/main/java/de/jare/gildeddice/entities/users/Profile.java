@@ -1,6 +1,6 @@
 package de.jare.gildeddice.entities.users;
 
-import de.jare.gildeddice.entities.character.CharDetails;
+import de.jare.gildeddice.entities.users.character.CharDetails;
 import jakarta.persistence.*;
 import lombok.Data;
 

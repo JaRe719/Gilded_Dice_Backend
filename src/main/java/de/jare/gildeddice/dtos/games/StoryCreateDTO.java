@@ -9,6 +9,7 @@ public record StoryCreateDTO(
         int phase,
         boolean phaseEnd,
         String prompt,
+        boolean gameEnd,
         List<ChoiceCreateDTO> choices
         ) {
 

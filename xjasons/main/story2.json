@@ -4,6 +4,7 @@
   "phase": 11,
   "phaseEnd": true,
   "prompt": "nachdem der Spieler sich entschieden hat wie es Beruflich weitergeht, ist die Wohnsituation dran.",
+  "gameEnd": false,
   "choices": [
     {
       "title": "Zu Hause wohnen bleiben",

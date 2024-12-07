@@ -20,6 +20,7 @@ public class Story {
     private int phase;
     private boolean phaseEnd;
     private String prompt;
+    private boolean gameEnd;
 
     @OneToMany
     private List<Choice> choices = new ArrayList<>();

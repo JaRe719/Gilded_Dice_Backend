@@ -22,6 +22,8 @@ public class Game {
 
     private boolean gameLost = false;
 
+    private boolean gameEnd = false;
+
     @OneToMany
     private List<Story> stories = new ArrayList<>();
 

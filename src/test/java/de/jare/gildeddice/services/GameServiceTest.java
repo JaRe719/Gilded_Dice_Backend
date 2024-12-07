@@ -80,7 +80,7 @@ class GameServiceTest {
     @Test
     void testCreateStory_Success() {
         // Arrange
-        StoryCreateDTO dto = new StoryCreateDTO("MAIN", "Title",  1, false, "PROMPT", new ArrayList<>());
+        StoryCreateDTO dto = new StoryCreateDTO("MAIN", "Title",  1, false, "PROMPT",false, new ArrayList<>());
         when(choiceRepository.save(any(Choice.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -93,7 +93,7 @@ class GameServiceTest {
     @Test
     void testUpdateStory_Success() {
         // Arrange
-        StoryUpdateDTO dto = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2, false, "Updated Prompt");
+        StoryUpdateDTO dto = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2, false, false, "Updated Prompt");
         Story existingStory = new Story();
         when(storyRepository.findById(dto.id())).thenReturn(Optional.of(existingStory));
 
@@ -109,7 +109,7 @@ class GameServiceTest {
     @Test
     void testUpdateStory_NotFound() {
         // Arrange
-        StoryUpdateDTO dto = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2,false, "Updated Prompt");
+        StoryUpdateDTO dto = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2,false, false, "Updated Prompt");
         when(storyRepository.findById(dto.id())).thenReturn(Optional.empty());
 
         // Act & Assert

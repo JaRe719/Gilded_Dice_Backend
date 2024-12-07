@@ -61,6 +61,7 @@ public class GameService {
         story.setPhase(dto.phase());
         story.setPrompt(dto.prompt());
         story.setPhaseEnd(dto.phaseEnd());
+        story.setGameEnd(dto.gameEnd());
         story.setChoices(createStoryList(dto.choices()));
         storyRepository.save(story);
     }
@@ -133,10 +134,12 @@ public class GameService {
 
     public void updateStory(StoryUpdateDTO dto) {
         Story story = storyRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Story not found!"));
+        story.setCategory(Category.valueOf(dto.category()));
         story.setTitle(dto.title());
         story.setPhase(dto.phase());
         story.setPhaseEnd(dto.phaseEnd());
         story.setPrompt(dto.prompt());
+        story.setGameEnd(dto.gameEnd());
         storyRepository.save(story);
     }
 
@@ -224,18 +227,8 @@ public class GameService {
     public GamePhaseDTO getGamePhase(Authentication auth) {
         User user = userService.getUser(auth);
         if (user.getProfile().getCharDetails() == null) throw new IllegalStateException("no Char");
-        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
 
-        Game game;
-
-        if (existingGame.isPresent()) {
-             game = existingGame.get();
-        } else {
-            game = new Game();
-            game.setUsername(user.getProfile().getUsername());
-            game.setPhase(10);
-        }
-        if (game.isGameLost()) throw new IllegalStateException("Game is lost");
+        Game game = getGame(user);
 
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
@@ -248,19 +241,35 @@ public class GameService {
         String finalPrompt = createCompletedPrompt(story, user);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
-        if (story.isPhaseEnd()) {
-            game.setPhase(((game.getPhase() + 9) / 10) * 10);
-
-        } else game.setPhase(game.getPhase() + 1);
-
+        setNextGamePhase(story, game);
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story);
 
         gameRepository.save(game);
         return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
 
+    private void setNextGamePhase(Story story, Game game) {
+        if (story.isPhaseEnd()) game.setPhase(((game.getPhase() + 9) / 10) * 10);
+        else if (story.isGameEnd()) game.setGameEnd(true);
+        else game.setPhase(game.getPhase() + 1);
+    }
+
+    private Game getGame(User user) {
+        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
+        Game game = new Game();
+        if (existingGame.isPresent()) {
+            game = existingGame.get();
+            if (game.isGameLost() || game.isGameEnd()) throw new IllegalStateException("Game is lost/ Ended");
+            return game;
+        } else {
+            game.setUsername(user.getProfile().getUsername());
+            game.setPhase(10);
+            return game;
+        }
+    }
+
     private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, Story story) {
-        if (game.isGameLost()) {
+        if (game.isGameLost() || story.isGameEnd()) {
             int highScore = profile.getCharDetails().getMoney();
             if (profile.getHighScore() < highScore) {
                 userService.saveHighScore(profile, highScore);
@@ -275,6 +284,7 @@ public class GameService {
 
         game.setPhase(10);
         game.setGameLost(false);
+        game.setGameEnd(false);
 
         gameRepository.save(game);
 

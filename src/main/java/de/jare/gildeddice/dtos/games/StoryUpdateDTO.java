@@ -6,6 +6,7 @@ public record StoryUpdateDTO(
         String title,
         int phase,
         boolean phaseEnd,
+        boolean gameEnd,
         String prompt
 ) {
 }

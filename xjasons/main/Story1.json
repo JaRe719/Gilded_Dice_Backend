@@ -4,6 +4,7 @@
   "phase": 10,
   "phaseEnd": false,
   "prompt": "Spieler hat den Schulabschluss, nun muss er sich entscheiden, wie es Beruflich weiter geht.",
+  "gameEnd": false,
   "choices": [
     {
         "title": "Auf Studienplatz bewerben",

@@ -1,5 +1,7 @@
-package de.jare.gildeddice.dtos.games;
+package de.jare.gildeddice.dtos.games.story;
 
+
+import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
 
 import java.util.List;
 

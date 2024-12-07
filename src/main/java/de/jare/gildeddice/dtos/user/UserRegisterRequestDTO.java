@@ -1,4 +1,4 @@
-package de.jare.gildeddice.dtos;
+package de.jare.gildeddice.dtos.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

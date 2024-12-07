@@ -1,4 +1,4 @@
-package de.jare.gildeddice.entities;
+package de.jare.gildeddice.entities.games.storys;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

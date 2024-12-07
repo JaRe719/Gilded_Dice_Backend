@@ -3,13 +3,18 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiChoicesDTO;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiMessageDTO;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
-import de.jare.gildeddice.dtos.games.*;
-import de.jare.gildeddice.entities.Npc;
+import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
+import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
+import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
+import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
+import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
+import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
+import de.jare.gildeddice.entities.games.storys.Npc;
 import de.jare.gildeddice.entities.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
 import de.jare.gildeddice.entities.games.Game;
-import de.jare.gildeddice.entities.games.storys.Choice;
+import de.jare.gildeddice.entities.games.choices.Choice;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
@@ -27,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 class GameServiceTest {

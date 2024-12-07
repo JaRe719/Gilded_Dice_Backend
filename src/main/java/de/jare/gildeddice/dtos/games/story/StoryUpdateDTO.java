@@ -1,4 +1,4 @@
-package de.jare.gildeddice.dtos.games;
+package de.jare.gildeddice.dtos.games.story;
 
 public record StoryUpdateDTO(
         long id,

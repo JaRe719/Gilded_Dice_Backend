@@ -23,8 +23,9 @@ public class Requirement {
 
     Boolean hasInvested;
 
-    Integer HealthStatusLvl;
-    Integer StressStatusLvl;
-    Integer SatisfactionStatusLvl;
+    Integer stressStatusLvl;
+    Integer satisfactionStatusLvl;
+    Integer healthStatusLvl;
+
 
 }

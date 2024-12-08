@@ -22,6 +22,7 @@ public record CharDetailsResponseDTO(
         boolean property,
         boolean rentApartment,
         boolean car,
+        boolean driverLicense,
 
         String avatar
 ) {

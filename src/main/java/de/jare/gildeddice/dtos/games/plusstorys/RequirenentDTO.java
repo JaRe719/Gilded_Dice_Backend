@@ -7,6 +7,7 @@ public record RequirenentDTO(
         Boolean hasProperty,
         Boolean hasRentedApartment,
         Boolean hasCar,
+        Boolean hasDriverLicense,
         Boolean hasInvested,
         Integer stressStatusLvl,
         Integer satisfactionStatusLvl,

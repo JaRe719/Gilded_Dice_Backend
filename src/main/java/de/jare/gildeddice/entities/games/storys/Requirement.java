@@ -20,6 +20,7 @@ public class Requirement {
     Boolean hasProperty;
     Boolean hasRentedApartment;
     Boolean hasCar;
+    Boolean hasDriverLicense;
 
     Boolean hasInvested;
 

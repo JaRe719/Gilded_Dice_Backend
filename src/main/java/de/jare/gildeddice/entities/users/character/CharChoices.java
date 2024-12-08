@@ -19,4 +19,5 @@ public class CharChoices {
     private boolean property = false;
     private boolean rentApartment = false;
     private boolean car = false;
+    private boolean driverLicense = false;
 }

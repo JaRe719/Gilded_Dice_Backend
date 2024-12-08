@@ -53,12 +53,12 @@ public class AdminController {
 
     @PostMapping(value = "/plusstorys")
     public ResponseEntity<Void> createPlusStory(@RequestBody PlusStoryCreateDTO dto) {
-        try {
-            gameService.createPlusStory(dto);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+//        try {
+//            gameService.createPlusStory(dto);
+//            return ResponseEntity.ok().build();
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().build();
+//        }
     }
 
     @PutMapping(value = "/plusstorys")

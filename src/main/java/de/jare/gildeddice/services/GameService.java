@@ -70,6 +70,7 @@ public class GameService {
         story.setTitle(dto.title());
         story.setPhase(dto.phase());
         story.setPrompt(dto.prompt());
+        story.setSkippable(dto.skippable());
         story.setPhaseEnd(dto.phaseEnd());
         story.setGameEnd(dto.gameEnd());
         story.setChoices(createChoiceList(dto.choices()));
@@ -148,6 +149,7 @@ public class GameService {
         story.setCategory(Category.valueOf(dto.category()));
         story.setTitle(dto.title());
         story.setPhase(dto.phase());
+        story.setSkippable(dto.skippable());
         story.setPhaseEnd(dto.phaseEnd());
         story.setPrompt(dto.prompt());
         story.setGameEnd(dto.gameEnd());

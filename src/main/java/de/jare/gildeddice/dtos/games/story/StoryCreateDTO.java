@@ -9,6 +9,7 @@ public record StoryCreateDTO(
         String category,
         String title,
         int phase,
+        boolean skippable,
         boolean phaseEnd,
         String prompt,
         boolean gameEnd,

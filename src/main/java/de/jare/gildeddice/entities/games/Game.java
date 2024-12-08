@@ -23,8 +23,10 @@ public class Game {
     private boolean gameLost = false;
     private boolean gameEnd = false;
 
+    private boolean plusStoryRunLastRound = false;
+
     @OneToMany
-    private Set<PlusStory> availablePlusStories = new HashSet<>();
+    private List<PlusStory> availablePlusStories = new ArrayList<>();
 
     @ElementCollection
     private Set<Long> usedPlusStories = new HashSet<>();

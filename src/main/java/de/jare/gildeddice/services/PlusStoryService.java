@@ -5,6 +5,7 @@ import de.jare.gildeddice.repositories.PlusStoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PlusStoryService {
@@ -18,4 +19,5 @@ public class PlusStoryService {
     public List<PlusStory> getAllPlusStory() {
         return plusStoryRepository.findAll();
     }
+
 }

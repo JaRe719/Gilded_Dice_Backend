@@ -7,25 +7,20 @@ import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.dtos.games.game.MinValueToWinDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
-import de.jare.gildeddice.entities.games.storys.Npc;
-import de.jare.gildeddice.entities.games.storys.PlusStory;
-import de.jare.gildeddice.entities.games.storys.Requirement;
+import de.jare.gildeddice.entities.games.storys.*;
 import de.jare.gildeddice.entities.users.character.CharChoices;
 import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
 import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.games.choices.Choice;
-import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.entities.users.Profile;
 import de.jare.gildeddice.entities.users.User;
 import de.jare.gildeddice.mapper.GameMapper;
-import de.jare.gildeddice.repositories.ChoiceRepository;
-import de.jare.gildeddice.repositories.GameRepository;
-import de.jare.gildeddice.repositories.NpcRepository;
-import de.jare.gildeddice.repositories.StoryRepository;
+import de.jare.gildeddice.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -41,6 +36,7 @@ public class GameService {
     private StoryRepository storyRepository;
     private ChoiceRepository choiceRepository;
     private NpcRepository npcRepository;
+    private PlusStoryRepository plusStoryRepository;
 
     private AiService aiService;
     private UserService userService;
@@ -50,16 +46,17 @@ public class GameService {
 
     private HighScoreService highScoreService;
 
-    public GameService(GameRepository gameRepository, StoryRepository storyRepository, ChoiceRepository choiceRepository, NpcRepository npcRepository, AiService aiService, UserService userService, CharDetailsService charDetailsService, PlusStoryService plusStoryService, HighScoreService highScoreService) {
-        this.gameRepository = gameRepository;
-        this.storyRepository = storyRepository;
-        this.choiceRepository = choiceRepository;
-        this.npcRepository = npcRepository;
+    public GameService(AiService aiService, CharDetailsService charDetailsService, ChoiceRepository choiceRepository, GameRepository gameRepository, HighScoreService highScoreService, NpcRepository npcRepository, PlusStoryRepository plusStoryRepository, PlusStoryService plusStoryService, StoryRepository storyRepository, UserService userService) {
         this.aiService = aiService;
-        this.userService = userService;
         this.charDetailsService = charDetailsService;
-        this.plusStoryService = plusStoryService;
+        this.choiceRepository = choiceRepository;
+        this.gameRepository = gameRepository;
         this.highScoreService = highScoreService;
+        this.npcRepository = npcRepository;
+        this.plusStoryRepository = plusStoryRepository;
+        this.plusStoryService = plusStoryService;
+        this.storyRepository = storyRepository;
+        this.userService = userService;
     }
 
     public Iterable<Story> getAllStorys() {
@@ -563,4 +560,55 @@ public class GameService {
 
         return new MinValueToWinDTO(finalMinResultToWin, calcPathGoal);
     }
+
+    public void createPlusStory(PlusStoryCreateDTO dto) {
+        PlusStory plusStory = new PlusStory();
+        plusStory.setCategory(Category.valueOf(dto.category()));
+        plusStory.setTitle(dto.title());
+        plusStory.setPrompt(dto.prompt());
+        plusStory.setSkippable(dto.skippable());
+        plusStory.setOneTime(dto.oneTime());
+
+        Requirement requirement = new Requirement();
+        requirement.setHasStudied(dto.requirement().hasStudie());
+        requirement.setHasApprenticeship(dto.requirement().hasApprenticeship());
+        requirement.setHasJob(dto.requirement().hasJob());
+        requirement.setHasProperty(dto.requirement().hasProperty());
+        requirement.setHasRentedApartment(dto.requirement().hasRentedApartment());
+        requirement.setHasCar(dto.requirement().hasCar());
+
+        requirement.setHasInvested(dto.requirement().hasInvested());
+        requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());
+        requirement.setHealthStatusLvl(dto.requirement().healthStatusLvl());
+        plusStory.setRequirement(requirement);
+        plusStory.setChoices(createStoryList(dto.choices()));
+
+        plusStoryRepository.save(plusStory);
+    }
+
+    public void updatePlusStory(PlusStoryUpdateDTO dto) {
+        PlusStory plusStory = plusStoryRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Story not found!"));
+        plusStory.setCategory(Category.valueOf(dto.category()));
+        plusStory.setTitle(dto.title());
+        plusStory.setPrompt(dto.prompt());
+        plusStory.setSkippable(dto.skippable());
+        plusStory.setOneTime(dto.oneTime());
+
+        Requirement requirement = plusStory.getRequirement();
+        requirement.setHasStudied(dto.requirement().hasStudie());
+        requirement.setHasApprenticeship(dto.requirement().hasApprenticeship());
+        requirement.setHasJob(dto.requirement().hasJob());
+        requirement.setHasProperty(dto.requirement().hasProperty());
+        requirement.setHasRentedApartment(dto.requirement().hasRentedApartment());
+        requirement.setHasCar(dto.requirement().hasCar());
+
+        requirement.setHasInvested(dto.requirement().hasInvested());
+        requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());
+        requirement.setHealthStatusLvl(dto.requirement().healthStatusLvl());
+        plusStory.setRequirement(requirement);
+
+        plusStoryRepository.save(plusStory);
+    }
+
 }
+

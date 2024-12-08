@@ -1,10 +1,12 @@
 package de.jare.gildeddice.controller;
 
 import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
 import de.jare.gildeddice.entities.games.choices.Choice;
+import de.jare.gildeddice.entities.games.storys.PlusStoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +43,26 @@ public class AdminController {
     public ResponseEntity<Void> updateStory(@RequestBody StoryUpdateDTO dto) {
         try {
             gameService.updateStory(dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping(value = "/plusstorys")
+    public ResponseEntity<Void> createPlusStory(@RequestBody PlusStoryCreateDTO dto) {
+        try {
+            gameService.createPlusStory(dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping(value = "/plusstorys")
+    public ResponseEntity<Void> updatePlusStory(@RequestBody PlusStoryUpdateDTO dto) {
+        try {
+            gameService.updatePlusStory(dto);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

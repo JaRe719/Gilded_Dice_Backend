@@ -30,10 +30,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Service
@@ -235,7 +233,10 @@ public class GameService {
 
         choiceRepository.save(choiceEntity);
     }
-    //------
+
+
+    //########################################################################
+    //########################################################################
 
 
     public GamePhaseDTO getGamePhase(Authentication auth) {
@@ -244,19 +245,30 @@ public class GameService {
 
         Game game = getGame(user);
 
-        Story story = storyRepository.findByPhase(game.getPhase());
-        if (story == null) {
-            GamePhaseDTO error = new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), new ArrayList<>());
-            game.setPhase(10);
-            gameRepository.save(game);
-            return error;
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
+        //alle 3 runden? try catch
+        if (game.getPhase() % 4 == 0 && (randomIndex >= 0 && randomIndex < 5)) {
+            game.setPlusStoryRunLastRound(true);
+            try {
+                return startRandomPlusStory(game, user);
+            } catch (EmptyStackException ignored) {
+                System.out.println("LOG: empty PlusStory stack");
+            }
+        } else if (game.getPhase() % 4 == 1) {
+            game.setPlusStoryRunLastRound(false);
         }
 
-        String finalPrompt = createCompletedPrompt(story, user);
+        Story story = storyRepository.findByPhase(game.getPhase());
+        if (story == null) {
+            gameRepository.save(game);
+            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), new ArrayList<>());
+        }
+
+        String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
         setNextGamePhase(story, game);
-        saveHighScoreWhenGameIsEnd(user.getProfile(), game, story);
+        saveHighScoreWhenGameIsEnd(user.getProfile(), game, story.isGameEnd());
 
         gameRepository.save(game);
 
@@ -264,9 +276,48 @@ public class GameService {
         return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.getChoices());
     }
 
-    private Set<PlusStory> addNewAvailablePlusStories(User user, Game game) {
+
+
+    //########################################################################
+    //########################################################################
+
+    private GamePhaseDTO startRandomPlusStory(Game game, User user) {
+        List<PlusStory> plusStories = game.getAvailablePlusStories();
+        if (plusStories.isEmpty()) throw new EmptyStackException();
+
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, plusStories.size());
+        PlusStory randomPlusStory = plusStories.get(randomIndex);
+
+        if (randomPlusStory.isOneTime()) {
+            game.getUsedPlusStories().add(randomPlusStory.getId());
+            plusStories.remove(randomPlusStory);
+        } else game.getAvailablePlusStories().remove(randomPlusStory);
+
+        String finalPrompt = createCompletedPrompt(randomPlusStory.getPrompt(), randomPlusStory.getChoices(), randomPlusStory.getPhase(), user);
+        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+        saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
+
+        gameRepository.save(game);
+        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.getChoices());
+    }
+
+    private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {
+        String username = user.getProfile().getUsername();
+        CharDetails charDetails = user.getProfile().getCharDetails();
+
+        StringBuilder finalPrompt = new StringBuilder("Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuellen text für folgendes PnP-Szenarion basierend auf den folgenden informationen: ");
+        finalPrompt.append("charaktername: ").append(username);
+        finalPrompt.append(", Szenario: ").append(storyPrompt);
+        finalPrompt.append(", Endscheidung: ");
+        for (Choice choice : choices) finalPrompt.append(choice.getTitle());
+        finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
+        if (storyPhase != 10) finalPrompt.append("ladde die Begrüßung weg und steig gleich in das Szenario ein");
+        return finalPrompt.toString();
+    }
+
+    private List<PlusStory> addNewAvailablePlusStories(User user, Game game) {
         CharDetails userCharacter = user.getProfile().getCharDetails();
-        Set<PlusStory> availablePlusStories = game.getAvailablePlusStories();
+        List<PlusStory> availablePlusStories = game.getAvailablePlusStories();
         Set<Long> usedPlusStories = game.getUsedPlusStories();
 
         List<PlusStory> allPlusStory = plusStoryService.getAllPlusStory();
@@ -274,7 +325,8 @@ public class GameService {
                 .filter(ps -> !availablePlusStories.contains(ps.getId()))
                 .filter(ps -> !usedPlusStories.contains(ps.getId()))
                 .filter(ps -> meetsRequirements(ps.getRequirement(), userCharacter))
-                .collect(Collectors.toSet());
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private boolean meetsRequirements(Requirement requirement, CharDetails userCharacter) {
@@ -320,8 +372,8 @@ public class GameService {
         }
     }
 
-    private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, Story story) {
-        if (game.isGameLost() || story.isGameEnd()) {
+    private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, boolean gameEnd) {
+        if (game.isGameLost() || gameEnd) {
             int highScore = profile.getCharDetails().getMoney();
             if (profile.getHighScore() < highScore) {
                 userService.saveHighScore(profile, highScore);
@@ -344,19 +396,7 @@ public class GameService {
     }
 
 
-    private String createCompletedPrompt(Story story, User user) {
-        String username = user.getProfile().getUsername();
-        CharDetails charDetails = user.getProfile().getCharDetails();
 
-        StringBuilder finalPrompt = new StringBuilder("Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuellen text für folgendes PnP-Szenarion basierend auf den folgenden informationen: ");
-        finalPrompt.append("charaktername: ").append(username);
-        finalPrompt.append(", Szenario: ").append(story.getPrompt());
-        finalPrompt.append(", Endscheidung: ");
-        for (Choice choice : story.getChoices()) finalPrompt.append(choice.getTitle());
-        finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
-        if (story.getPhase() != 10) finalPrompt.append("ladde die Begrüßung weg und steig gleich in das Szenario ein");
-        return finalPrompt.toString();
-    }
 
     public GameChoiceDTO getChoiceDetails(long choiceId) {
         Choice choice = choiceRepository.findById(choiceId).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));

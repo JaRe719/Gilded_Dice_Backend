@@ -16,6 +16,7 @@ public class PlusStory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    private int phase = 1;
     private Category category;
     private String title;
     private String prompt;

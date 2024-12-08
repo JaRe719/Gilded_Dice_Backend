@@ -3,6 +3,7 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiChoicesDTO;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiMessageDTO;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
+import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
 import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
 import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
@@ -28,9 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -69,6 +68,8 @@ class GameServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+
+
     @Test
     void testGetAllStorys() {
         // Arrange
@@ -85,18 +86,46 @@ class GameServiceTest {
     }
 
 
+
+
+    //------ create story -------
+
     @Test
     void testCreateStory_Success() {
         // Arrange
-        StoryCreateDTO dto = new StoryCreateDTO("MAIN", "Title",  1, false, "PROMPT",false, new ArrayList<>());
+        StoryCreateDTO storyDto = getStoryCreateDTO();
+
+        Npc npc = new Npc();
+        npc.setId(1L);
+        when(npcRepository.findById(1L)).thenReturn(Optional.of(npc));
         when(choiceRepository.save(any(Choice.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(storyRepository.save(any(Story.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        gameService.createStory(dto);
+        gameService.createStory(storyDto);
 
         // Assert
+        verify(npcRepository, times(1)).findById(1L);
+        verify(choiceRepository, times(1)).save(any(Choice.class));
         verify(storyRepository, times(1)).save(any(Story.class));
     }
+
+    @Test
+    void testCreateStory_NpcNotFound() {
+        // Arrange
+        StoryCreateDTO storyDto = getStoryCreateDTO();
+
+        when(npcRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                gameService.createStory(storyDto)
+        );
+        assertEquals("npc not found!", exception.getMessage());
+        verify(npcRepository, times(1)).findById(1L);
+    }
+
+    //------ Update story ------
 
     @Test
     void testUpdateStory_Success() {
@@ -123,6 +152,8 @@ class GameServiceTest {
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> gameService.updateStory(dto));
     }
+
+    //--- NPC ----
 
     @Test
     void testGetAllNpc() {
@@ -151,6 +182,8 @@ class GameServiceTest {
         // Assert
         verify(npcRepository, times(1)).save(any(Npc.class));
     }
+
+    //--- update choices --
 
     @Test
     void testUpdateChoice_Success() {
@@ -531,7 +564,55 @@ class GameServiceTest {
     }
 
 
+//    @Test
+//    void testStartRandomPlusStory_Success() {
+//        // Arrange
+//        Game game = new Game();
+//        PlusStory plusStory = new PlusStory();
+//        plusStory.setId(1L);
+//        plusStory.setPrompt("Test prompt");
+//        plusStory.setPhase(1);
+//        plusStory.setCategory(Category.INVESTMENT);
+//        plusStory.setOneTime(true);
+//        plusStory.setChoices(Collections.emptyList());
+//
+//        game.setAvailablePlusStories(new ArrayList<>(List.of(plusStory)));
+//        game.setUsedPlusStories(new ArrayList<>());
+//
+//        User user = new User();
+//        Profile profile = new Profile();
+//        user.setProfile(profile);
+//
+//        KSuitAiMessageDTO messageDTO = new KSuitAiMessageDTO("assistant", "Response content");
+//        KSuitAiChoicesDTO choicesDTO = new KSuitAiChoicesDTO(0, messageDTO, null, "stop");
+//        KSuitAiResponseDTO responseDTO = new KSuitAiResponseDTO("gpt-model", "id123", "chat.completion", "fingerprint", System.currentTimeMillis(), List.of(choicesDTO));
+//
+//        when(aiService.callApi(anyString())).thenReturn(responseDTO);
+//
+//        // Act
+//        GamePhaseDTO result = gameService.startRandomPlusStory(game, user);
+//
+//        // Assert
+//        assertNotNull(result);
+//        assertEquals("Response content", result.intro());
+//        assertTrue(game.getUsedPlusStories().contains(1L));
+//        assertTrue(game.getAvailablePlusStories().isEmpty());
+//        verify(aiService, times(1)).callApi(anyString());
+//        verify(gameRepository, times(1)).save(game);
+//    }
 
+//    @Test
+//    void testStartRandomPlusStory_EmptyPlusStories() {
+//        // Arrange
+//        Game game = new Game();
+//        game.setAvailablePlusStories(new ArrayList<>());
+//
+//        User user = new User();
+//
+//        // Act & Assert
+//        assertThrows(EmptyStackException.class, () ->
+//                gameService.startRandomPlusStory(game, user));
+//    }
 
 
 
@@ -547,6 +628,22 @@ class GameServiceTest {
 
 
 //---------------
+
+
+
+    private static StoryCreateDTO getStoryCreateDTO() {
+        ChoiceCreateDTO choiceDto = new ChoiceCreateDTO(
+                "Choice Title", "NEGOTIATE", 10, 0, "Start Message",
+                "Win Message", 100, 50, 200, 0,true, false, false, false, false,
+                false, false, 5, 3, 2, "Lose Message", 50, 20, 0, 0,false, false,
+                false, false, false, false, false, 2, -1, 0, "Crit Message", 150, 80, 0, 0,true,
+                1, 2,4,1L,false
+        );
+        StoryCreateDTO storyDto = new StoryCreateDTO(
+                "MAIN", "Story Title", 1, false, "Prompt", true, List.of(choiceDto)
+        );
+        return storyDto;
+    }
 
     private User createUserWithProfile() {
         User user = new User();

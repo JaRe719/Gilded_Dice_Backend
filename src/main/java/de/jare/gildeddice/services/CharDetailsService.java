@@ -3,6 +3,8 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
+import de.jare.gildeddice.entities.enums.Category;
+import de.jare.gildeddice.entities.games.storys.PlusStory;
 import de.jare.gildeddice.entities.users.character.CharChoices;
 import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
@@ -17,15 +19,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class CharDetailsService {
 
+    private final PlusStoryService plusStoryService;
     private CharDetailsRepository charDetailsRepository;
 
     private UserService userService;
 
-    public CharDetailsService(CharDetailsRepository charDetailsRepository, UserService userService) {
+    public CharDetailsService(PlusStoryService plusStoryService, CharDetailsRepository charDetailsRepository, UserService userService) {
+        this.plusStoryService = plusStoryService;
         this.charDetailsRepository = charDetailsRepository;
         this.userService = userService;
     }
-
 
     public CharDetailsResponseDTO getCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
@@ -173,6 +176,19 @@ public class CharDetailsService {
         charDetails.setMoney(0);
 
         charDetails.setCharChoices(new CharChoices());
+        charDetailsRepository.save(charDetails);
+    }
+
+    public void setInvesting(long plusStoryId, Integer incomeValue, Authentication auth) {
+        PlusStory plusStory = plusStoryService.getPlusStory(plusStoryId);
+        Profile userProfile = userService.getUserProfile(auth);
+        CharDetails charDetails = userProfile.getCharDetails();
+
+        if (!plusStory.getCategory().equals(Category.INVESTMENT)) throw new WrongThreadException("PlusStory is not an Inventory Story");
+        if (incomeValue >= 0) {
+            charDetails.setInvest(incomeValue);
+        } else throw new IllegalArgumentException("Investment value negative or null");
+
         charDetailsRepository.save(charDetails);
     }
 }

@@ -6,7 +6,7 @@ import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
 import de.jare.gildeddice.entities.games.choices.Choice;
-import de.jare.gildeddice.entities.games.storys.PlusStoryUpdateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Story;
 import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;

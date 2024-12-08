@@ -46,18 +46,19 @@ public class CharController {
         }
     }
 
-    @PostMapping(value ="/avatar")
-    public ResponseEntity<String> setAvatar(@RequestParam String avatarUrl, Authentication auth) {
-        try {
-            return ResponseEntity.ok(charDetailsService.setUserAvatar(avatarUrl, auth));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
     @GetMapping(value ="/money")
     public ResponseEntity<MoneyResponseDTO> getAllFinancial(Authentication auth) {
         return ResponseEntity.ok(charDetailsService.getAllFinancial(auth));
+    }
+
+    @PostMapping(value = "/investing")
+    public ResponseEntity<Void> setInvestingByChoice(@RequestParam long storyId, @RequestParam Integer incomeValue, Authentication auth) {
+        try {
+            charDetailsService.setInvesting(incomeValue, auth);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }

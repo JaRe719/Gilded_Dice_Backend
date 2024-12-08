@@ -5,6 +5,7 @@ public record ChoiceUpdateDTO(
         String title,
         String skill,
         int minDiceValue,
+        Integer cost,
         String startMessage,
 
         String winMessage,

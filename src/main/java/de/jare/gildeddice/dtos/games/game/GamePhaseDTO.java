@@ -8,6 +8,7 @@ public record GamePhaseDTO(
 
         String category,
         String intro,
+        boolean skippable,
         List<GameChoiceShortDTO> choices
 ) {
 }

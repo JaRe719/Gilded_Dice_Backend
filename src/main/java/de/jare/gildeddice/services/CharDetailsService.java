@@ -62,14 +62,6 @@ public class CharDetailsService {
         return userProfile.getCharDetails().getAvatar();
     }
 
-    public String setUserAvatar(String avatarUrl, Authentication auth) {
-        Profile userProfile = userService.getUserProfile(auth);
-        CharDetails charDetails = userProfile.getCharDetails();
-        charDetails.setAvatar(avatarUrl);
-        charDetails = charDetailsRepository.save(charDetails);
-        return charDetails.getAvatar();
-    }
-
     public MoneyResponseDTO getAllFinancial(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());

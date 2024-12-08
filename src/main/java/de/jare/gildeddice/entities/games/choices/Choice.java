@@ -17,6 +17,7 @@ public class Choice {
     private Skill skill;
 
     private int minDiceValue;
+    private Integer cost;
 
     @Column(length = 1024)
     private String startMessage;

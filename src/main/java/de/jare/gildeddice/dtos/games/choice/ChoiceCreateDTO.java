@@ -4,6 +4,7 @@ public record ChoiceCreateDTO(
         String title,
         String skill,
         int minDiceValue,
+        Integer cost,
         String startMessage,
 
         String winMessage,

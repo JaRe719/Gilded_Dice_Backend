@@ -82,6 +82,7 @@ public class GameService {
             choiceEntity.setTitle(choice.title());
             choiceEntity.setSkill(Skill.valueOf(choice.skill()));
             choiceEntity.setMinDiceValue(choice.minDiceValue());
+            choiceEntity.setCost(choice.cost());
             choiceEntity.setStartMessage(choice.startMessage());
 
             choiceEntity.setWinMessage(choice.winMessage());
@@ -173,6 +174,7 @@ public class GameService {
         choiceEntity.setTitle(dto.title());
         choiceEntity.setSkill(Skill.valueOf(dto.skill()));
         choiceEntity.setMinDiceValue(dto.minDiceValue());
+        choiceEntity.setCost(dto.cost());
         choiceEntity.setStartMessage(dto.startMessage());
 
         choiceEntity.setWinMessage(dto.winMessage());
@@ -258,7 +260,7 @@ public class GameService {
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             gameRepository.save(game);
-            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), new ArrayList<>());
+            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), false, new ArrayList<>());
         }
 
         String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
@@ -270,7 +272,7 @@ public class GameService {
         gameRepository.save(game);
 
         game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
-        return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.getChoices());
+        return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), story.getChoices());
     }
 
 
@@ -295,7 +297,7 @@ public class GameService {
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
 
         gameRepository.save(game);
-        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.getChoices());
+        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), randomPlusStory.getChoices());
     }
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {

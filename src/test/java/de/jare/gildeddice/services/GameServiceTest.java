@@ -156,7 +156,7 @@ class GameServiceTest {
     void testUpdateChoice_Success() {
         // Arrange
         ChoiceUpdateDTO dto = new ChoiceUpdateDTO(
-                1L, "Updated Title", Skill.PLANNING.name(), 10, "Start Message",
+                1L, "Updated Title", Skill.PLANNING.name(), 10, null, "Start Message",
                 "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, 1, 5, 10,
                 "Lose Message", 80, 40, 1.0f, 200, false, true, false, true, false, false, true, 7, 5, 6,
                 "Crit Message", 120, 60, 2.0f, 700, true, 4, 9, 12,
@@ -231,7 +231,7 @@ class GameServiceTest {
     void testUpdateChoice_ChoiceNotFound() {
         // Arrange
         ChoiceUpdateDTO dto = new ChoiceUpdateDTO(
-                1L, "Updated Title", Skill.PLANNING.name(), 10, "Start Message",
+                1L, "Updated Title", Skill.PLANNING.name(), 10, null, "Start Message",
                 "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, 1, 5, 10,
                 "Lose Message", 80, 40, 1.5f, 200, false, true, false, true, false, false, true, 7, 5, 6,
                 "Crit Message", 120, 60, 2.5f, 700, true, 4, 9, 12,

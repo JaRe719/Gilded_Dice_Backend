@@ -260,6 +260,7 @@ public class GameService {
 
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
+            gameRepository.save(game);
             return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), new ArrayList<>());
         }
 

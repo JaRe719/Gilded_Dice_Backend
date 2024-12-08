@@ -10,6 +10,7 @@ import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
+import de.jare.gildeddice.entities.games.storys.PlusStory;
 import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
@@ -59,6 +60,9 @@ class GameServiceTest {
 
     @Mock
     private CharDetailsService charDetailsService;
+
+    @Mock
+    private PlusStoryService plusStoryService;
 
     @BeforeEach
     void setUp() {
@@ -247,6 +251,10 @@ class GameServiceTest {
         Story story = createStoryWithChoices();
         story.setCategory(Category.FATE);
 
+        // Mocking des PlusStoryService
+        List<PlusStory> mockPlusStories = List.of(new PlusStory());
+        when(plusStoryService.getAllPlusStory()).thenReturn(mockPlusStories);
+
         when(userService.getUser(auth)).thenReturn(user);
         when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.empty());
         when(storyRepository.findByPhase(10)).thenReturn(story);
@@ -264,6 +272,7 @@ class GameServiceTest {
         assertEquals("Response", result.intro());
         verify(gameRepository, times(1)).save(any(Game.class));
         verify(aiService, times(1)).callApi(anyString());
+        verify(plusStoryService, times(1)).getAllPlusStory(); // Überprüfen, ob PlusStoryService verwendet wurde
     }
 
     @Test
@@ -275,6 +284,10 @@ class GameServiceTest {
         game.setPhase(1);
         Story story = createStoryWithChoices();
         story.setCategory(Category.FATE);
+
+        // Mocking des PlusStoryService
+        List<PlusStory> mockPlusStories = List.of(new PlusStory());
+        when(plusStoryService.getAllPlusStory()).thenReturn(mockPlusStories);
 
         when(userService.getUser(auth)).thenReturn(user);
         when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.of(game));
@@ -293,6 +306,7 @@ class GameServiceTest {
         assertEquals("Response", result.intro());
         verify(gameRepository, times(1)).save(game);
         verify(aiService, times(1)).callApi(anyString());
+        verify(plusStoryService, times(1)).getAllPlusStory(); // Überprüfung, ob PlusStoryService verwendet wurde
     }
 
     @Test
@@ -300,6 +314,7 @@ class GameServiceTest {
         // Arrange
         Authentication auth = mock(Authentication.class);
         User user = createUserWithProfile();
+        user.getProfile().setCharDetails(new CharDetails());
         Game game = new Game();
         game.setPhase(2);
 

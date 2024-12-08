@@ -19,6 +19,7 @@ public class Story {
     private Category category;
     private String title;
     private int phase;
+    private boolean skippable = false;
     private boolean phaseEnd;
     private String prompt;
     private boolean gameEnd;

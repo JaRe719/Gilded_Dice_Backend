@@ -19,19 +19,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class CharDetailsService {
 
-    private final GameService gameService;
     private final PlusStoryService plusStoryService;
     private CharDetailsRepository charDetailsRepository;
 
     private UserService userService;
 
-    public CharDetailsService(CharDetailsRepository charDetailsRepository, UserService userService, GameService gameService, PlusStoryService plusStoryService) {
+    public CharDetailsService(PlusStoryService plusStoryService, CharDetailsRepository charDetailsRepository, UserService userService) {
+        this.plusStoryService = plusStoryService;
         this.charDetailsRepository = charDetailsRepository;
         this.userService = userService;
-        this.gameService = gameService;
-        this.plusStoryService = plusStoryService;
     }
-
 
     public CharDetailsResponseDTO getCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);

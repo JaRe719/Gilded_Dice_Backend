@@ -3,6 +3,8 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
+import de.jare.gildeddice.entities.enums.Category;
+import de.jare.gildeddice.entities.games.storys.PlusStory;
 import de.jare.gildeddice.entities.users.character.CharChoices;
 import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.users.Profile;
@@ -28,6 +30,9 @@ class CharDetailsServiceTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private PlusStoryService plusStoryService;
 
     @InjectMocks
     private CharDetailsService charDetailsService;
@@ -178,35 +183,6 @@ class CharDetailsServiceTest {
         verify(userService, times(1)).getUserProfile(auth);
     }
 
-    @Test
-    void testSetUserAvatar_Success() {
-        // Arrange
-        Authentication auth = mock(Authentication.class);
-        String avatarUrl = "new_avatar_url";
-
-        CharDetails charDetailsMock = new CharDetails();
-        charDetailsMock.setId(1L);
-
-        Profile profileMock = new Profile();
-        profileMock.setId(1L);
-        profileMock.setCharDetails(charDetailsMock);
-
-        when(userService.getUserProfile(auth)).thenReturn(profileMock);
-        when(charDetailsRepository.save(any(CharDetails.class))).thenAnswer(invocation -> {
-            return invocation.<CharDetails>getArgument(0); // Rückgabe des gleichen Objekts nach "Speichern"
-        });
-
-        // Act
-        String actualAvatarUrl = charDetailsService.setUserAvatar(avatarUrl, auth);
-
-        // Assert
-        assertNotNull(actualAvatarUrl, "Avatar URL sollte nicht null sein");
-        assertEquals(avatarUrl, actualAvatarUrl, "Avatar URL sollte aktualisiert werden");
-
-        // Verifiziere, dass die Mock-Methoden korrekt aufgerufen wurden
-        verify(userService, times(1)).getUserProfile(auth);
-        verify(charDetailsRepository, times(1)).save(any(CharDetails.class));
-    }
 
     @Test
     void testGetAllFinancial_Success() {
@@ -638,11 +614,80 @@ class CharDetailsServiceTest {
         verify(charDetailsRepository, never()).save(any());
     }
 
-
-
     //---------------
 
 
+    @Test
+    void testSetInvesting_Success() {
+        // Arrange
+        long plusStoryId = 1L;
+        int incomeValue = 500;
+        Authentication auth = mock(Authentication.class);
+
+        PlusStory plusStory = new PlusStory();
+        plusStory.setCategory(Category.INVESTMENT);
+        when(plusStoryService.getPlusStory(plusStoryId)).thenReturn(plusStory);
+
+        Profile profile = new Profile();
+        CharDetails charDetails = new CharDetails();
+        profile.setCharDetails(charDetails);
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+
+        // Act
+        charDetailsService.setInvesting(plusStoryId, incomeValue, auth);
+
+        // Assert
+        assertEquals(incomeValue, charDetails.getInvest());
+        verify(charDetailsRepository, times(1)).save(charDetails);
+    }
+
+    @Test
+    void testSetInvesting_WrongCategory() {
+        // Arrange
+        Profile profile = new Profile();
+        CharDetails charDetails = new CharDetails();
+        profile.setCharDetails(charDetails);
+
+        long plusStoryId = 1L;
+        PlusStory plusStory = new PlusStory();
+        plusStory.setId(plusStoryId);
+        plusStory.setCategory(Category.FATE); // Wrong category
+
+        int incomeValue = 500;
+        Authentication auth = mock(Authentication.class);
+
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+        when(plusStoryService.getPlusStory(plusStoryId)).thenReturn(plusStory);
+
+        // Act & Assert
+        WrongThreadException exception = assertThrows(WrongThreadException.class, () ->
+                charDetailsService.setInvesting(plusStoryId, incomeValue, auth));
+        assertEquals("PlusStory is not an Inventory Story", exception.getMessage());
+        verify(charDetailsRepository, never()).save(any());
+    }
+
+    @Test
+    void testSetInvesting_NegativeIncomeValue() {
+        // Arrange
+        long plusStoryId = 1L;
+        int incomeValue = -100; // Negative value
+        Authentication auth = mock(Authentication.class);
+
+        PlusStory plusStory = new PlusStory();
+        plusStory.setCategory(Category.INVESTMENT);
+        when(plusStoryService.getPlusStory(plusStoryId)).thenReturn(plusStory);
+
+        Profile profile = new Profile();
+        CharDetails charDetails = new CharDetails();
+        profile.setCharDetails(charDetails);
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                charDetailsService.setInvesting(plusStoryId, incomeValue, auth));
+        assertEquals("Investment value negative or null", exception.getMessage());
+        verify(charDetailsRepository, never()).save(any());
+    }
 
 
 

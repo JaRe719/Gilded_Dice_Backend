@@ -8,6 +8,7 @@ import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.dtos.games.game.MinValueToWinDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.*;
@@ -71,11 +72,11 @@ public class GameService {
         story.setPrompt(dto.prompt());
         story.setPhaseEnd(dto.phaseEnd());
         story.setGameEnd(dto.gameEnd());
-        story.setChoices(createStoryList(dto.choices()));
+        story.setChoices(createChoiceList(dto.choices()));
         storyRepository.save(story);
     }
 
-    private List<Choice> createStoryList(List<ChoiceCreateDTO> choices) {
+    private List<Choice> createChoiceList(List<ChoiceCreateDTO> choices) {
         List<Choice> choiceEntities = new ArrayList<>();
         for (ChoiceCreateDTO choice : choices) {
             Choice choiceEntity = new Choice();
@@ -234,9 +235,6 @@ public class GameService {
     }
 
 
-    //########################################################################
-    //########################################################################
-
 
     public GamePhaseDTO getGamePhase(Authentication auth) {
         User user = userService.getUser(auth);
@@ -276,10 +274,6 @@ public class GameService {
     }
 
 
-
-    //########################################################################
-    //########################################################################
-
     private GamePhaseDTO startRandomPlusStory(Game game, User user) {
         List<PlusStory> plusStories = game.getAvailablePlusStories();
         if (plusStories.isEmpty()) throw new EmptyStackException();
@@ -312,6 +306,36 @@ public class GameService {
         finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
         if (storyPhase != 10) finalPrompt.append("ladde die Begrüßung weg und steig gleich in das Szenario ein");
         return finalPrompt.toString();
+    }
+
+    private void setNextGamePhase(Story story, Game game) {
+        if (story.isPhaseEnd()) game.setPhase(((game.getPhase() + 9) / 10) * 10);
+        else if (story.isGameEnd()) game.setGameEnd(true);
+        else game.setPhase(game.getPhase() + 1);
+    }
+
+    private Game getGame(User user) {
+        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
+        Game game = new Game();
+        if (existingGame.isPresent()) {
+            game = existingGame.get();
+            if (game.isGameLost() || game.isGameEnd()) throw new IllegalStateException("Game is lost/ Ended");
+            return game;
+        } else {
+            game.setUsername(user.getProfile().getUsername());
+            game.setPhase(10);
+            return game;
+        }
+    }
+
+    private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, boolean gameEnd) {
+        if (game.isGameLost() || gameEnd) {
+            int highScore = profile.getCharDetails().getMoney();
+            if (profile.getHighScore() < highScore) {
+                userService.saveHighScore(profile, highScore);
+                highScoreService.saveHighScore(profile);
+            }
+        }
     }
 
     private List<PlusStory> addNewAvailablePlusStories(User user, Game game) {
@@ -351,35 +375,11 @@ public class GameService {
     }
 
 
-    private void setNextGamePhase(Story story, Game game) {
-        if (story.isPhaseEnd()) game.setPhase(((game.getPhase() + 9) / 10) * 10);
-        else if (story.isGameEnd()) game.setGameEnd(true);
-        else game.setPhase(game.getPhase() + 1);
-    }
 
-    private Game getGame(User user) {
-        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
-        Game game = new Game();
-        if (existingGame.isPresent()) {
-            game = existingGame.get();
-            if (game.isGameLost() || game.isGameEnd()) throw new IllegalStateException("Game is lost/ Ended");
-            return game;
-        } else {
-            game.setUsername(user.getProfile().getUsername());
-            game.setPhase(10);
-            return game;
-        }
-    }
 
-    private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, boolean gameEnd) {
-        if (game.isGameLost() || gameEnd) {
-            int highScore = profile.getCharDetails().getMoney();
-            if (profile.getHighScore() < highScore) {
-                userService.saveHighScore(profile, highScore);
-                highScoreService.saveHighScore(profile);
-            }
-        }
-    }
+
+
+
 
     public void resetGame(Authentication auth) {
         User user = userService.getUser(auth);
@@ -583,7 +583,7 @@ public class GameService {
         requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());
         requirement.setHealthStatusLvl(dto.requirement().healthStatusLvl());
         plusStory.setRequirement(requirement);
-        plusStory.setChoices(createStoryList(dto.choices()));
+        plusStory.setChoices(createChoiceList(dto.choices()));
 
         plusStoryRepository.save(plusStory);
     }

@@ -15,7 +15,7 @@ public class GameMapper {
     }
 
     private static GameChoiceShortDTO toGameChoiceShortDTO(Choice choice) {
-        return new GameChoiceShortDTO(choice.getId(), choice.getTitle());
+        return new GameChoiceShortDTO(choice.getId(), choice.getTitle(), choice.getCost());
     }
 
     public static GameChoiceDTO toGameChoiceDTO(Choice choice) {

@@ -20,12 +20,12 @@ public class HighScoreController {
         this.highScoreService = highScoreService;
     }
 
-    @GetMapping(value = "/allscores")
+    @GetMapping(value = "/all")
     public ResponseEntity<List<HighScore>> getAllHighscores() {
         return ResponseEntity.ok(highScoreService.getAllHighscores());
     }
 
-    @GetMapping(value = "/top")
+    @GetMapping(value = "/toplist")
     public ResponseEntity<List<HighScore>> getTopHighscores() {
         return ResponseEntity.ok(highScoreService.getTopTen());
     }

@@ -25,6 +25,7 @@ public class CharMapper {
                 charDetails.getCharChoices().isProperty(),
                 charDetails.getCharChoices().isRentApartment(),
                 charDetails.getCharChoices().isCar(),
+                charDetails.getCharChoices().isDriverLicense(),
                 charDetails.getAvatar());
     }
 

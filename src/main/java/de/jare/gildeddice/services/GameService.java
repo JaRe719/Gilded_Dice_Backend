@@ -99,6 +99,7 @@ public class GameService {
             choiceEntity.setWinProperty(choice.winProperty());
             choiceEntity.setWinRentApartment(choice.winRentApartment());
             choiceEntity.setWinCar(choice.winCar());
+            choiceEntity.setWinDriverLicense(choice.winDriverLicense());
 
             choiceEntity.setWinStressValue(choice.winStressValue());
             choiceEntity.setWinSatisfactionValue(choice.winSatisfactionValue());
@@ -117,6 +118,7 @@ public class GameService {
             choiceEntity.setLoseProperty(choice.loseProperty());
             choiceEntity.setLoseRentApartment(choice.loseRentApartment());
             choiceEntity.setLoseCar(choice.loseCar());
+            choiceEntity.setLoseDriverLicense(choice.loseDriverLicense());
 
             choiceEntity.setLoseStressValue(choice.loseStressValue());
             choiceEntity.setLoseSatisfactionValue(choice.loseSatisfactionValue());
@@ -193,6 +195,7 @@ public class GameService {
         choiceEntity.setWinProperty(dto.winProperty());
         choiceEntity.setWinRentApartment(dto.winRentApartment());
         choiceEntity.setWinCar(dto.winCar());
+        choiceEntity.setWinDriverLicense(dto.winDriverLicense());
 
         choiceEntity.setWinStressValue(dto.winStressValue());
         choiceEntity.setWinSatisfactionValue(dto.winSatisfactionValue());
@@ -463,7 +466,8 @@ public class GameService {
                         choice.getWinJob(),
                         choice.getWinProperty(),
                         choice.getWinRentApartment(),
-                        choice.getWinCar()
+                        choice.getWinCar(),
+                        choice.getWinDriverLicense()
                 );
 
                 break;
@@ -490,7 +494,8 @@ public class GameService {
                         choice.getWinJob(),
                         choice.getWinProperty(),
                         choice.getWinRentApartment(),
-                        choice.getWinCar()
+                        choice.getWinCar(),
+                        choice.getWinDriverLicense()
                 );
                 break;
             case -1: //lose
@@ -516,7 +521,8 @@ public class GameService {
                         choice.getLoseJob(),
                         choice.getLoseProperty(),
                         choice.getLoseRentApartment(),
-                        choice.getLoseCar()
+                        choice.getLoseCar(),
+                        choice.getWinDriverLicense()
                 );
                 break;
         }

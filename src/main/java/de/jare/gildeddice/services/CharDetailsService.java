@@ -94,7 +94,7 @@ public class CharDetailsService {
         System.out.println(charDetails.getMoney());
     }
 
-    public void setInventoryByChoice(long id, Boolean study, Boolean scholarship, Boolean apprenticeship, Boolean job, Boolean property, Boolean rentApartment, Boolean car) {
+    public void setInventoryByChoice(long id, Boolean study, Boolean scholarship, Boolean apprenticeship, Boolean job, Boolean property, Boolean rentApartment, Boolean car, Boolean driverLicense) {
         CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
         CharChoices charChoices = charDetails.getCharChoices();
 
@@ -105,6 +105,7 @@ public class CharDetailsService {
         if (property!= null) charChoices.setProperty(property);
         if (rentApartment!= null) charChoices.setRentApartment(rentApartment);
         if (car!= null) charChoices.setCar(car);
+        if (driverLicense!= null) charChoices.setDriverLicense(driverLicense);
 
         charDetailsRepository.save(charDetails);
     }

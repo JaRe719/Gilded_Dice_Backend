@@ -17,7 +17,7 @@ public class Choice {
     private Skill skill;
 
     private int minDiceValue;
-    private Integer cost;
+    private Integer cost; // value are only for Frontend it contains max cost
 
     @Column(length = 1024)
     private String startMessage;

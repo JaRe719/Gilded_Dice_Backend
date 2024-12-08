@@ -258,7 +258,7 @@ public class GameService {
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             gameRepository.save(game);
-            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), false, new ArrayList<>());
+            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), false, true, new ArrayList<>());
         }
 
         String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
@@ -270,7 +270,7 @@ public class GameService {
         gameRepository.save(game);
 
         game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
-        return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), story.getChoices());
+        return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
     }
 
 
@@ -291,7 +291,7 @@ public class GameService {
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
 
         gameRepository.save(game);
-        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), randomPlusStory.getChoices());
+        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
     }
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {

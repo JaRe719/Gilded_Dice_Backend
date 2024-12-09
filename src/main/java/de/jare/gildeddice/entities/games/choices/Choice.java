@@ -18,6 +18,7 @@ public class Choice {
 
     private int minDiceValue;
     private Integer cost; // value are only for Frontend it contains max cost
+    private boolean returning; // if true = returning when the choice lost
 
     @Column(length = 1024)
     private String startMessage;

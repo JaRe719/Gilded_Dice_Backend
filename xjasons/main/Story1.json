@@ -58,7 +58,8 @@
       "critSatisfactionValue": 2,
       "critHealthValue": null,
 
-      "npcId": 1
+      "npcId": 1,
+      "npcName": "Dekan"
   },
   {
         "title": "Auf ein Ausbildungsplatz bewerben",
@@ -110,7 +111,8 @@
     "critSatisfactionValue": 2,
     "critHealthValue": null,
 
-    "npcId": 2
+    "npcId": 2,
+    "npcName": "Meister"
   },
   {
         "title": "Direkt nach einen Job suchen",
@@ -161,7 +163,9 @@
     "critStressValue": null,
     "critSatisfactionValue": 1,
     "critHealthValue": null,
-    "npcId": 3
+
+    "npcId": 3,
+    "npcName": "Polier"
   }
   ]
 }

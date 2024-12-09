@@ -248,6 +248,7 @@ public class GameService {
 
         Game game = getGame(user);
 
+
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
         //alle 3 runden? try catch
         if (game.getPhase() == 12 || (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))) {

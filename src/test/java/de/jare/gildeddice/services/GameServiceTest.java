@@ -74,7 +74,7 @@ class GameServiceTest {
         storyUpdateDTO = new StoryUpdateDTO(1L, "MAINX", "Updated Prompt", 2, false, false, false,"Updated Prompt");
 
         choiceCreateDTO = new ChoiceCreateDTO(
-                "Choice Title", "NEGOTIATE", 10, 0, "Start Message",
+                "Choice Title", "NEGOTIATE", 10, 0, true,"Start Message",
                 "Win Message", 100, 50, 200, 0,true, false, false, false, false,
                 false, false, false, 5, 3, 2, "Lose Message", 50, 20, 0, 0,false, false,
                 false, false, false, false, false, false,2, -1, 0, "Crit Message", 150, 80, 0, 0,true,
@@ -82,7 +82,7 @@ class GameServiceTest {
         );
 
         choiceUpdateDTO = new ChoiceUpdateDTO(
-                1L, "Updated Title", Skill.PLANNING.name(), 10, null, "Start Message",
+                1L, "Updated Title", Skill.PLANNING.name(), 10, null, true, "Start Message",
                 "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, false, 1, 5, 10,
                 "Lose Message", 80, 40, 1.0f, 200, false, true, false, true, false, false, true, false, 7, 5, 6,
                 "Crit Message", 120, 60, 2.0f, 700, true, 4, 9, 12,

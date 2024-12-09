@@ -358,149 +358,131 @@ class CharDetailsServiceTest {
 
 
 
-
-
     @Test
-    void testSetCharacterStatusLvls_Success_NoGameEnd() {
+    void testSetCharacterStatusLvls_CharDetailsNotFound() {
         // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 5;
-        Integer stressValue = 2;
-        Integer satisfactionValue = 1;
-        Integer healthValue = -1;
+        long id = 1L;
+        when(charDetailsRepository.findById(id)).thenReturn(Optional.empty());
 
-        CharDetails charDetails = new CharDetails();
-        charDetails.setId(charDetailsId);
-        charDetails.setStressLvl(3);
-        charDetails.setSatisfactionLvl(4);
-        charDetails.setHealthLvl(5);
-        charDetails.setHandicap(0);
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
-
-        // Act
-        boolean gameEnd = charDetailsService.setCharacterStatusLvls(charDetailsId, gamePhase, stressValue, satisfactionValue, healthValue);
-
-        // Assert
-        assertFalse(gameEnd);
-        assertEquals(5, charDetails.getStressLvl()); // 3 + 2
-        assertEquals(5, charDetails.getSatisfactionLvl()); // 4 + 1
-        assertEquals(4, charDetails.getHealthLvl()); // 5 - 1
-        assertEquals(-1, charDetails.getHandicap()); // Satisfaction level increased slightly, reducing handicap by 1
-        verify(charDetailsRepository, times(1)).save(charDetails);
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                charDetailsService.setCharacterStatusLvls(id, 1, 5, 3, 2));
+        assertEquals("CharDetails not found!", exception.getMessage());
+        verify(charDetailsRepository, times(1)).findById(id);
     }
 
     @Test
-    void testSetCharacterStatusLvls_GameEnd_StressLevel() {
+    void testSetCharacterStatusLvls_StressLevelGameEnd() {
         // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 5;
-        Integer stressValue = 7; // Stress Level will reach 10
-
+        long id = 1L;
         CharDetails charDetails = new CharDetails();
-        charDetails.setId(charDetailsId);
-        charDetails.setStressLvl(3);
-        charDetails.setSatisfactionLvl(4);
-        charDetails.setHealthLvl(5);
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
+        charDetails.setStressLvl(9); // Start bei 9
+        when(charDetailsRepository.findById(id)).thenReturn(Optional.of(charDetails));
 
         // Act
-        boolean gameEnd = charDetailsService.setCharacterStatusLvls(charDetailsId, gamePhase, stressValue, null, null);
+        boolean result = charDetailsService.setCharacterStatusLvls(id, 1, 1, null, null); // Stress +1
 
         // Assert
-        assertTrue(gameEnd);
+        assertTrue(result);
         assertEquals(10, charDetails.getStressLvl());
         verify(charDetailsRepository, times(1)).save(charDetails);
     }
 
     @Test
-    void testSetCharacterStatusLvls_GameEnd_HealthLevel() {
+    void testSetCharacterStatusLvls_HealthLevelGameEnd() {
         // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 5;
-        Integer healthValue = -5; // Health Level will reach 0
-
+        long id = 1L;
         CharDetails charDetails = new CharDetails();
-        charDetails.setId(charDetailsId);
-        charDetails.setStressLvl(2);
-        charDetails.setSatisfactionLvl(4);
-        charDetails.setHealthLvl(5);
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
+        charDetails.setHealthLvl(1); // Start bei 1
+        when(charDetailsRepository.findById(id)).thenReturn(Optional.of(charDetails));
 
         // Act
-        boolean gameEnd = charDetailsService.setCharacterStatusLvls(charDetailsId, gamePhase, null, null, healthValue);
+        boolean result = charDetailsService.setCharacterStatusLvls(id, 1, null, null, -1); // Gesundheit -1
 
         // Assert
-        assertTrue(gameEnd);
+        assertTrue(result);
         assertEquals(0, charDetails.getHealthLvl());
         verify(charDetailsRepository, times(1)).save(charDetails);
     }
 
     @Test
-    void testSetCharacterStatusLvls_CharDetailsNotFound() {
+    void testSetCharacterStatusLvls_NormalAdjustments() {
         // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 5;
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
-                charDetailsService.setCharacterStatusLvls(charDetailsId, gamePhase, null, null, null));
-        assertEquals("CharDetails not found!", exception.getMessage());
-        verify(charDetailsRepository, never()).save(any());
-    }
-
-    @Test
-    void testSetCharacterStatusLvls_HandicapAdjustment() {
-        // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 10;
-        Integer stressValue = 4; // Brings stress level to 8, triggers handicap and potential health decrease
-
+        long id = 1L;
         CharDetails charDetails = new CharDetails();
-        charDetails.setId(charDetailsId);
-        charDetails.setStressLvl(4);
-        charDetails.setSatisfactionLvl(5);
-        charDetails.setHealthLvl(5);
-        charDetails.setHandicap(0);
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
+        charDetails.setStressLvl(5);
+        charDetails.setSatisfactionLvl(3);
+        charDetails.setHealthLvl(10);
+        when(charDetailsRepository.findById(id)).thenReturn(Optional.of(charDetails));
 
         // Act
-        boolean gameEnd = charDetailsService.setCharacterStatusLvls(charDetailsId, gamePhase, stressValue, null, null);
+        boolean result = charDetailsService.setCharacterStatusLvls(id, 1, 1, 2, -2);
 
         // Assert
-        assertFalse(gameEnd);
-        assertEquals(8, charDetails.getStressLvl());
-        assertEquals(4, charDetails.getHealthLvl()); // Health decreases by 1 as gamePhase % 10 == 0
-        assertEquals(-2, charDetails.getHandicap()); // Handicap adjustment based on stress level
+        assertFalse(result);
+        assertEquals(6, charDetails.getStressLvl()); // Stress +1
+        assertEquals(5, charDetails.getSatisfactionLvl()); // Satisfaction +2
+        assertEquals(8, charDetails.getHealthLvl()); // Health -2
+        assertEquals(-1, charDetails.getHandicap()); // Handicap angepasst
         verify(charDetailsRepository, times(1)).save(charDetails);
     }
 
-    private CharDetails createCharDetails(long id, int stressLvl, int satisfactionLvl, int healthLvl) {
+    @Test
+    void testSetCharacterStatusLvls_OverMinMaxAdjustments() {
+        // Arrange
+        long id = 1L;
         CharDetails charDetails = new CharDetails();
-        charDetails.setId(id);
-        charDetails.setStressLvl(stressLvl);
-        charDetails.setSatisfactionLvl(satisfactionLvl);
-        charDetails.setHealthLvl(healthLvl);
-        return charDetails;
+        charDetails.setStressLvl(0);
+        charDetails.setSatisfactionLvl(4);
+        charDetails.setHealthLvl(19);
+        when(charDetailsRepository.findById(id)).thenReturn(Optional.of(charDetails));
+
+        // Act
+        boolean result = charDetailsService.setCharacterStatusLvls(id, 11, -1, 1, 2);
+
+        // Assert
+        assertFalse(result);
+        assertEquals(0, charDetails.getStressLvl()); // Stress over min = 0
+        assertEquals(5, charDetails.getSatisfactionLvl()); // Satisfaction +1
+        assertEquals(20, charDetails.getHealthLvl()); // Health over max = 20
+        assertEquals(0, charDetails.getHandicap()); 
+        verify(charDetailsRepository, times(1)).save(charDetails);
     }
 
+    @Test
+    void testSetCharacterStatusLvls_StressAndSatisfactionBoundary() {
+        // Arrange
+        long id = 1L;
+        CharDetails charDetails = new CharDetails();
+        charDetails.setStressLvl(7);
+        charDetails.setSatisfactionLvl(3);
+        charDetails.setHealthLvl(10);
+        when(charDetailsRepository.findById(id)).thenReturn(Optional.of(charDetails));
+
+        // Act
+        boolean result = charDetailsService.setCharacterStatusLvls(id, 10, 1, -1, -1);
+
+        // Assert
+        assertFalse(result);
+        assertEquals(8, charDetails.getStressLvl()); // Stress +1
+        assertEquals(2, charDetails.getSatisfactionLvl()); // Satisfaction +1
+        assertEquals(7, charDetails.getHealthLvl()); // Health -1
+        assertEquals(-4, charDetails.getHandicap()); // Handicap angepasst
+        verify(charDetailsRepository, times(1)).save(charDetails);
+    }
 
 
     @Test
     void testResetChar_Success() {
         // Arrange
         Authentication auth = mock(Authentication.class);
-
         CharChoices initialCharChoices = new CharChoices();
+        initialCharChoices.setStudy(true);
         CharChoices resetCharChoices = new CharChoices();
 
         CharDetails charDetails = new CharDetails();
-        charDetails.setStressLvl(7);
+        charDetails.setId(1L);
+        charDetails.setStressLvl(10);
         charDetails.setSatisfactionLvl(3);
         charDetails.setHealthLvl(4);
         charDetails.setHandicap(-2);
@@ -512,6 +494,7 @@ class CharDetailsServiceTest {
         charDetails.setCharChoices(initialCharChoices);
 
         Profile userProfile = new Profile();
+        userProfile.setId(1L);
         userProfile.setCharDetails(charDetails);
 
         when(userService.getUserProfile(auth)).thenReturn(userProfile);
@@ -522,7 +505,7 @@ class CharDetailsServiceTest {
         // Assert
         assertEquals(0, charDetails.getStressLvl());
         assertEquals(5, charDetails.getSatisfactionLvl());
-        assertEquals(10, charDetails.getHealthLvl());
+        assertEquals(20, charDetails.getHealthLvl());
         assertEquals(0, charDetails.getHandicap());
         assertEquals(0, charDetails.getIncome());
         assertEquals(0, charDetails.getOutcome());

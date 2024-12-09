@@ -18,6 +18,7 @@ public class Choice {
 
     private int minDiceValue;
     private Integer cost; // value are only for Frontend it contains max cost
+    @Column(name = "is_returning")
     private boolean returning; // if true = returning when the choice lost
 
     @Column(length = 1024)
@@ -76,5 +77,6 @@ public class Choice {
 
 
     @ManyToOne
+    @JoinColumn(name = "npc_id")
     private Npc npc;
 }

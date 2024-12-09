@@ -31,47 +31,34 @@ public class AdminController {
 
     @PostMapping(value = "/storys")
     public ResponseEntity<Void> CreateStory(@RequestBody StoryCreateDTO dto) {
-        try {
-            gameService.createStory(dto);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        gameService.createStory(dto);
+        return ResponseEntity.ok().build();
+
     }
 
     @PutMapping(value = "/storys")
     public ResponseEntity<Void> updateStory(@RequestBody StoryUpdateDTO dto) {
-        gameService.updateStory(dto);
-        return ResponseEntity.ok().build();
-//        try {
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().build();
-//        }
+        try {
+            gameService.updateStory(dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     //------
 
     @PostMapping(value = "/plusstorys")
     public ResponseEntity<Void> createPlusStory(@RequestBody PlusStoryCreateDTO dto) {
-        try {
             gameService.createPlusStory(dto);
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+
     }
 
     @PutMapping(value = "/plusstorys")
     public ResponseEntity<Void> updatePlusStory(@RequestBody PlusStoryUpdateDTO dto) {
         gameService.updatePlusStory(dto);
         return ResponseEntity.ok().build();
-
-//        try {
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().build();
-//        }
     }
 
     //------

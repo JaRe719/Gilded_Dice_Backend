@@ -23,6 +23,7 @@
       "skill": "ABILITY",
       "minDiceValue": 13,
       "cost": null,
+      "returning": true,
       "startMessage": "Willkommen! Wir suchen Aushilfen, die im Service mit anpacken können – besonders zu Stoßzeiten. Haben Sie Erfahrung in der Gastronomie, oder warum denken Sie, dass dieser Job gut zu Ihnen passt?",
       "winMessage": "Das klingt vernünftig. Wir geben Ihnen eine Chance – ab nächster Woche können Sie bei uns starten!",
       "winIncomeValue":  700,
@@ -74,6 +75,7 @@
       "skill": "NEGOTIATE",
       "minDiceValue": 10,
       "cost": null,
+      "returning": true,
       "startMessage": "Schön, dass Du dich gemeldet hast! Ich suche jemanden, der zuverlässig mit meinen Hunden spazieren geht und sich gut mit Tieren auskennt. Erzähle mir doch ein bisschen",
       "winMessage": "Das klingt gut. Du machst einen soliden Eindruck, und ich denke, meine Hunde werden sich an Dich gewöhnen. Du kannst morgen starten!",
       "winIncomeValue":  150,
@@ -118,7 +120,7 @@
       "critSatisfactionValue": 2,
       "critHealthValue": 1,
 
-      "npcId": 7
+      "npcId": 6
     }
   ]
 }

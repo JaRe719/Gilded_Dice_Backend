@@ -297,20 +297,17 @@ public class GameService {
         CharDetails charDetails = profile.getCharDetails();
         CharChoices charChoices = charDetails.getCharChoices();
 
-        StringBuilder finalPrompt = new StringBuilder("Erstelle eine kurze grobe zusammenfassung des PnP-Spielcharakter in deutscher sprache. basierend auf den folgenden informationen: ");
-        finalPrompt.append("charaktername: ").append(username);
-        finalPrompt.append(", Finanzielle lage: Monatliches Einkommen: " + charDetails.getIncome() + ", Monatliche Ausgaben: " + charDetails.getOutcome() + " insgesamtes Vermögen: " + charDetails.getMoney());
-        finalPrompt.append(", es wirde folgendes erreicht: Studium=" + charChoices.isStudy() + " mit Stipendium=" + charChoices.isScholarship());
-        finalPrompt.append(", Beruflicheausbildung= " + charChoices.isApprenticeship());
-        finalPrompt.append(", Beruf= " + charChoices.isJob());
-        finalPrompt.append(", eigenes Haus=" + charChoices.isProperty() + " Wohnt zur miete=" + charChoices.isRentApartment());
-        finalPrompt.append(", Eigenes Fahrzeug: ").append(charChoices.isCar()).append(" Führerschein=").append(charChoices.isDriverLicense());
-
-        finalPrompt.append(", allgemeiner gesundheitszustand: Gesundheit=").append(charDetails.getHealthLvl()).append("zufriedenheit=").append(charDetails.getSatisfactionLvl()).append(" (skala schlecht 0 bis 10 gut)");
-        finalPrompt.append(", Stressniveau: " + charDetails.getStressLvl() + " (skala gut 0 bis 10 schlecht)");
-
-        finalPrompt.append(", Ton: gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
-        return finalPrompt.toString();
+        String finalPrompt = "Erstelle eine kurze grobe zusammenfassung des PnP-Spielcharakter in deutscher sprache. basierend auf den folgenden informationen: " + "charaktername: " + username +
+                ", Finanzielle lage: Monatliches Einkommen: " + charDetails.getIncome() + ", Monatliche Ausgaben: " + charDetails.getOutcome() + " insgesamtes Vermögen: " + charDetails.getMoney() +
+                ", es wird  folgendes erreicht: Studium=" + charChoices.isStudy() + " mit Stipendium=" + charChoices.isScholarship() +
+                ", Berufliche ausbildung= " + charChoices.isApprenticeship() +
+                ", Beruf= " + charChoices.isJob() +
+                ", eigenes Haus=" + charChoices.isProperty() + " Wohnt zur miete=" + charChoices.isRentApartment() +
+                ", Eigenes Fahrzeug: " + charChoices.isCar() + " Führerschein=" + charChoices.isDriverLicense() +
+                ", allgemeiner gesundheitszustand: Gesundheit=" + charDetails.getHealthLvl() + "zufriedenheit=" + charDetails.getSatisfactionLvl() + " (skala schlecht 0 bis 10 gut)" +
+                ", Stressniveau: " + charDetails.getStressLvl() + " (skala gut 0 bis 10 schlecht)" +
+                ", Ton: gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an";
+        return finalPrompt;
 
     }
 

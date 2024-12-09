@@ -7,6 +7,13 @@ import lombok.Data;
 @Data
 public class CharDetails {
 
+    private static final int STRESS_MIN = 0;
+    private static final int STRESS_MAX = 10;
+    private static final int SATISFACTION_MIN = 0;
+    private static final int SATISFACTION_MAX = 10;
+    private static final int HEALTH_MIN = 0;
+    private static final int HEALTH_MAX = 20;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -32,5 +39,21 @@ public class CharDetails {
 
     @OneToOne(cascade = {CascadeType.ALL})
     private CharChoices charChoices;
+
+    public void setStressLvl(int value) {
+        this.stressLvl = clamp(this.stressLvl + value, STRESS_MIN, STRESS_MAX);
+    }
+    
+    public void setSatisfactionLvl(int value) {
+        this.satisfactionLvl = clamp(this.satisfactionLvl + value, SATISFACTION_MIN, SATISFACTION_MAX);
+    }
+
+    public void setHealthLvl(int value) {
+        this.healthLvl = clamp(this.healthLvl + value, HEALTH_MIN, HEALTH_MAX);
+    }
+
+    private int clamp(int min, int max, int value) {
+        return Math.max(min, Math.min(value, max));
+    }
 
 }

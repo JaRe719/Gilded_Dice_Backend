@@ -71,7 +71,7 @@ class GameServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        storyUpdateDTO = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2, false, false, false,"Updated Prompt");
+        storyUpdateDTO = new StoryUpdateDTO(1L, "MAINX", "Updated Prompt", 2, false, false, false,"Updated Prompt");
 
         choiceCreateDTO = new ChoiceCreateDTO(
                 "Choice Title", "NEGOTIATE", 10, 0, "Start Message",
@@ -154,6 +154,7 @@ class GameServiceTest {
     void testUpdateStory_Success() {
         // Arrange
         Story existingStory = new Story();
+        existingStory.setCategory(Category.MAINL);
         when(storyRepository.findById(storyUpdateDTO.id())).thenReturn(Optional.of(existingStory));
 
         // Act
@@ -550,7 +551,7 @@ class GameServiceTest {
     private StoryCreateDTO getStoryCreateDTO() {
 
         return new StoryCreateDTO(
-                "MAIN", "Story Title", 1, false, false,"Prompt", true, List.of(choiceCreateDTO)
+                "MAINL", "Story Title", 1, false, false,"Prompt", true, List.of(choiceCreateDTO)
         );
     }
 

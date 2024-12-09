@@ -5,6 +5,7 @@ public record ChoiceCreateDTO(
         String skill,
         int minDiceValue,
         Integer cost,
+        boolean returning,
         String startMessage,
 
         String winMessage,

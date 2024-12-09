@@ -89,6 +89,7 @@ public class GameService {
             choiceEntity.setSkill(Skill.valueOf(choice.skill()));
             choiceEntity.setMinDiceValue(choice.minDiceValue());
             choiceEntity.setCost(choice.cost());
+            choiceEntity.setReturning(choice.returning());
             choiceEntity.setStartMessage(choice.startMessage());
 
             choiceEntity.setWinMessage(choice.winMessage());
@@ -184,6 +185,7 @@ public class GameService {
         choiceEntity.setSkill(Skill.valueOf(dto.skill()));
         choiceEntity.setMinDiceValue(dto.minDiceValue());
         choiceEntity.setCost(dto.cost());
+        choiceEntity.setReturning(dto.returning());
         choiceEntity.setStartMessage(dto.startMessage());
 
         choiceEntity.setWinMessage(dto.winMessage());

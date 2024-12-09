@@ -234,7 +234,7 @@ class CharDetailsServiceTest {
         when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
 
         // Act
-        charDetailsService.setFinancesByChoice(charDetailsId, gamePhase, incomeValue, outcomeValue, oneTimePayment);
+        charDetailsService.setFinancesByChoice(charDetailsId, incomeValue, outcomeValue, oneTimePayment);
 
         // Assert
         assertEquals(incomeValue, charDetails.getIncome());
@@ -254,66 +254,12 @@ class CharDetailsServiceTest {
 
         // Act & Assert
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
-                charDetailsService.setFinancesByChoice(charDetailsId, gamePhase, null, null, null));
+                charDetailsService.setFinancesByChoice(charDetailsId, null, null, null));
         assertEquals("CharDetails not found!", exception.getMessage());
         verify(charDetailsRepository, never()).save(any());
     }
 
-    @Test
-    void testSetFinancesByChoice_WithInvestment() {
-        // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 9;
-        Integer incomeValue = null;
-        Integer outcomeValue = null;
-        Integer oneTimePayment = null;
 
-        CharDetails charDetails = new CharDetails();
-        charDetails.setId(charDetailsId);
-        charDetails.setMoney(1000);
-        charDetails.setInvest(1000);
-        charDetails.setInvestmentPercent(5);
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
-
-        // Act
-        charDetailsService.setFinancesByChoice(charDetailsId, gamePhase, incomeValue, outcomeValue, oneTimePayment);
-
-        // Assert
-        assertEquals(50, charDetails.getMoney());
-        assertEquals(1000, charDetails.getInvest());
-        assertEquals(5, charDetails.getInvestmentPercent());
-
-        verify(charDetailsRepository, times(1)).save(charDetails);
-    }
-
-    @Test
-    void testSetFinancesByChoice_EndOfInvestmentPhase() {
-        // Arrange
-        long charDetailsId = 1L;
-        int gamePhase = 10; // 10er Vielfaches, um Investition zurückzuzahlen
-        Integer incomeValue = null;
-        Integer outcomeValue = null;
-        Integer oneTimePayment = null;
-
-        CharDetails charDetails = new CharDetails();
-        charDetails.setId(charDetailsId);
-        charDetails.setMoney(500);
-        charDetails.setInvest(1000);
-        charDetails.setInvestmentPercent(5);
-
-        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
-
-        // Act
-        charDetailsService.setFinancesByChoice(charDetailsId, gamePhase, incomeValue, outcomeValue, oneTimePayment);
-
-        // Assert
-        assertEquals(1500, charDetails.getMoney()); // Investition von 1000 zurückzahlen
-        assertEquals(0, charDetails.getInvest());
-        assertEquals(0, charDetails.getInvestmentPercent());
-
-        verify(charDetailsRepository, times(1)).save(charDetails);
-    }
 
 
     @Test
@@ -327,6 +273,7 @@ class CharDetailsServiceTest {
         Boolean property = false;
         Boolean rentApartment = true;
         Boolean car = false;
+        Boolean driverLicense = false;
 
         CharChoices charChoices = new CharChoices();
         CharDetails charDetails = new CharDetails();
@@ -336,7 +283,7 @@ class CharDetailsServiceTest {
         when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
 
         // Act
-        charDetailsService.setInventoryByChoice(charDetailsId, study, scholarship, apprenticeship, job, property, rentApartment, car);
+        charDetailsService.setInventoryByChoice(charDetailsId, study, scholarship, apprenticeship, job, property, rentApartment, car, driverLicense);
 
         // Assert
         assertTrue(charChoices.isStudy());
@@ -359,7 +306,7 @@ class CharDetailsServiceTest {
 
         // Act & Assert
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
-                charDetailsService.setInventoryByChoice(charDetailsId, true, false, true, true, false, true, false));
+                charDetailsService.setInventoryByChoice(charDetailsId, true, false, true, true, false, true, false, false));
         assertEquals("CharDetails not found!", exception.getMessage());
         verify(charDetailsRepository, never()).save(any());
     }
@@ -375,6 +322,7 @@ class CharDetailsServiceTest {
         Boolean property = true;
         Boolean rentApartment = null; // Keine Änderung
         Boolean car = true;
+        Boolean driverLicense = true;
 
         CharChoices charChoices = new CharChoices();
         charChoices.setStudy(false);
@@ -384,6 +332,7 @@ class CharDetailsServiceTest {
         charChoices.setProperty(false);
         charChoices.setRentApartment(true);
         charChoices.setCar(false);
+        charChoices.setDriverLicense(false);
 
         CharDetails charDetails = new CharDetails();
         charDetails.setId(charDetailsId);
@@ -392,7 +341,7 @@ class CharDetailsServiceTest {
         when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
 
         // Act
-        charDetailsService.setInventoryByChoice(charDetailsId, study, scholarship, apprenticeship, job, property, rentApartment, car);
+        charDetailsService.setInventoryByChoice(charDetailsId, study, scholarship, apprenticeship, job, property, rentApartment, car, driverLicense);
 
         // Assert
         assertFalse(charChoices.isStudy()); // Unverändert

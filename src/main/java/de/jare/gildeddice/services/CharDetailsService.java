@@ -70,28 +70,39 @@ public class CharDetailsService {
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
     }
 
-    public void setFinancesByChoice(long id, int gamePhase, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment) {
-        CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+    public void setFinancesByPhaseEnd(long charId, int gamePhase) {
+        CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+        int totalIncome = charDetails.getIncome();
+        int totalOutcome = charDetails.getOutcome();
+        int totalMoney = charDetails.getMoney();
 
+        if (gamePhase % 10 == 0) {
+            if (charDetails.getInvest() > 0) {
+                totalMoney += ((totalIncome + totalOutcome) * 120);
+                totalMoney += (int) ((charDetails.getInvest() * charDetails.getInvestmentPercent()) / 100.0f) * 120;
+                totalMoney += charDetails.getInvest();
+                charDetails.setInvest(0);
+                charDetails.setInvestmentPercent(0);
+
+            } else charDetails.setInvestmentPercent(0);
+
+            charDetails.setIncome(totalIncome);
+            charDetails.setOutcome(totalOutcome);
+            charDetails.setMoney(totalMoney);
+
+            charDetailsRepository.save(charDetails);
+        }
+
+    }
+
+    public void setFinancesByChoice(long charId, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment) {
+        CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
 
         if (incomeValue != null) charDetails.setIncome(incomeValue);
         if (outcomeValue != null) charDetails.setOutcome(charDetails.getOutcome() + outcomeValue);
         if (oneTimePayment != null) charDetails.setMoney(charDetails.getMoney() + (oneTimePayment));
 
-        if (charDetails.getInvest() > 0) {
-            if (gamePhase % 10 != 0) {
-                charDetails.setMoney((int) ((charDetails.getInvest() * charDetails.getInvestmentPercent()) / 100.0f));
-            } else {
-                charDetails.setMoney(charDetails.getMoney() + charDetails.getInvest());
-                charDetails.setInvest(0);
-                charDetails.setInvestmentPercent(0);
-            }
-        }
-
-
         charDetailsRepository.save(charDetails);
-        System.out.println(oneTimePayment);
-        System.out.println(charDetails.getMoney());
     }
 
     public void setInventoryByChoice(long id, Boolean study, Boolean scholarship, Boolean apprenticeship, Boolean job, Boolean property, Boolean rentApartment, Boolean car, Boolean driverLicense) {

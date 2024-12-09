@@ -215,6 +215,7 @@ public class GameService {
         choiceEntity.setLoseProperty(dto.loseProperty());
         choiceEntity.setLoseRentApartment(dto.loseRentApartment());
         choiceEntity.setLoseCar(dto.loseCar());
+        choiceEntity.setLoseDriverLicense(dto.loseDriverLicense());
 
         choiceEntity.setLoseStressValue(dto.loseStressValue());
         choiceEntity.setLoseSatisfactionValue(dto.loseSatisfactionValue());
@@ -249,14 +250,14 @@ public class GameService {
 
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
         //alle 3 runden? try catch
-        if (game.getPhase() % 4 == 0 && (randomIndex >= 0 && randomIndex < 5)) {
+        if (game.getPhase() == 12 || (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))) {
             game.setPlusStoryRunLastRound(true);
             try {
                 return startRandomPlusStory(game, user);
             } catch (EmptyStackException ignored) {
                 System.out.println("LOG: empty PlusStory stack");
             }
-        } else if (game.getPhase() % 4 == 1) {
+        } else if (game.getPhase() % 2 == 1) {
             game.setPlusStoryRunLastRound(false);
         }
 
@@ -420,6 +421,7 @@ public class GameService {
         int choiceResult = checkResult(diceResult, finalMinValueToWin.value());
         String responseMessage = compareResultForMessage(choiceResult, choice);
 
+        charDetailsService.setFinancesByPhaseEnd(charDetails.getId(), game.getPhase());
         boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
 
 
@@ -428,13 +430,13 @@ public class GameService {
         }
 
         gameRepository.save(game);
+
         return new GameChoiceResultDTO(
                 choiceResult >= 0,
                 gameLost,
                 responseMessage,
                 finalMinValueToWin.calculation()
         );
-
     }
 
     private boolean executeChoiceResult(Choice choice, int choiceResult, Profile userProfile) {
@@ -453,7 +455,6 @@ public class GameService {
 
                 charDetailsService.setFinancesByChoice(
                         userProfile.getId(),
-                        game.getPhase(),
                         choice.getCritIncomeValue(),
                         choice.getCritOutcomeValue(),
                         choice.getCritOneTimePayment()
@@ -481,7 +482,6 @@ public class GameService {
                 );
                 charDetailsService.setFinancesByChoice(
                         userProfile.getId(),
-                        game.getPhase(),
                         choice.getWinIncomeValue(),
                         choice.getWinOutcomeValue(),
                         choice.getWinOneTimePayment()
@@ -508,7 +508,6 @@ public class GameService {
                 );
                 charDetailsService.setFinancesByChoice(
                         userProfile.getId(),
-                        game.getPhase(),
                         choice.getLoseIncomeValue(),
                         choice.getLoseOutcomeValue(),
                         choice.getLoseOneTimePayment()
@@ -526,6 +525,7 @@ public class GameService {
                 );
                 break;
         }
+
         return gameLost;
     }
 

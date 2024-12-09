@@ -24,7 +24,7 @@ public class GameMapper {
                 choice.getTitle(),
                 choice.getSkill().name(),
                 choice.getStartMessage(),
-                choice.getNpc().getName(),
+                choice.getNpcName(),
                 choice.getNpc().getFilename()
         );
     }

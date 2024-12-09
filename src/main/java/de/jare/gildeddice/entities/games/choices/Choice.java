@@ -79,4 +79,5 @@ public class Choice {
     @ManyToOne
     @JoinColumn(name = "npc_id")
     private Npc npc;
+    private String npcName;
 }

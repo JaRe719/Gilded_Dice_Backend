@@ -55,6 +55,7 @@ public record ChoiceUpdateDTO(
         Integer critHealthValue,
 
 
-        long npcId
+        long npcId,
+        String npcName
 ) {
 }

@@ -78,7 +78,7 @@ class GameServiceTest {
                 "Win Message", 100, 50, 200, 0,true, false, false, false, false,
                 false, false, false, 5, 3, 2, "Lose Message", 50, 20, 0, 0,false, false,
                 false, false, false, false, false, false,2, -1, 0, "Crit Message", 150, 80, 0, 0,true,
-                1, 2,4,1L,false
+                1, 2,4,1L,"test NPC", false
         );
 
         choiceUpdateDTO = new ChoiceUpdateDTO(
@@ -86,7 +86,7 @@ class GameServiceTest {
                 "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, false, 1, 5, 10,
                 "Lose Message", 80, 40, 1.0f, 200, false, true, false, true, false, false, true, false, 7, 5, 6,
                 "Crit Message", 120, 60, 2.0f, 700, true, 4, 9, 12,
-                1L
+                1L, "test NPC"
         );
 
     }
@@ -421,6 +421,7 @@ class GameServiceTest {
         choice.setWinMessage("Win Text");
         choice.setLoseMessage("Lose Text");
         choice.setCritMessage("Crit Text");
+        choice.setNpcName("test NPC");
         Npc npc = new Npc();
         npc.setId(1L);
         npc.setName("NPC");
@@ -436,7 +437,7 @@ class GameServiceTest {
         assertEquals("Test Choice", result.title());
         assertEquals(Skill.INTELLIGENCE.name(), result.skill());
         assertEquals("Start Text", result.startMessage());
-        assertEquals("NPC", result.npcName());
+        assertEquals("test NPC", result.npcName());
         assertEquals("file.png", result.npcFilename());
     }
 

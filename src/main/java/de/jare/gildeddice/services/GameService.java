@@ -143,6 +143,7 @@ public class GameService {
 
 
             choiceEntity.setNpc(npcRepository.findById(choice.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
+            choiceEntity.setNpcName(choice.npcName());
 
             choiceEntity = choiceRepository.save(choiceEntity);
             choiceEntities.add(choiceEntity);
@@ -242,6 +243,7 @@ public class GameService {
 
 
         choiceEntity.setNpc(npcRepository.findById(dto.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
+        choiceEntity.setNpcName(dto.npcName());
 
         choiceRepository.save(choiceEntity);
     }
@@ -257,7 +259,7 @@ public class GameService {
 
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
         //alle 3 runden? try catch
-        if (game.getPhase() == 12 || (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))) {
+        if (game.getPhase() == 12 || (game.getPhase() % 2 == 0 && randomIndex >= 0 && randomIndex < 5)) {
             game.setPlusStoryRunLastRound(true);
             try {
                 return startRandomPlusStory(game, user);

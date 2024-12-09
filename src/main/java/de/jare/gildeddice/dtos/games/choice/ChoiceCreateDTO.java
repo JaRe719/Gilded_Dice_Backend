@@ -55,6 +55,7 @@ public record ChoiceCreateDTO(
 
 
         long npcId,
+        String npcName,
         boolean phaseEnd
 ) {
 }

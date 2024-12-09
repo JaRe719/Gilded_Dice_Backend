@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 @Service
 public class GameService {
 
+    private final ProfileRepository profileRepository;
+    private final CharDetailsRepository charDetailsRepository;
     private GameRepository gameRepository;
     private StoryRepository storyRepository;
     private ChoiceRepository choiceRepository;
@@ -47,7 +49,7 @@ public class GameService {
 
     private HighScoreService highScoreService;
 
-    public GameService(AiService aiService, CharDetailsService charDetailsService, ChoiceRepository choiceRepository, GameRepository gameRepository, HighScoreService highScoreService, NpcRepository npcRepository, PlusStoryRepository plusStoryRepository, PlusStoryService plusStoryService, StoryRepository storyRepository, UserService userService) {
+    public GameService(AiService aiService, CharDetailsService charDetailsService, ChoiceRepository choiceRepository, GameRepository gameRepository, HighScoreService highScoreService, NpcRepository npcRepository, PlusStoryRepository plusStoryRepository, PlusStoryService plusStoryService, StoryRepository storyRepository, UserService userService, ProfileRepository profileRepository, CharDetailsRepository charDetailsRepository) {
         this.aiService = aiService;
         this.charDetailsService = charDetailsService;
         this.choiceRepository = choiceRepository;
@@ -58,6 +60,8 @@ public class GameService {
         this.plusStoryService = plusStoryService;
         this.storyRepository = storyRepository;
         this.userService = userService;
+        this.profileRepository = profileRepository;
+        this.charDetailsRepository = charDetailsRepository;
     }
 
     public Iterable<Story> getAllStorys() {
@@ -247,7 +251,7 @@ public class GameService {
         if (user.getProfile().getCharDetails() == null) throw new IllegalStateException("no Char");
 
         Game game = getGame(user);
-
+        if (game.isGameEnd() || game.isGameLost()) return getGameSummary(game);
 
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
         //alle 3 runden? try catch
@@ -278,6 +282,36 @@ public class GameService {
 
         game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
         return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+    }
+
+    private GamePhaseDTO getGameSummary(Game game) {
+        Profile profile = profileRepository.findByUsername(game.getUsername());
+        String finalPrompt = generateFinalPrompt(profile, game);
+        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+
+        return GameMapper.toGamePhaseDTO(Category.FATE, responseDTO.choices().getFirst().message().content(), false, game.isGameEnd(), new ArrayList<>());
+    }
+
+    private String generateFinalPrompt(Profile profile, Game game) {
+        String username = profile.getUsername();
+        CharDetails charDetails = profile.getCharDetails();
+        CharChoices charChoices = charDetails.getCharChoices();
+
+        StringBuilder finalPrompt = new StringBuilder("Erstelle eine kurze grobe zusammenfassung des PnP-Spielcharakter in deutscher sprache. basierend auf den folgenden informationen: ");
+        finalPrompt.append("charaktername: ").append(username);
+        finalPrompt.append(", Finanzielle lage: Monatliches Einkommen: " + charDetails.getIncome() + ", Monatliche Ausgaben: " + charDetails.getOutcome() + " insgesamtes Vermögen: " + charDetails.getMoney());
+        finalPrompt.append(", es wirde folgendes erreicht: Studium=" + charChoices.isStudy() + " mit Stipendium=" + charChoices.isScholarship());
+        finalPrompt.append(", Beruflicheausbildung= " + charChoices.isApprenticeship());
+        finalPrompt.append(", Beruf= " + charChoices.isJob());
+        finalPrompt.append(", eigenes Haus=" + charChoices.isProperty() + " Wohnt zur miete=" + charChoices.isRentApartment());
+        finalPrompt.append(", Eigenes Fahrzeug: ").append(charChoices.isCar()).append(" Führerschein=").append(charChoices.isDriverLicense());
+
+        finalPrompt.append(", allgemeiner gesundheitszustand: Gesundheit=").append(charDetails.getHealthLvl()).append("zufriedenheit=").append(charDetails.getSatisfactionLvl()).append(" (skala schlecht 0 bis 10 gut)");
+        finalPrompt.append(", Stressniveau: " + charDetails.getStressLvl() + " (skala gut 0 bis 10 schlecht)");
+
+        finalPrompt.append(", Ton: gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
+        return finalPrompt.toString();
+
     }
 
 
@@ -326,7 +360,6 @@ public class GameService {
         Game game = new Game();
         if (existingGame.isPresent()) {
             game = existingGame.get();
-            if (game.isGameLost() || game.isGameEnd()) throw new IllegalStateException("Game is lost/ Ended");
             return game;
         } else {
             game.setUsername(user.getProfile().getUsername());

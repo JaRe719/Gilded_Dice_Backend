@@ -57,7 +57,8 @@
       "critSatisfactionValue": 1,
       "critHealthValue": 1,
 
-      "npcId": 4
+      "npcId": 4,
+      "npcName": "Deine Mutter"
     },
     {
       "title": "Eigene Wohnung",
@@ -109,7 +110,8 @@
       "critSatisfactionValue": 2,
       "critHealthValue": 1,
 
-      "npcId": 5
+      "npcId": 5,
+      "npcName": "Vermieterin"
     },
     {
       "title": "in eine WG ziehen",
@@ -161,7 +163,8 @@
       "critSatisfactionValue": 2,
       "critHealthValue": null,
 
-      "npcId": 6
+      "npcId": 6,
+      "npcName": "WG-Bewohner"
     }
   ]
 }

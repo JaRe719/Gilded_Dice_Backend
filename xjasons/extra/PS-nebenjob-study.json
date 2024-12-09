@@ -70,7 +70,8 @@
       "critSatisfactionValue": 1,
       "critHealthValue": 0,
 
-      "npcId": 1
+      "npcId": 1,
+      "npcName": "Dekan"
     },
     {
       "title": "Als Werkstudent arbeiten",
@@ -122,7 +123,8 @@
       "critSatisfactionValue": 2,
       "critHealthValue": 1,
 
-      "npcId": 6
+      "npcId": 12,
+      "npcName": "HR Managerin"
     }
   ]
 }

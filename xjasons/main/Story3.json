@@ -3,7 +3,7 @@
   "title": "Führerschein",
   "phase": 12,
   "phaseEnd": true,
-  "prompt": "Der Spieler hat jetzt schon die ersten wichtigen Entscheidungen für seine zukunft getroffen. jetzt steht der Führerschein an. der spieler muss sich endscheiden ob und wie er ihn machen will. der schein kostet 2500 wenn alles gut läuft ",
+  "prompt": "Der Spieler hat jetzt schon die ersten wichtigen Entscheidungen für seine zukunft getroffen. jetzt steht der Führerschein an. der spieler muss sich endscheiden ob dieser ihn macht oder Überspringt und wie er ihn machen will. der schein kostet 2500 wenn alles gut läuft.  ",
   "skippable": true,
   "gameEnd": false,
   "choices": [
@@ -58,7 +58,8 @@
       "critSatisfactionValue": 1,
       "critHealthValue": null,
 
-      "npcId": 1
+      "npcId": 10,
+      "npcName": "Fahrlehrerin"
     },
     {
       "title": "Führerschein in Raten bezahlen mit 13,4% zinsen",
@@ -110,7 +111,8 @@
       "critSatisfactionValue": 1,
       "critHealthValue": null,
 
-      "npcId": 2
+      "npcId": 10,
+      "npcName": "Fahrlehrerin"
     }
   ]
 }

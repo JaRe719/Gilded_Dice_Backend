@@ -68,7 +68,8 @@
       "critSatisfactionValue": null,
       "critHealthValue": null,
 
-      "npcId": 1
+      "npcId": 8,
+      "npcName": "Gastro Besitzer"
     },
     {
       "title": "Als Dogsitter arbeiten",
@@ -120,7 +121,8 @@
       "critSatisfactionValue": 2,
       "critHealthValue": 1,
 
-      "npcId": 6
+      "npcId": 11,
+      "npcName": "Hundeliebhaber"
     }
   ]
 }

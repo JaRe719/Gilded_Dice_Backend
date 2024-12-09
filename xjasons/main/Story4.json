@@ -58,7 +58,8 @@
       "critSatisfactionValue": null,
       "critHealthValue": null,
 
-      "npcId": 1
+      "npcId": 1,
+      "npcName": "Bänker"
     },
     {
       "title": "Aktienfonds/ETFs",
@@ -110,7 +111,8 @@
       "critSatisfactionValue": null,
       "critHealthValue": null,
 
-      "npcId": 2
+      "npcId": 2,
+      "npcName": "Bänker"
     },
     {
       "title": "Tagesgeldkonto",
@@ -162,7 +164,8 @@
       "critSatisfactionValue": null,
       "critHealthValue": null,
 
-      "npcId": 2
+      "npcId": 2,
+      "npcName": "Bänker"
     }
   ]
 }

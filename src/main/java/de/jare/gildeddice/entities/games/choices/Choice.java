@@ -17,6 +17,8 @@ public class Choice {
     private Skill skill;
 
     private int minDiceValue;
+    private Integer cost; // value are only for Frontend it contains max cost
+    private boolean returning; // if true = returning when the choice lost
 
     @Column(length = 1024)
     private String startMessage;
@@ -34,6 +36,7 @@ public class Choice {
     private Boolean winProperty;
     private Boolean winRentApartment;
     private Boolean winCar;
+    private Boolean winDriverLicense;
 
     private Integer winStressValue;
     private Integer winSatisfactionValue;
@@ -52,6 +55,7 @@ public class Choice {
     private Boolean loseProperty;
     private Boolean loseRentApartment;
     private Boolean loseCar;
+    private Boolean loseDriverLicense;
 
     private Integer loseStressValue;
     private Integer loseSatisfactionValue;

@@ -10,12 +10,12 @@ import java.util.List;
 
 public class GameMapper {
 
-    public static GamePhaseDTO toGamePhaseDTO(Category category, String message, List<Choice> choices) {
-        return new GamePhaseDTO(category.name(), message, choices.stream().map(GameMapper::toGameChoiceShortDTO).toList());
+    public static GamePhaseDTO toGamePhaseDTO(Category category, String message, boolean skippable, boolean gameEnd, List<Choice> choices) {
+        return new GamePhaseDTO(category.name(), message, skippable, gameEnd, choices.stream().map(GameMapper::toGameChoiceShortDTO).toList());
     }
 
     private static GameChoiceShortDTO toGameChoiceShortDTO(Choice choice) {
-        return new GameChoiceShortDTO(choice.getId(), choice.getTitle());
+        return new GameChoiceShortDTO(choice.getId(), choice.getTitle(), choice.getCost(), choice.isReturning());
     }
 
     public static GameChoiceDTO toGameChoiceDTO(Choice choice) {

@@ -3,6 +3,7 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiChoicesDTO;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiMessageDTO;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
+import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
 import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
 import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
@@ -28,9 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -64,10 +63,35 @@ class GameServiceTest {
     @Mock
     private PlusStoryService plusStoryService;
 
+    private StoryUpdateDTO storyUpdateDTO;
+    private ChoiceCreateDTO choiceCreateDTO;
+    ChoiceUpdateDTO choiceUpdateDTO;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        storyUpdateDTO = new StoryUpdateDTO(1L, "MAINX", "Updated Prompt", 2, false, false, false,"Updated Prompt");
+
+        choiceCreateDTO = new ChoiceCreateDTO(
+                "Choice Title", "NEGOTIATE", 10, 0, true,"Start Message",
+                "Win Message", 100, 50, 200, 0,true, false, false, false, false,
+                false, false, false, 5, 3, 2, "Lose Message", 50, 20, 0, 0,false, false,
+                false, false, false, false, false, false,2, -1, 0, "Crit Message", 150, 80, 0, 0,true,
+                1, 2,4,1L,false
+        );
+
+        choiceUpdateDTO = new ChoiceUpdateDTO(
+                1L, "Updated Title", Skill.PLANNING.name(), 10, null, true, "Start Message",
+                "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, false, 1, 5, 10,
+                "Lose Message", 80, 40, 1.0f, 200, false, true, false, true, false, false, true, false, 7, 5, 6,
+                "Crit Message", 120, 60, 2.0f, 700, true, 4, 9, 12,
+                1L
+        );
+
     }
+
+
 
     @Test
     void testGetAllStorys() {
@@ -85,31 +109,59 @@ class GameServiceTest {
     }
 
 
+
+
+    //------ create story -------
+
     @Test
     void testCreateStory_Success() {
         // Arrange
-        StoryCreateDTO dto = new StoryCreateDTO("MAIN", "Title",  1, false, "PROMPT",false, new ArrayList<>());
+        StoryCreateDTO storyDto = getStoryCreateDTO();
+
+        Npc npc = new Npc();
+        npc.setId(1L);
+        when(npcRepository.findById(1L)).thenReturn(Optional.of(npc));
         when(choiceRepository.save(any(Choice.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(storyRepository.save(any(Story.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        gameService.createStory(dto);
+        gameService.createStory(storyDto);
 
         // Assert
+        verify(npcRepository, times(1)).findById(1L);
+        verify(choiceRepository, times(1)).save(any(Choice.class));
         verify(storyRepository, times(1)).save(any(Story.class));
     }
 
     @Test
+    void testCreateStory_NpcNotFound() {
+        // Arrange
+        StoryCreateDTO storyDto = getStoryCreateDTO();
+
+        when(npcRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                gameService.createStory(storyDto)
+        );
+        assertEquals("npc not found!", exception.getMessage());
+        verify(npcRepository, times(1)).findById(1L);
+    }
+
+    //------ Update story ------
+
+    @Test
     void testUpdateStory_Success() {
         // Arrange
-        StoryUpdateDTO dto = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2, false, false, "Updated Prompt");
         Story existingStory = new Story();
-        when(storyRepository.findById(dto.id())).thenReturn(Optional.of(existingStory));
+        existingStory.setCategory(Category.MAINL);
+        when(storyRepository.findById(storyUpdateDTO.id())).thenReturn(Optional.of(existingStory));
 
         // Act
-        gameService.updateStory(dto);
+        gameService.updateStory(storyUpdateDTO);
 
         // Assert
-        assertEquals(dto.title(), existingStory.getTitle());
+        assertEquals(storyUpdateDTO.title(), existingStory.getTitle());
         verify(storyRepository, times(1)).save(existingStory);
     }
 
@@ -117,12 +169,13 @@ class GameServiceTest {
     @Test
     void testUpdateStory_NotFound() {
         // Arrange
-        StoryUpdateDTO dto = new StoryUpdateDTO(1L, "MAIN", "Updated Prompt", 2,false, false, "Updated Prompt");
-        when(storyRepository.findById(dto.id())).thenReturn(Optional.empty());
+        when(storyRepository.findById(storyUpdateDTO.id())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> gameService.updateStory(dto));
+        assertThrows(EntityNotFoundException.class, () -> gameService.updateStory(storyUpdateDTO));
     }
+
+    //--- NPC ----
 
     @Test
     void testGetAllNpc() {
@@ -152,95 +205,83 @@ class GameServiceTest {
         verify(npcRepository, times(1)).save(any(Npc.class));
     }
 
+    //--- update choices --
+
     @Test
     void testUpdateChoice_Success() {
         // Arrange
-        ChoiceUpdateDTO dto = new ChoiceUpdateDTO(
-                1L, "Updated Title", Skill.PLANNING.name(), 10, "Start Message",
-                "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, 1, 5, 10,
-                "Lose Message", 80, 40, 1.0f, 200, false, true, false, true, false, false, true, 7, 5, 6,
-                "Crit Message", 120, 60, 2.0f, 700, true, 4, 9, 12,
-                1L
-        );
+
         Choice choice = new Choice();
         Npc npc = new Npc();
-        when(choiceRepository.findById(dto.id())).thenReturn(Optional.of(choice));
-        when(npcRepository.findById(dto.npcId())).thenReturn(Optional.of(npc));
+        when(choiceRepository.findById(choiceUpdateDTO.id())).thenReturn(Optional.of(choice));
+        when(npcRepository.findById(choiceUpdateDTO.npcId())).thenReturn(Optional.of(npc));
 
         // Act
-        gameService.updateChoice(dto);
+        gameService.updateChoice(choiceUpdateDTO);
 
         // Assert
-        assertEquals(dto.title(), choice.getTitle());
-        assertEquals(Skill.valueOf(dto.skill()), choice.getSkill());
-        assertEquals(dto.minDiceValue(), choice.getMinDiceValue());
-        assertEquals(dto.startMessage(), choice.getStartMessage());
+        assertEquals(choiceUpdateDTO.title(), choice.getTitle());
+        assertEquals(Skill.valueOf(choiceUpdateDTO.skill()), choice.getSkill());
+        assertEquals(choiceUpdateDTO.minDiceValue(), choice.getMinDiceValue());
+        assertEquals(choiceUpdateDTO.startMessage(), choice.getStartMessage());
 
-        // Verifikation der Gewinn-Eigenschaften
-        assertEquals(dto.winMessage(), choice.getWinMessage());
-        assertEquals(dto.winIncomeValue(), choice.getWinIncomeValue());
-        assertEquals(dto.winOutcomeValue(), choice.getWinOutcomeValue());
-        assertEquals(dto.winInvestmentPercent(), choice.getWinInvestmentPercent());
-        assertEquals(dto.winOneTimePayment(), choice.getWinOneTimePayment());
-        assertEquals(dto.winStudy(), choice.getWinStudy());
-        assertEquals(dto.winScholarship(), choice.getWinScholarship());
-        assertEquals(dto.winApprenticeship(), choice.getWinApprenticeship());
-        assertEquals(dto.winJob(), choice.getWinJob());
-        assertEquals(dto.winProperty(), choice.getWinProperty());
-        assertEquals(dto.winRentApartment(), choice.getWinRentApartment());
-        assertEquals(dto.winCar(), choice.getWinCar());
-        assertEquals(dto.winStressValue(), choice.getWinStressValue());
-        assertEquals(dto.winSatisfactionValue(), choice.getWinSatisfactionValue());
-        assertEquals(dto.winHealthValue(), choice.getWinHealthValue());
+        assertEquals(choiceUpdateDTO.winMessage(), choice.getWinMessage());
+        assertEquals(choiceUpdateDTO.winIncomeValue(), choice.getWinIncomeValue());
+        assertEquals(choiceUpdateDTO.winOutcomeValue(), choice.getWinOutcomeValue());
+        assertEquals(choiceUpdateDTO.winInvestmentPercent(), choice.getWinInvestmentPercent());
+        assertEquals(choiceUpdateDTO.winOneTimePayment(), choice.getWinOneTimePayment());
+        assertEquals(choiceUpdateDTO.winStudy(), choice.getWinStudy());
+        assertEquals(choiceUpdateDTO.winScholarship(), choice.getWinScholarship());
+        assertEquals(choiceUpdateDTO.winApprenticeship(), choice.getWinApprenticeship());
+        assertEquals(choiceUpdateDTO.winJob(), choice.getWinJob());
+        assertEquals(choiceUpdateDTO.winProperty(), choice.getWinProperty());
+        assertEquals(choiceUpdateDTO.winRentApartment(), choice.getWinRentApartment());
+        assertEquals(choiceUpdateDTO.winCar(), choice.getWinCar());
+        assertEquals(choiceUpdateDTO.winDriverLicense(), choice.getWinDriverLicense());
+        assertEquals(choiceUpdateDTO.winStressValue(), choice.getWinStressValue());
+        assertEquals(choiceUpdateDTO.winSatisfactionValue(), choice.getWinSatisfactionValue());
+        assertEquals(choiceUpdateDTO.winHealthValue(), choice.getWinHealthValue());
 
-        // Verifikation der Verlust-Eigenschaften
-        assertEquals(dto.loseMessage(), choice.getLoseMessage());
-        assertEquals(dto.loseIncomeValue(), choice.getLoseIncomeValue());
-        assertEquals(dto.loseOutcomeValue(), choice.getLoseOutcomeValue());
-        assertEquals(dto.loseInvestmentPercent(), choice.getLoseInvestmentPercent());
-        assertEquals(dto.loseOneTimePayment(), choice.getLoseOneTimePayment());
-        assertEquals(dto.loseStudy(), choice.getLoseStudy());
-        assertEquals(dto.loseScholarship(), choice.getLoseScholarship());
-        assertEquals(dto.loseApprenticeship(), choice.getLoseApprenticeship());
-        assertEquals(dto.loseJob(), choice.getLoseJob());
-        assertEquals(dto.loseProperty(), choice.getLoseProperty());
-        assertEquals(dto.loseRentApartment(), choice.getLoseRentApartment());
-        assertEquals(dto.loseCar(), choice.getLoseCar());
-        assertEquals(dto.loseStressValue(), choice.getLoseStressValue());
-        assertEquals(dto.loseSatisfactionValue(), choice.getLoseSatisfactionValue());
-        assertEquals(dto.loseHealthValue(), choice.getLoseHealthValue());
+        assertEquals(choiceUpdateDTO.loseMessage(), choice.getLoseMessage());
+        assertEquals(choiceUpdateDTO.loseIncomeValue(), choice.getLoseIncomeValue());
+        assertEquals(choiceUpdateDTO.loseOutcomeValue(), choice.getLoseOutcomeValue());
+        assertEquals(choiceUpdateDTO.loseInvestmentPercent(), choice.getLoseInvestmentPercent());
+        assertEquals(choiceUpdateDTO.loseOneTimePayment(), choice.getLoseOneTimePayment());
+        assertEquals(choiceUpdateDTO.loseStudy(), choice.getLoseStudy());
+        assertEquals(choiceUpdateDTO.loseScholarship(), choice.getLoseScholarship());
+        assertEquals(choiceUpdateDTO.loseApprenticeship(), choice.getLoseApprenticeship());
+        assertEquals(choiceUpdateDTO.loseJob(), choice.getLoseJob());
+        assertEquals(choiceUpdateDTO.loseProperty(), choice.getLoseProperty());
+        assertEquals(choiceUpdateDTO.loseRentApartment(), choice.getLoseRentApartment());
+        assertEquals(choiceUpdateDTO.loseCar(), choice.getLoseCar());
+        assertEquals(choiceUpdateDTO.loseDriverLicense(), choice.getLoseDriverLicense());
+        assertEquals(choiceUpdateDTO.loseStressValue(), choice.getLoseStressValue());
+        assertEquals(choiceUpdateDTO.loseSatisfactionValue(), choice.getLoseSatisfactionValue());
+        assertEquals(choiceUpdateDTO.loseHealthValue(), choice.getLoseHealthValue());
 
-        // Verifikation der kritischen Eigenschaften
-        assertEquals(dto.critMessage(), choice.getCritMessage());
-        assertEquals(dto.critIncomeValue(), choice.getCritIncomeValue());
-        assertEquals(dto.critOutcomeValue(), choice.getCritOutcomeValue());
-        assertEquals(dto.critInvestmentPercent(), choice.getCritInvestmentPercent());
-        assertEquals(dto.critOneTimePayment(), choice.getCritOneTimePayment());
-        assertEquals(dto.critScholarship(), choice.getCritScholarship());
-        assertEquals(dto.critStressValue(), choice.getCritStressValue());
-        assertEquals(dto.critSatisfactionValue(), choice.getCritSatisfactionValue());
-        assertEquals(dto.critHealthValue(), choice.getCritHealthValue());
+        assertEquals(choiceUpdateDTO.critMessage(), choice.getCritMessage());
+        assertEquals(choiceUpdateDTO.critIncomeValue(), choice.getCritIncomeValue());
+        assertEquals(choiceUpdateDTO.critOutcomeValue(), choice.getCritOutcomeValue());
+        assertEquals(choiceUpdateDTO.critInvestmentPercent(), choice.getCritInvestmentPercent());
+        assertEquals(choiceUpdateDTO.critOneTimePayment(), choice.getCritOneTimePayment());
+        assertEquals(choiceUpdateDTO.critScholarship(), choice.getCritScholarship());
+        assertEquals(choiceUpdateDTO.critStressValue(), choice.getCritStressValue());
+        assertEquals(choiceUpdateDTO.critSatisfactionValue(), choice.getCritSatisfactionValue());
+        assertEquals(choiceUpdateDTO.critHealthValue(), choice.getCritHealthValue());
 
         assertEquals(npc, choice.getNpc());
 
-        // Verifikation, dass die Repository-Methode `save` aufgerufen wurde
         verify(choiceRepository, times(1)).save(choice);
     }
 
     @Test
     void testUpdateChoice_ChoiceNotFound() {
         // Arrange
-        ChoiceUpdateDTO dto = new ChoiceUpdateDTO(
-                1L, "Updated Title", Skill.PLANNING.name(), 10, "Start Message",
-                "Win Message", 100, 50, 2.2f, 500, true, false, false, true, false, true, false, 1, 5, 10,
-                "Lose Message", 80, 40, 1.5f, 200, false, true, false, true, false, false, true, 7, 5, 6,
-                "Crit Message", 120, 60, 2.5f, 700, true, 4, 9, 12,
-                1L
-        );
-        when(choiceRepository.findById(dto.id())).thenReturn(Optional.empty());
+
+        when(choiceRepository.findById(choiceUpdateDTO.id())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> gameService.updateChoice(dto));
+        assertThrows(EntityNotFoundException.class, () -> gameService.updateChoice(choiceUpdateDTO));
     }
 
     @Test
@@ -272,7 +313,7 @@ class GameServiceTest {
         assertEquals("Response", result.intro());
         verify(gameRepository, times(1)).save(any(Game.class));
         verify(aiService, times(1)).callApi(anyString());
-        verify(plusStoryService, times(1)).getAllPlusStory(); // Überprüfen, ob PlusStoryService verwendet wurde
+        verify(plusStoryService, times(1)).getAllPlusStory();
     }
 
     @Test
@@ -285,7 +326,6 @@ class GameServiceTest {
         Story story = createStoryWithChoices();
         story.setCategory(Category.FATE);
 
-        // Mocking des PlusStoryService
         List<PlusStory> mockPlusStories = List.of(new PlusStory());
         when(plusStoryService.getAllPlusStory()).thenReturn(mockPlusStories);
 
@@ -306,7 +346,7 @@ class GameServiceTest {
         assertEquals("Response", result.intro());
         verify(gameRepository, times(1)).save(game);
         verify(aiService, times(1)).callApi(anyString());
-        verify(plusStoryService, times(1)).getAllPlusStory(); // Überprüfung, ob PlusStoryService verwendet wurde
+        verify(plusStoryService, times(1)).getAllPlusStory();
     }
 
     @Test
@@ -409,31 +449,6 @@ class GameServiceTest {
         assertThrows(EntityNotFoundException.class, () -> gameService.getChoiceDetails(1L));
     }
 
-//    @Test
-//    void testPlayChoice_Success_Win() {
-//        // Arrange
-//        long choiceId = 1L;
-//        int diceResult = 15;
-//        Authentication auth = mock(Authentication.class);
-//
-//        User user = createUserWithProfileWithCharDetails();
-//        Game game = new Game();
-//        game.setGameLost(false);
-//
-//        Choice choice = new Choice();
-//
-//        when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
-//        when(userService.getUser(auth)).thenReturn(user);
-//        when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.of(game));
-//
-//        // Act
-//        GameChoiceResultDTO result = gameService.playChoice(choiceId, diceResult, auth);
-//
-//        // Assert
-//        assertNotNull(result);
-//        assertTrue(result.isWin() || result.isGameLost() == false); // Sicherstellen, dass das Ergebnis entweder gewonnen oder verloren ist
-//        verify(gameRepository, times(1)).save(game);
-//    }
 
     @Test
     void testPlayChoice_GameLost() {
@@ -448,13 +463,12 @@ class GameServiceTest {
 
         Choice choice = new Choice();
         choice.setSkill(Skill.INTELLIGENCE);
-        choice.setMinDiceValue(15); // Höherer Wert, sodass der Spieler wahrscheinlich verliert
+        choice.setMinDiceValue(15);
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(userService.getUser(auth)).thenReturn(user);
         when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.of(game));
 
-        // Mock für CharDetailsService, um sicherzustellen, dass das Spiel verloren wird
         when(charDetailsService.setCharacterStatusLvls(anyLong(), anyInt(), any(), any(), any())).thenReturn(true);
 
         // Act
@@ -462,9 +476,9 @@ class GameServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertTrue(result.gameLost()); // Sicherstellen, dass das Spiel als verloren markiert wird
+        assertTrue(result.gameLost());
         verify(gameRepository, times(1)).save(game);
-        assertTrue(game.isGameLost()); // Überprüfen, dass das Spiel als verloren markiert ist
+        assertTrue(game.isGameLost());
     }
 
     @Test
@@ -478,11 +492,10 @@ class GameServiceTest {
         Game game = new Game();
         game.setGameLost(false);
 
-        // Mock das UserService, um einen Benutzer zurückzugeben
         when(userService.getUser(auth)).thenReturn(user);
-        // Mock das GameRepository, um ein bestehendes Spiel zurückzugeben
+
         when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.of(game));
-        // Mock das ChoiceRepository, damit keine Choice gefunden wird
+
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -518,7 +531,7 @@ class GameServiceTest {
         int diceResult = 10;
         Authentication auth = mock(Authentication.class);
 
-        User user = createUserWithoutCharDetails(); // Benutzer ohne CharDetails
+        User user = createUserWithoutCharDetails();
         Choice choice = new Choice();
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
@@ -531,22 +544,16 @@ class GameServiceTest {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //---------------
+
+
+
+    private StoryCreateDTO getStoryCreateDTO() {
+
+        return new StoryCreateDTO(
+                "MAINL", "Story Title", 1, false, false,"Prompt", true, List.of(choiceCreateDTO)
+        );
+    }
 
     private User createUserWithProfile() {
         User user = new User();

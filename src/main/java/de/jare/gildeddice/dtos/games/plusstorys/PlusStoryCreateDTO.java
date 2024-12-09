@@ -1,19 +1,16 @@
-package de.jare.gildeddice.dtos.games.story;
-
+package de.jare.gildeddice.dtos.games.plusstorys;
 
 import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
 
 import java.util.List;
 
-public record StoryCreateDTO(
+public record PlusStoryCreateDTO(
         String category,
         String title,
-        int phase,
-        boolean skippable,
-        boolean phaseEnd,
         String prompt,
-        boolean gameEnd,
+        boolean skippable,
+        boolean oneTime,
+        RequirenentDTO requirement,
         List<ChoiceCreateDTO> choices
-        ) {
-
+) {
 }

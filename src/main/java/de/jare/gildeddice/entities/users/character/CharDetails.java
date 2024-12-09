@@ -40,20 +40,19 @@ public class CharDetails {
     @OneToOne(cascade = {CascadeType.ALL})
     private CharChoices charChoices;
 
-    public void setStressLvl(int value) {
-        this.stressLvl = clamp(this.stressLvl + value, STRESS_MIN, STRESS_MAX);
-    }
-    
-    public void setSatisfactionLvl(int value) {
-        this.satisfactionLvl = clamp(this.satisfactionLvl + value, SATISFACTION_MIN, SATISFACTION_MAX);
+    public void adjustStressLvl(int delta) {
+        this.stressLvl = clamp(this.stressLvl + delta, STRESS_MIN, STRESS_MAX);
     }
 
-    public void setHealthLvl(int value) {
-        this.healthLvl = clamp(this.healthLvl + value, HEALTH_MIN, HEALTH_MAX);
+    public void adjustSatisfactionLvl(int delta) {
+        this.satisfactionLvl = clamp(this.satisfactionLvl + delta, SATISFACTION_MIN, SATISFACTION_MAX);
     }
 
-    private int clamp(int min, int max, int value) {
+    public void adjustHealthLvl(int delta) {
+        this.healthLvl = clamp(this.healthLvl + delta, HEALTH_MIN, HEALTH_MAX);
+    }
+
+    private int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(value, max));
     }
-
 }

@@ -37,8 +37,7 @@ public class CharDetails {
     private int handicap = 0;
     private String avatar;
 
-    @OneToOne(cascade = {CascadeType.ALL})
-    private CharChoices charChoices;
+
 
     public void adjustStressLvl(int delta) {
         this.stressLvl = clamp(this.stressLvl + delta, STRESS_MIN, STRESS_MAX);
@@ -55,4 +54,9 @@ public class CharDetails {
     private int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(value, max));
     }
+
+    @OneToOne(cascade = {CascadeType.ALL})
+    private CharChoices charChoices;
+
+    private long userProfileId;
 }

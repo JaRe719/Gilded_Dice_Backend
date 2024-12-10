@@ -3,6 +3,7 @@ package de.jare.gildeddice.controller;
 import de.jare.gildeddice.dtos.user.AuthResponseDTO;
 import de.jare.gildeddice.dtos.user.UserRegisterRequestDTO;
 import de.jare.gildeddice.services.AuthService;
+import de.jare.gildeddice.services.CharDetailsService;
 import de.jare.gildeddice.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,10 +17,12 @@ public class AuthController {
 
     private UserService userService;
     private AuthService authService;
+    private CharDetailsService charDetailsService;
 
-    public AuthController(UserService userService, AuthService authService) {
-        this.userService = userService;
+    public AuthController(AuthService authService, CharDetailsService charDetailsService, UserService userService) {
         this.authService = authService;
+        this.charDetailsService = charDetailsService;
+        this.userService = userService;
     }
 
     @PostMapping(value = "/register")
@@ -40,6 +43,7 @@ public class AuthController {
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<Void> deleteUser(Authentication auth) {
+        charDetailsService.delete(auth);
         userService.deleteUser(auth);
         return ResponseEntity.ok().build();
     }

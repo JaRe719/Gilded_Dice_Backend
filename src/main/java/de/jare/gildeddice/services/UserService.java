@@ -15,16 +15,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+
     private UserRepository userRepository;
     private ProfileRepository profileRepository;
     private PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.profileRepository = profileRepository;
+    public UserService(PasswordEncoder passwordEncoder, ProfileRepository profileRepository, UserRepository userRepository) {
         this.passwordEncoder = passwordEncoder;
+        this.profileRepository = profileRepository;
+        this.userRepository = userRepository;
     }
-
 
     public User getUser(Authentication auth) {
         User user = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));

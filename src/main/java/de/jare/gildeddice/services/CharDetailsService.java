@@ -17,6 +17,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CharDetailsService {
 
@@ -54,6 +56,7 @@ public class CharDetailsService {
         charDetails.setPlanning(dto.planning());
         charDetails.setStamina(dto.stamina());
         charDetails.setAvatar(dto.avatar());
+        charDetails.setUserProfileId(userProfile.getId());
 
         charDetails = charDetailsRepository.save(charDetails);
         userService.setUserCharToProfile(charDetails, auth);
@@ -206,5 +209,11 @@ public class CharDetailsService {
         } else throw new IllegalArgumentException("Investment value negative or null");
 
         charDetailsRepository.save(charDetails);
+    }
+
+    public void delete(Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        Optional<CharDetails> existingUserChar = charDetailsRepository.findById(userProfile.getId());
+        existingUserChar.ifPresent(charDetails -> charDetailsRepository.delete(charDetails));
     }
 }

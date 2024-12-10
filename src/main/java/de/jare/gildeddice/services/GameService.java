@@ -251,10 +251,15 @@ public class GameService {
 
         Game game = getGame(user);
         if (game.isGameEnd() || game.isGameLost()) return getGameSummary(game);
+        int activeGamePhase = game.getPhase();
 
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
         //alle 3 runden? try catch
+        System.out.print("randomzahl:" + randomIndex);
+
+
         if (game.getPhase() == 12 || (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))) {
+            System.out.println("plusstory einleitung");
             game.setPlusStoryRunLastRound(true);
             try {
                 return startRandomPlusStory(game, user);
@@ -264,23 +269,26 @@ public class GameService {
         } else if (game.getPhase() % 2 == 1) {
             game.setPlusStoryRunLastRound(false);
         }
-
+        System.out.println("story einleitung");
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             gameRepository.save(game);
             return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), false, true, new ArrayList<>());
         }
 
-        String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
-        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+        //String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
+        //KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
         setNextGamePhase(story, game);
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story.isGameEnd());
 
+        game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
+
         gameRepository.save(game);
 
-        game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
-        return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+        //return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());//return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+        return GameMapper.toGamePhaseDTO(story.getCategory(), "test " + activeGamePhase , story.isSkippable(), game.isGameEnd(), story.getChoices());//return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+
     }
 
     private GamePhaseDTO getGameSummary(Game game) {
@@ -324,11 +332,13 @@ public class GameService {
         } else game.getAvailablePlusStories().remove(randomPlusStory);
 
         String finalPrompt = createCompletedPrompt(randomPlusStory.getPrompt(), randomPlusStory.getChoices(), randomPlusStory.getPhase(), user);
-        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
-        saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
+//        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+//        saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
 
         gameRepository.save(game);
-        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+       // return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), "Test Plus " + game.getPhase(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+
     }
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {
@@ -395,12 +405,12 @@ public class GameService {
             return true;
         }
 
-        if (requirement.getHasStudied() != null && !userChoices.isStudy()) return false;
-        if (requirement.getHasApprenticeship() != null && !userChoices.isApprenticeship()) return false;
-        if (requirement.getHasJob() != null && !userChoices.isJob()) return false;
-        if (requirement.getHasProperty() != null && !userChoices.isProperty()) return false;
-        if (requirement.getHasRentedApartment() != null && !userChoices.isRentApartment()) return false;
-        if (requirement.getHasCar() != null && !userChoices.isCar()) return false;
+        if (requirement.getHasStudied() != null && requirement.getHasStudied() != userChoices.isStudy()) return false;
+        if (requirement.getHasApprenticeship() != null && requirement.getHasApprenticeship() != userChoices.isApprenticeship()) return false;
+        if (requirement.getHasJob() != null && requirement.getHasJob() != userChoices.isJob()) return false;
+        if (requirement.getHasProperty() != null && requirement.getHasProperty() != userChoices.isProperty()) return false;
+        if (requirement.getHasRentedApartment() != null && requirement.getHasRentedApartment() != userChoices.isRentApartment()) return false;
+        if (requirement.getHasCar() != null && requirement.getHasCar() != userChoices.isCar()) return false;
         if (requirement.getHasInvested() != null && userCharacter.getInvest() <= 0) return false;
 
         if (requirement.getHealthStatusLvl() != null && userCharacter.getHealthLvl() < requirement.getHealthStatusLvl()) return false;
@@ -411,12 +421,6 @@ public class GameService {
     }
 
 
-
-
-
-
-
-
     public void resetGame(Authentication auth) {
         User user = userService.getUser(auth);
         Game game = gameRepository.findByUsername(user.getProfile().getUsername()).orElseThrow(() -> new EntityNotFoundException("GameNotFound"));
@@ -424,6 +428,8 @@ public class GameService {
         game.setPhase(10);
         game.setGameLost(false);
         game.setGameEnd(false);
+        game.getAvailablePlusStories().clear();
+        game.getUsedPlusStories().clear();
 
         gameRepository.save(game);
 
@@ -451,7 +457,7 @@ public class GameService {
         int choiceResult = checkResult(diceResult, finalMinValueToWin.value());
         String responseMessage = compareResultForMessage(choiceResult, choice);
 
-        charDetailsService.setFinancesByPhaseEnd(charDetails.getId(), game.getPhase());
+        charDetailsService.setFinancesByPhaseEnd(charDetails.getId(), game);
         boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
 
 

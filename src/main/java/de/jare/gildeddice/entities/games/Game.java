@@ -19,6 +19,7 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private int phase;
+    private int playedPhase = 0;
     private String username;
     private boolean gameLost = false;
     private boolean gameEnd = false;

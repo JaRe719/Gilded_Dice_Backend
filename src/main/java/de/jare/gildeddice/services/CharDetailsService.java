@@ -4,6 +4,7 @@ import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
 import de.jare.gildeddice.entities.enums.Category;
+import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.games.storys.PlusStory;
 import de.jare.gildeddice.entities.users.character.CharChoices;
 import de.jare.gildeddice.entities.users.character.CharDetails;
@@ -70,24 +71,26 @@ public class CharDetailsService {
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
     }
 
-    public void setFinancesByPhaseEnd(long charId, int gamePhase) {
+    public void setFinancesByPhaseEnd(long charId, Game game) {
+        int gamePhase = game.getPhase();
         CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
-        int totalIncome = charDetails.getIncome();
-        int totalOutcome = charDetails.getOutcome();
+
         int totalMoney = charDetails.getMoney();
 
-        if (gamePhase % 10 == 0) {
+        if (gamePhase != 10 && gamePhase % 10 == 0) {
             if (charDetails.getInvest() > 0) {
-                totalMoney += ((totalIncome + totalOutcome) * 120);
+                int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
+                totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12));
                 totalMoney += (int) ((charDetails.getInvest() * charDetails.getInvestmentPercent()) / 100.0f) * 120;
                 totalMoney += charDetails.getInvest();
                 charDetails.setInvest(0);
                 charDetails.setInvestmentPercent(0);
 
-            } else charDetails.setInvestmentPercent(0);
+            } else {
+                charDetails.setInvestmentPercent(0);
+                totalMoney += (charDetails.getIncome() + charDetails.getOutcome() * 12);
+            }
 
-            charDetails.setIncome(totalIncome);
-            charDetails.setOutcome(totalOutcome);
             charDetails.setMoney(totalMoney);
 
             charDetailsRepository.save(charDetails);

@@ -1,6 +1,7 @@
 package de.jare.gildeddice.controller;
 
 import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
+import de.jare.gildeddice.dtos.games.game.NpcCreateListDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
@@ -12,6 +13,8 @@ import de.jare.gildeddice.services.GameService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/admin")
@@ -71,6 +74,12 @@ public class AdminController {
     @PostMapping(value = "/npc")
     public ResponseEntity<Void> createNpc(@RequestParam String npcName, String filename) {
         gameService.createNpc(npcName, filename);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/npclist")
+    public ResponseEntity<Void> createNpcFromList(@RequestBody List<NpcCreateListDTO> dto) {
+        gameService.createListOfNpc(dto);
         return ResponseEntity.ok().build();
     }
 

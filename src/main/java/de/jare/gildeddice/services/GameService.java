@@ -3,10 +3,7 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
 import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
 import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
-import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
-import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
-import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
-import de.jare.gildeddice.dtos.games.game.MinValueToWinDTO;
+import de.jare.gildeddice.dtos.games.game.*;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
@@ -653,5 +650,10 @@ public class GameService {
         plusStoryRepository.save(plusStory);
     }
 
+    public void createListOfNpc(List<NpcCreateListDTO> dto) {
+        for (NpcCreateListDTO newNpc : dto) {
+            createNpc(newNpc.npcName(), newNpc.filename());
+        }
+    }
 }
 

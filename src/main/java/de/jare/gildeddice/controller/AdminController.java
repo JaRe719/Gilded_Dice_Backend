@@ -79,7 +79,7 @@ public class AdminController {
 
     @PostMapping(value = "/npclist")
     public ResponseEntity<Void> createNpcFromList(@RequestBody List<NpcCreateListDTO> dto) {
-        gameService.createListOfNpc(dto);
+        gameService.createNpcFromList(dto);
         return ResponseEntity.ok().build();
     }
 

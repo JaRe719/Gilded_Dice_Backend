@@ -3,7 +3,7 @@
   "title": "Führerschein",
   "phase": 12,
   "phaseEnd": true,
-  "prompt": "Der Spieler hat jetzt schon die ersten wichtigen Entscheidungen für seine zukunft getroffen. jetzt steht der Führerschein an. der spieler muss sich endscheiden ob dieser ihn macht oder Überspringt und wie er ihn machen will. der schein kostet 2500 wenn alles gut läuft.  ",
+  "prompt": "nach den ersten wichtigen entscheidungen muss Der Spieler entscheiden, ob er den Führerschein ( normal Kosten: 2500) macht oder überspringt und wie er ihn erwirbt.",
   "skippable": true,
   "gameEnd": false,
   "choices": [
@@ -31,7 +31,7 @@
       "winSatisfactionValue": null,
       "winHealthValue": null,
 
-      "loseMessage": "Tut mir leid, du hast es nach dem dritten versuch nicht geschafft die prüfung zu bestehen. Vielleicht ist das Autofahren nichts für dich. Da du länger gebraucht hast und du 2 zusätzliche prüfungen ablegen musstest hat dich das ganze 2500 + 500 gekostet. leider können wir dir davon nichts erstatten",
+      "loseMessage": "... du hast es leider beim dritten versuch nicht geschafft bestehen. Vielleicht ist das Autofahren nichts für dich. Da du 2 zusätzliche prüfungen ablegen musstest, kostet dich das ganze jetzt 2500 + 500. leider können wir dir davon nichts erstatten",
       "loseIncomeValue":  null,
       "loseOutcomeValue": null,
       "loseInvestmentPercent":  null,
@@ -85,7 +85,7 @@
       "winSatisfactionValue": null,
       "winHealthValue": null,
 
-      "loseMessage": "Tut mir leid, du hast es nach dem dritten versuch nicht geschafft die prüfung zu bestehen. Vielleicht ist das Autofahren nichts für dich. Da du länger gebraucht hast und du 2 zusätzliche prüfungen ablegen musstest kostet dich das ganze jetzt 3000 + 402 zinsen. leider können wir dir davon nichts erstatten",
+      "loseMessage": "... du hast es leider beim dritten versuch nicht geschafft bestehen. Vielleicht ist das Autofahren nichts für dich. Da du 2 zusätzliche prüfungen ablegen musstest, kostet dich das ganze jetzt 3000 + 402 zinsen. leider können wir dir davon nichts erstatten",
       "loseIncomeValue":  null,
       "loseOutcomeValue": null,
       "loseInvestmentPercent":  null,

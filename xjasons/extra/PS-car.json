@@ -1,7 +1,7 @@
 {
   "category": "EXTRA",
   "title": "Autokauf",
-  "prompt": "Der Spieler wird von einem händler angesprochen nachdem der Spieler bei einem Autohändler kurz stehen geblieben ist und sich ein auto etwas genauer angeschaut hat. der Händler und der Spieler kommen inst gespräch und er bietet die dieses auto an. Das auto ist neu und kostet 15000 die nebenkosten (ausser tank) beträgt 136 / monat",
+  "prompt": "Ein Händler spricht den Spieler an, nachdem spieler ein neues Auto für 15.000 im schaufenster betrachtet hat. Im Gespräch bietet der Händler das Auto an. Die monatlichen Nebenkosten (exkl. Tanken) sollen betragen 136.",
   "skippable": true,
   "oneTime": true,
   "requirement": {
@@ -43,7 +43,7 @@
       "winSatisfactionValue": 1,
       "winHealthValue": null,
 
-      "LoseMessage": "Hmm, ich fürchte, am Preis kann ich nichts mehr machen. Das Auto ist bereits ein Schnäppchen, und bei diesem Zustand finden Sie kaum etwas Vergleichbares. Was wir aber machen, ist Ihnen das auto noch einmal zu waschen und ich Schenke ihnen die erste Tankfüllung.",
+      "LoseMessage": "Hmm, ich fürchte, am Preis kann ich nichts mehr machen. Das Auto ist bereits ein Schnäppchen, und bei diesem Zustand finden Sie kaum etwas Vergleichbares. Was wir aber machen, ist Ihnen das auto noch einmal zu waschen.",
       "loseIncomeValue": null,
       "loseOutcomeValue": -136,
       "loseInvestmentPercent": null,
@@ -59,7 +59,7 @@
       "loseSatisfactionValue": -1,
       "loseHealthValue": null,
 
-      "CritMessage": "Wow, Sie haben wirklich ein Auge fürs Detail! Da das Auto Ihnen so gut gefällt und ich sehe, dass Sie ernsthaftes Interesse haben, mache ich Ihnen ein unwiderstehliches Angebot. Ich gebe Ihnen zusätzlich noch ein paar Extras und senke den Preis deutlich. Das ist wirklich ein Glücksgriff für Sie!",
+      "CritMessage": "Wow, Sie haben ein Auge fürs Detail! Das gefällt mir. Ich sehe Ihr ernsthaftes Interesse, daher biete ich Ihnen zusätzliche Extras und senke den Preis auf 13.000. Ein echtes Glücksangebot für Sie!",
       "critIncomeValue": null,
       "critOutcomeValue": -136,
       "critInvestmentPercent": null,

@@ -656,7 +656,7 @@ public class GameService {
         plusStoryRepository.save(plusStory);
     }
 
-    public void createListOfNpc(List<NpcCreateListDTO> dto) {
+    public void createNpcFromList(List<NpcCreateListDTO> dto) {
         for (NpcCreateListDTO newNpc : dto) {
             createNpc(newNpc.npcName(), newNpc.filename());
         }

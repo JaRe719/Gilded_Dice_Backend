@@ -4,6 +4,6 @@ public record GameChoiceShortDTO(
         long id,
         String title,
         Integer cost,
-        boolean retuning
+        boolean returning
 ) {
 }

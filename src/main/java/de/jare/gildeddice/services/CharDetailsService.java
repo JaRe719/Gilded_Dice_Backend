@@ -79,7 +79,6 @@ public class CharDetailsService {
         CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
 
         int totalMoney = charDetails.getMoney();
-
         if (gamePhase != 10 && gamePhase % 10 == 0) {
             if (charDetails.getInvest() > 0) {
                 int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
@@ -88,17 +87,16 @@ public class CharDetailsService {
                 totalMoney += charDetails.getInvest();
                 charDetails.setInvest(0);
                 charDetails.setInvestmentPercent(0);
-
             } else {
                 charDetails.setInvestmentPercent(0);
-                totalMoney += (charDetails.getIncome() + charDetails.getOutcome() * 12);
+                int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
+                totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12));
             }
-
-            charDetails.setMoney(totalMoney);
-
-            charDetailsRepository.save(charDetails);
+        } else {
+            totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * 12);
         }
-
+            charDetails.setMoney(totalMoney);
+            charDetailsRepository.save(charDetails);
     }
 
     public void setFinancesByChoice(long charId, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment) {

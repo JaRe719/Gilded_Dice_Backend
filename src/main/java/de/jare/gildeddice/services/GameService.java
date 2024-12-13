@@ -250,16 +250,15 @@ public class GameService {
         if (user.getProfile().getCharDetails() == null) throw new IllegalStateException("no Char");
 
         Game game = getGame(user);
+        charDetailsService.setFinancesByPhaseEnd(user.getProfile().getCharDetails().getId(), game);
+
         if (game.isGameEnd() || game.isGameLost()) return getGameSummary(game);
         int activeGamePhase = game.getPhase();
 
+        game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
-        //alle 3 runden? try catch
-        System.out.print("randomzahl:" + randomIndex);
 
-
-        if (game.getPhase() == 12 || (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))) {
-            System.out.println("plusstory einleitung");
+        if (!game.isPlusStoryRunLastRound() && (game.getPhase() == 12 || (game.getPhase() > 12 && (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))))) {
             game.setPlusStoryRunLastRound(true);
             try {
                 return startRandomPlusStory(game, user);
@@ -269,11 +268,11 @@ public class GameService {
         } else if (game.getPhase() % 2 == 1) {
             game.setPlusStoryRunLastRound(false);
         }
-        System.out.println("story einleitung");
+
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             gameRepository.save(game);
-            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), false, true, new ArrayList<>());
+            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), true, true, new ArrayList<>());
         }
 
         //String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
@@ -281,8 +280,6 @@ public class GameService {
 
         setNextGamePhase(story, game);
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story.isGameEnd());
-
-        game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
 
         gameRepository.save(game);
 
@@ -457,9 +454,9 @@ public class GameService {
         int choiceResult = checkResult(diceResult, finalMinValueToWin.value());
         String responseMessage = compareResultForMessage(choiceResult, choice);
 
-        charDetailsService.setFinancesByPhaseEnd(charDetails.getId(), game);
-        boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
 
+        boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
+        // berechnung der finanzen müssen nochmal überarbeitet werden
 
         if (gameLost) {
             game.setGameLost(true);
@@ -534,6 +531,7 @@ public class GameService {
                         choice.getWinDriverLicense()
                 );
                 break;
+
             case -1: //lose
                 gameLost = charDetailsService.setCharacterStatusLvls(
                         userProfile.getId(),

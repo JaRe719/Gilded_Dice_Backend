@@ -28,7 +28,6 @@ public class AdminController {
 
     @GetMapping(value = "/storys")
     public ResponseEntity<Iterable<Story>> getAllStorys(Authentication auth) {
-        System.out.println(auth.getAuthorities());
         return ResponseEntity.ok(gameService.getAllStorys());
     }
 

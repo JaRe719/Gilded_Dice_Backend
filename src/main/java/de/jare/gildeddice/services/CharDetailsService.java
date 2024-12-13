@@ -180,7 +180,6 @@ public class CharDetailsService {
     public void resetChar(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         CharDetails charDetails = userProfile.getCharDetails();
-        System.out.print(charDetails);
         charDetails.setStressLvl(0);
         charDetails.setSatisfactionLvl(5);
         charDetails.setHealthLvl(20);
@@ -193,7 +192,6 @@ public class CharDetailsService {
 
         charDetails.setCharChoices(new CharChoices());
         charDetailsRepository.save(charDetails);
-        System.out.print(charDetails);
     }
 
     public void setInvesting(long plusStoryId, Integer incomeValue, Authentication auth) {

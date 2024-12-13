@@ -7,7 +7,7 @@
   "requirement": {
     "hasStudied":  true,
     "hasApprenticeship": null,
-    "hasJob":  false,
+    "hasJob":  true,
     "hasProperty": null,
     "hasRentedApartment":  null,
     "hasCar": null,

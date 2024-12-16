@@ -59,6 +59,7 @@ public class CharDetailsService {
         charDetails.setUserProfileId(userProfile.getId());
 
         charDetails = charDetailsRepository.save(charDetails);
+        userProfile.setCharDetails(charDetails);
         userService.setUserCharToProfile(charDetails, auth);
 
         return CharMapper.charToResponseDTO(userProfile);

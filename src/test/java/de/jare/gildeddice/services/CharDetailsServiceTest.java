@@ -73,14 +73,17 @@ class CharDetailsServiceTest {
         CharDetailsRequestDTO requestDTO = new CharDetailsRequestDTO(10, 8, 7, 6, 5, "avatar_url");
 
         Profile profileMock = new Profile();
-        profileMock.setCharDetails(null); // Kein CharDetails vorhanden
+        profileMock.setUsername("username");
+        profileMock.setCharDetails(null); // Noch kein CharDetails
 
         User userMock = new User();
+        userMock.setId(1L);
         userMock.setProfile(profileMock);
 
+        // Wir mocken, dass der userService diesen User zurückgibt
         when(userService.getUser(auth)).thenReturn(userMock);
 
-        // Simuliert das Speichern der neuen CharDetails
+        // Speichern von CharDetails soll eine ID setzen
         when(charDetailsRepository.save(any(CharDetails.class))).thenAnswer(invocation -> {
             CharDetails savedCharDetails = invocation.getArgument(0);
             savedCharDetails.setId(1L); // ID simulieren
@@ -88,21 +91,22 @@ class CharDetailsServiceTest {
         });
 
         // Act
-        CharDetailsResponseDTO responseDTO = charDetailsService.createOrUpdateCharDetails(requestDTO, auth);
+        CharDetailsResponseDTO response = charDetailsService.createOrUpdateCharDetails(requestDTO, auth);
 
         // Assert
-        assertNotNull(responseDTO);
-        assertEquals(10, responseDTO.intelligence());
-        assertEquals(8, responseDTO.negotiate());
-        assertEquals(7, responseDTO.ability());
-        assertEquals(6, responseDTO.planning());
-        assertEquals(5, responseDTO.stamina());
-        assertEquals("avatar_url", responseDTO.avatar());
+        // Jetzt sollte im userMock.getProfile() ein CharDetails Objekt vorhanden sein.
+        assertNotNull(userMock.getProfile().getCharDetails(), "CharDetails sollte nach dem Erstellen nicht mehr null sein");
+        assertEquals(1L, userMock.getProfile().getCharDetails().getId(), "CharDetails ID sollte gesetzt sein");
+        assertEquals(10, userMock.getProfile().getCharDetails().getIntelligence());
+        assertEquals(8, userMock.getProfile().getCharDetails().getNegotiate());
+        assertEquals(7, userMock.getProfile().getCharDetails().getAbility());
+        assertEquals(6, userMock.getProfile().getCharDetails().getPlanning());
+        assertEquals(5, userMock.getProfile().getCharDetails().getStamina());
+        assertEquals("avatar_url", userMock.getProfile().getCharDetails().getAvatar());
 
-        // Verifiziere die Interaktionen
-        verify(userService, times(1)).getUser(auth);
-        verify(charDetailsRepository, times(1)).save(any(CharDetails.class));
+        // Verifizieren, dass setUserCharToProfile aufgerufen wurde
         verify(userService, times(1)).setUserCharToProfile(any(CharDetails.class), eq(auth));
+        verify(charDetailsRepository, times(1)).save(any(CharDetails.class));
     }
 
 

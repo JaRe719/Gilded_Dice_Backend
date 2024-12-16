@@ -3,6 +3,7 @@ package de.jare.gildeddice.dtos.characters;
 public record CharDetailsResponseDTO(
 
         long id,
+        String username,
         int stressLvl,
         int satisfactionLvl,
         int healthLvl,

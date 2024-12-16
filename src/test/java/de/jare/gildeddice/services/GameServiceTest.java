@@ -71,7 +71,7 @@ class GameServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        storyUpdateDTO = new StoryUpdateDTO(1L, "MAINX", "Updated Prompt", 2, false, false, false,"Updated Prompt");
+        storyUpdateDTO = new StoryUpdateDTO(1L, "MAINX", "title", 2,false, "Updated Prompt",false, false);
 
         choiceCreateDTO = new ChoiceCreateDTO(
                 "Choice Title", "NEGOTIATE", 10, 0, true,"Start Message",

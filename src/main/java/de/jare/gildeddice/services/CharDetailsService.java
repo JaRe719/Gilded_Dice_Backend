@@ -36,7 +36,7 @@ public class CharDetailsService {
     public CharDetailsResponseDTO getCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
 
-        return CharMapper.charToResponseDTO(userProfile.getCharDetails());
+        return CharMapper.charToResponseDTO(userProfile);
     }
 
     @Transactional
@@ -61,7 +61,7 @@ public class CharDetailsService {
         charDetails = charDetailsRepository.save(charDetails);
         userService.setUserCharToProfile(charDetails, auth);
 
-        return CharMapper.charToResponseDTO(charDetails);
+        return CharMapper.charToResponseDTO(userProfile);
     }
 
     public String getUserAvatar(Authentication auth) {

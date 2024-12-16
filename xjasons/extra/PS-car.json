@@ -6,10 +6,18 @@
   "oneTime": true,
   "requirement": {
     "hasStudied":  true,
+    "hasScholarship": null,
     "hasApprenticeship": null,
+    "hasSecondJob": null,
     "hasJob":  true,
-    "hasProperty": null,
+
+    "hasInsurance": null,
+
+    "hasHomeByParents": null,
+    "hasSharedApartment": null,
     "hasRentedApartment":  null,
+
+    "hasProperty": null,
     "hasCar": null,
     "hasDriverLicense": null,
 

@@ -1,11 +1,32 @@
 {
   "category": "INVESTMENT",
   "title": "Der Bänker",
-  "phase": 20,
-  "phaseEnd": false,
   "prompt": "die ersten 10 Jahre sind vorbei und der Spieler hat ein Termin bei der Bank. Der Banker stellt sich vor und bietet dem Spieler ein paar investitionsmöglichkeiten für die nächsten 10 jahre an",
   "skippable": true,
-  "gameEnd": false,
+  "oneTime": true,
+  "requirement": {
+    "hasStudied":  true,
+    "hasScholarship": null,
+    "hasApprenticeship": null,
+    "hasSecondJob": null,
+    "hasJob":  true,
+
+    "hasInsurance": null,
+
+    "hasHomeByParents": null,
+    "hasSharedApartment": null,
+    "hasRentedApartment":  null,
+
+    "hasProperty": null,
+    "hasCar": null,
+    "hasDriverLicense": null,
+
+    "hasInvested":  null,
+
+    "stressStatusLvl": null,
+    "satisfactionStatusLvl":  null,
+    "healthStatusLvl": null
+  },
   "choices": [
     {
       "title": "Start-up-Investitionen (Venture Capital)",

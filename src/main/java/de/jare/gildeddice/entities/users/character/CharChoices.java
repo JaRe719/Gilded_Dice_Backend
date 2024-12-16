@@ -14,10 +14,16 @@ public class CharChoices {
     private boolean study = false;
     private boolean scholarship = false;
     private boolean apprenticeship = false;
+    private boolean secondJob = false;
     private boolean job = false;
 
-    private boolean property = false;
+    private boolean insurance = false;
+
+    private boolean homeByParents = false;
+    private boolean sharedApartment = false;
     private boolean rentApartment = false;
+
+    private boolean property = false;
     private boolean car = false;
     private boolean driverLicense = false;
 }

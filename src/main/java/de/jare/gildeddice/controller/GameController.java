@@ -1,7 +1,7 @@
 package de.jare.gildeddice.controller;
 
-import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
-import de.jare.gildeddice.dtos.games.game.GameChoiceResultDTO;
+import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
+import de.jare.gildeddice.dtos.games.choice.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.services.GameService;
 import jakarta.persistence.EntityNotFoundException;

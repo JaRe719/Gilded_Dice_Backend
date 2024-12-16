@@ -1,4 +1,4 @@
-package de.jare.gildeddice.dtos.games.game;
+package de.jare.gildeddice.dtos.games.choice;
 
 public record GameChoiceShortDTO(
         long id,

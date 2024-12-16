@@ -5,19 +5,27 @@
   "skippable": true,
   "oneTime": true,
   "requirement": {
-      "hasStudied":  true,
-      "hasApprenticeship": null,
-      "hasJob":  false,
-      "hasProperty": null,
-      "hasRentedApartment":  null,
-      "hasCar": null,
-      "hasDriverLicense": null,
+    "hasStudied":  true,
+    "hasScholarship": null,
+    "hasApprenticeship": null,
+    "hasSecondJob": null,
+    "hasJob":  true,
 
-      "hasInvested":  null,
+    "hasInsurance": null,
 
-      "stressStatusLvl": null,
-      "satisfactionStatusLvl":  null,
-      "healthStatusLvl": null
+    "hasHomeByParents": null,
+    "hasSharedApartment": null,
+    "hasRentedApartment":  null,
+
+    "hasProperty": null,
+    "hasCar": null,
+    "hasDriverLicense": null,
+
+    "hasInvested":  null,
+
+    "stressStatusLvl": null,
+    "satisfactionStatusLvl":  null,
+    "healthStatusLvl": null
     },
   "choices": [
     {

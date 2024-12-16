@@ -5,14 +5,24 @@
   "skippable": true,
   "oneTime": true,
   "requirement": {
-    "hasStudied":  false,
-    "hasApprenticeship": true,
-    "hasJob":  false,
-    "hasProperty": null,
+    "hasStudied":  true,
+    "hasScholarship": null,
+    "hasApprenticeship": null,
+    "hasSecondJob": null,
+    "hasJob":  true,
+
+    "hasInsurance": null,
+
+    "hasHomeByParents": null,
+    "hasSharedApartment": null,
     "hasRentedApartment":  null,
+
+    "hasProperty": null,
     "hasCar": null,
     "hasDriverLicense": null,
+
     "hasInvested":  null,
+
     "stressStatusLvl": null,
     "satisfactionStatusLvl":  null,
     "healthStatusLvl": null

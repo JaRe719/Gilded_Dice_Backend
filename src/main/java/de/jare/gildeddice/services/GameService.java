@@ -252,9 +252,17 @@ public class GameService {
         if (user.getProfile().getCharDetails() == null) throw new IllegalStateException("no Char");
 
         Game game = getGame(user);
-        charDetailsService.setFinancesByPhaseEnd(user.getProfile().getCharDetails().getId(), game);
 
-        if (game.isGameEnd() || game.isGameLost()) return getGameSummary(game);
+        if (game.getCurrentGamePhase() != null) {
+            return game.getCurrentGamePhase();
+        } else charDetailsService.setFinancesByPhaseEnd(user.getProfile().getCharDetails().getId(), game);
+
+        if (game.isGameEnd() || game.isGameLost()) {
+            GamePhaseDTO summary = getGameSummary(game);
+            game.setCurrentGamePhase(summary);
+            gameRepository.save(game);
+            return summary;
+        }
         int activeGamePhase = game.getPhase();
 
         game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
@@ -277,17 +285,17 @@ public class GameService {
             return new GamePhaseDTO("null", "error", "Story not found for phase " + game.getPhase(), true, true, new ArrayList<>());
         }
 
-        //String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
+        String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
         //KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
         setNextGamePhase(story, game);
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story.isGameEnd());
 
+        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(story.getCategory(), story.getTitle(), "Test " +activeGamePhase + " " + finalPrompt , story.isSkippable(), game.isGameEnd(), story.getChoices()); //GameMapper.toGamePhaseDTO(story.getCategory(),story.getTitle(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+        game.setCurrentGamePhase(gamePhaseDTO);
         gameRepository.save(game);
 
-        //return GameMapper.toGamePhaseDTO(story.getCategory(),story.getTitle(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
-        return GameMapper.toGamePhaseDTO(story.getCategory(), story.getTitle(), "test " + activeGamePhase , story.isSkippable(), game.isGameEnd(), story.getChoices());
-
+        return gamePhaseDTO;
     }
 
     private GamePhaseDTO getGameSummary(Game game) {
@@ -314,7 +322,6 @@ public class GameService {
                 ", Stressniveau: " + charDetails.getStressLvl() + " (skala gut 0 bis 10 schlecht)" +
                 ", Ton: gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an";
         return finalPrompt;
-
     }
 
 
@@ -334,10 +341,12 @@ public class GameService {
 //        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 //        saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
 
-        gameRepository.save(game);
-       // return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
-        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), randomPlusStory.getTitle(), "Test Plus " + game.getPhase(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), randomPlusStory.getTitle(), "Test Plus " + game.getPhase() + " " + finalPrompt, randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+        // return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
 
+        game.setCurrentGamePhase(gamePhaseDTO);
+        gameRepository.save(game);
+        return gamePhaseDTO;
     }
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {
@@ -439,6 +448,7 @@ public class GameService {
         game.getAvailablePlusStories().clear();
         game.getUsedPlusStories().clear();
 
+        game.setCurrentGamePhase(null);
         gameRepository.save(game);
 
         charDetailsService.resetChar(auth);
@@ -467,13 +477,14 @@ public class GameService {
 
 
         boolean gameLost = executeChoiceResult(choice, choiceResult, user.getProfile());
-        // berechnung der finanzen müssen nochmal überarbeitet werden
 
         if (gameLost) {
             game.setGameLost(true);
         }
 
+        game.setCurrentGamePhase(null);
         gameRepository.save(game);
+
 
         return new GameChoiceResultDTO(
                 choiceResult >= 0,

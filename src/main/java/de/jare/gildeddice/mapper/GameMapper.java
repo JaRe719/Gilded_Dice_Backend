@@ -1,7 +1,7 @@
 package de.jare.gildeddice.mapper;
 
-import de.jare.gildeddice.dtos.games.game.GameChoiceDTO;
-import de.jare.gildeddice.dtos.games.game.GameChoiceShortDTO;
+import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
+import de.jare.gildeddice.dtos.games.choice.GameChoiceShortDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.games.choices.Choice;

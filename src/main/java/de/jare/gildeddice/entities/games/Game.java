@@ -1,8 +1,8 @@
 package de.jare.gildeddice.entities.games;
 
+import de.jare.gildeddice.converters.GamePhaseDTOConverter;
+import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.entities.games.storys.PlusStory;
-import de.jare.gildeddice.entities.games.storys.Story;
-import de.jare.gildeddice.entities.users.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,12 +26,14 @@ public class Game {
 
     private boolean plusStoryRunLastRound = false;
 
+    @Convert(converter = GamePhaseDTOConverter.class)
+    @Column(columnDefinition = "text")
+    private GamePhaseDTO currentGamePhase;
+
     @OneToMany
     private List<PlusStory> availablePlusStories = new ArrayList<>();
 
     @ElementCollection
     private Set<Long> usedPlusStories = new HashSet<>();
-
-
 
 }

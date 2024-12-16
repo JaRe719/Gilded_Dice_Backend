@@ -3,6 +3,8 @@ package de.jare.gildeddice.services;
 import de.jare.gildeddice.dtos.ai.response.KSuitAiResponseDTO;
 import de.jare.gildeddice.dtos.games.choice.ChoiceCreateDTO;
 import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
+import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
+import de.jare.gildeddice.dtos.games.choice.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.*;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
@@ -402,17 +404,26 @@ public class GameService {
             return true;
         }
 
-        if (requirement.getHasStudied() != null && requirement.getHasStudied() != userChoices.isStudy()) return false;
+        if (requirement.getHasStudie() != null && requirement.getHasStudie() != userChoices.isStudy()) return false;
+        if (requirement.getHasScholarship() != null && requirement.getHasScholarship() != userChoices.isScholarship()) return false;
         if (requirement.getHasApprenticeship() != null && requirement.getHasApprenticeship() != userChoices.isApprenticeship()) return false;
+        if (requirement.getHasSecondJob() != null && requirement.getHasSecondJob() != userChoices.isSecondJob()) return false;
         if (requirement.getHasJob() != null && requirement.getHasJob() != userChoices.isJob()) return false;
-        if (requirement.getHasProperty() != null && requirement.getHasProperty() != userChoices.isProperty()) return false;
-        if (requirement.getHasRentedApartment() != null && requirement.getHasRentedApartment() != userChoices.isRentApartment()) return false;
-        if (requirement.getHasCar() != null && requirement.getHasCar() != userChoices.isCar()) return false;
-        if (requirement.getHasInvested() != null && userCharacter.getInvest() <= 0) return false;
 
-        if (requirement.getHealthStatusLvl() != null && userCharacter.getHealthLvl() < requirement.getHealthStatusLvl()) return false;
+        if (requirement.getInsurance() != null && requirement.getInsurance() != userChoices.isInsurance()) return false;
+
+        if (requirement.getHasHomeByParents() != null && requirement.getHasHomeByParents() != userChoices.isHomeByParents()) return false;
+        if (requirement.getHasSharedApartment() != null && requirement.getHasSharedApartment() != userChoices.isSharedApartment()) return false;
+        if (requirement.getHasRentedApartment() != null && requirement.getHasRentedApartment() != userChoices.isRentApartment()) return false;
+
+        if (requirement.getHasProperty() != null && requirement.getHasProperty() != userChoices.isProperty()) return false;
+        if (requirement.getHasCar() != null && requirement.getHasCar() != userChoices.isCar()) return false;
+        if (requirement.getHasDriverLicense() != null && requirement.getHasDriverLicense() != userChoices.isDriverLicense()) return false;
+
+        if (requirement.getHasInvested() != null && userCharacter.getInvest() <= 0) return false;
         if (requirement.getStressStatusLvl() != null && userCharacter.getStressLvl() > requirement.getStressStatusLvl()) return false;
         if (requirement.getSatisfactionStatusLvl() != null && userCharacter.getSatisfactionLvl() < requirement.getSatisfactionStatusLvl()) return false;
+        if (requirement.getHealthStatusLvl() != null && userCharacter.getHealthLvl() < requirement.getHealthStatusLvl()) return false;
 
         return true;
     }
@@ -614,12 +625,21 @@ public class GameService {
         plusStory.setOneTime(dto.oneTime());
 
         Requirement requirement = new Requirement();
-        requirement.setHasStudied(dto.requirement().hasStudie());
+        requirement.setHasStudie(dto.requirement().hasStudie());
+        requirement.setHasScholarship(dto.requirement().hasScholarship());
         requirement.setHasApprenticeship(dto.requirement().hasApprenticeship());
+        requirement.setHasSecondJob(dto.requirement().hasSecondJob());
         requirement.setHasJob(dto.requirement().hasJob());
-        requirement.setHasProperty(dto.requirement().hasProperty());
+
+        requirement.setInsurance(dto.requirement().insurance());
+
+        requirement.setHasHomeByParents(dto.requirement().hasHomeByParents());
+        requirement.setHasSharedApartment(dto.requirement().hasSharedApartment());
         requirement.setHasRentedApartment(dto.requirement().hasRentedApartment());
+
+        requirement.setHasProperty(dto.requirement().hasProperty());
         requirement.setHasCar(dto.requirement().hasCar());
+        requirement.setHasDriverLicense(dto.requirement().hasDriverLicense());
 
         requirement.setHasInvested(dto.requirement().hasInvested());
         requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());
@@ -639,12 +659,21 @@ public class GameService {
         plusStory.setOneTime(dto.oneTime());
 
         Requirement requirement = plusStory.getRequirement();
-        requirement.setHasStudied(dto.requirement().hasStudie());
+        requirement.setHasStudie(dto.requirement().hasStudie());
+        requirement.setHasScholarship(dto.requirement().hasScholarship());
         requirement.setHasApprenticeship(dto.requirement().hasApprenticeship());
+        requirement.setHasSecondJob(dto.requirement().hasSecondJob());
         requirement.setHasJob(dto.requirement().hasJob());
-        requirement.setHasProperty(dto.requirement().hasProperty());
+
+        requirement.setInsurance(dto.requirement().insurance());
+
+        requirement.setHasHomeByParents(dto.requirement().hasHomeByParents());
+        requirement.setHasSharedApartment(dto.requirement().hasSharedApartment());
         requirement.setHasRentedApartment(dto.requirement().hasRentedApartment());
+
+        requirement.setHasProperty(dto.requirement().hasProperty());
         requirement.setHasCar(dto.requirement().hasCar());
+        requirement.setHasDriverLicense(dto.requirement().hasDriverLicense());
 
         requirement.setHasInvested(dto.requirement().hasInvested());
         requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());

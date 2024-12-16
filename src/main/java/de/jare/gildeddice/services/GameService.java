@@ -274,7 +274,7 @@ public class GameService {
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             gameRepository.save(game);
-            return new GamePhaseDTO("null", "Story not found for phase " + game.getPhase(), true, true, new ArrayList<>());
+            return new GamePhaseDTO("null", "error", "Story not found for phase " + game.getPhase(), true, true, new ArrayList<>());
         }
 
         //String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
@@ -285,8 +285,8 @@ public class GameService {
 
         gameRepository.save(game);
 
-        //return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());//return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
-        return GameMapper.toGamePhaseDTO(story.getCategory(), "test " + activeGamePhase , story.isSkippable(), game.isGameEnd(), story.getChoices());//return GameMapper.toGamePhaseDTO(story.getCategory(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+        //return GameMapper.toGamePhaseDTO(story.getCategory(),story.getTitle(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+        return GameMapper.toGamePhaseDTO(story.getCategory(), story.getTitle(), "test " + activeGamePhase , story.isSkippable(), game.isGameEnd(), story.getChoices());
 
     }
 
@@ -295,7 +295,7 @@ public class GameService {
         String finalPrompt = generateFinalPrompt(profile, game);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
-        return GameMapper.toGamePhaseDTO(Category.FATE, responseDTO.choices().getFirst().message().content(), false, game.isGameEnd(), new ArrayList<>());
+        return GameMapper.toGamePhaseDTO(Category.FATE, "GAMEEND", responseDTO.choices().getFirst().message().content(), false, game.isGameEnd(), new ArrayList<>());
     }
 
     private String generateFinalPrompt(Profile profile, Game game) {
@@ -336,7 +336,7 @@ public class GameService {
 
         gameRepository.save(game);
        // return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
-        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), "Test Plus " + game.getPhase(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+        return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), randomPlusStory.getTitle(), "Test Plus " + game.getPhase(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
 
     }
 

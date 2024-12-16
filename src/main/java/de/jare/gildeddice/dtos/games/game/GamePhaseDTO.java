@@ -7,6 +7,7 @@ import java.util.List;
 public record GamePhaseDTO(
 
         String category,
+        String title,
         String intro,
         boolean skippable,
         boolean gameEnd,

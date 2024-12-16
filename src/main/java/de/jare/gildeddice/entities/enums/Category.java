@@ -8,7 +8,8 @@ public enum Category {
     MAINX("Non-Linear"),
     MAINL("Linear"),
     INVESTMENT("Investiton"),
-    FATE("Schicksal");
+    FATE("Schicksal"),
+    END("Spiel Ende");
 
     private final String description;
 

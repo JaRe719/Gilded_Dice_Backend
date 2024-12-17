@@ -60,6 +60,14 @@ public class GameController {
         }
     }
 
-
+    @GetMapping(value = "/skip")
+    public ResponseEntity<Void> skipGame(Authentication auth) {
+        try {
+            gameService.skipGame(auth);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 }

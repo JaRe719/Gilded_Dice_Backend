@@ -699,5 +699,13 @@ public class GameService {
             createNpc(newNpc.npcName(), newNpc.filename());
         }
     }
+
+    public void skipGame(Authentication auth) {
+        Profile profile = userService.getUserProfile(auth);
+        Game game = gameRepository.findByUsername(profile.getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
+        game.setCurrentGamePhase(null);
+        gameRepository.save(game);
+
+    }
 }
 

@@ -8,6 +8,7 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,20 +48,37 @@ public class SecurityConfig {
         return source;
     }
 
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain basicAuthChain(HttpSecurity http) throws Exception {
         return http
+                .securityMatcher("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/highscore/**")
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/highscore/**" ).permitAll()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/highscore/**", "/api/v1/auth/register").permitAll()
+                        .requestMatchers( "/api/v1/auth/login").authenticated()
+                        .anyRequest().denyAll()
+                )
+                .httpBasic(Customizer.withDefaults())
+                .build();
+    }
+
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain jwtChain(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher("/api/v1/**")
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/admin/**").hasAuthority("SCOPE_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 

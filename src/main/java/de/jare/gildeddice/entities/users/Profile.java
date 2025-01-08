@@ -16,6 +16,6 @@ public class Profile {
 
     private int highScore;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.ALL})
     private CharDetails charDetails;
 }

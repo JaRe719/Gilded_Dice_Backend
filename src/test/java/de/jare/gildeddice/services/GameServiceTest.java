@@ -28,6 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.*;
 
@@ -91,6 +92,44 @@ class GameServiceTest {
 
     }
 
+
+    @Test
+    void testFindGameByUsername_Success() throws Exception {
+        // Arrange
+        String username = "user1";
+        User user = new User();
+        user.setId(1L);
+        Profile userProfile = new Profile();
+        userProfile.setId(1L);
+        userProfile.setUsername(username);
+        user.setProfile(userProfile);
+        Game game = new Game();
+        game.setUsername(username);
+
+        when(gameRepository.findByUsername(username)).thenReturn(Optional.of(game));
+
+        // Act
+        Game result = gameService.findGameByUsername(username);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(game.getUsername(), result.getUsername());
+        verify(gameRepository, times(1)).findByUsername(username);
+    }
+
+    @Test
+    void testFindGameByUsername_GameNotExist() throws Exception {
+        // Arrange
+        String username = "user1";
+        when(gameRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                gameService.findGameByUsername(username)
+        );
+        assertEquals("Game not found", exception.getMessage());
+        verify(gameRepository, times(1)).findByUsername(username);
+    }
 
 
     @Test
@@ -543,6 +582,38 @@ class GameServiceTest {
         verify(gameRepository, never()).save(any(Game.class));
     }
 
+    @Test
+    void testPlayerHasGame_Success() {
+        User user = createUserWithProfileWithCharDetails();
+        Game game = new Game();
+        game.setId(1L);
+        game.setUsername(user.getProfile().getUsername());
+        Authentication auth = mock(Authentication.class);
+
+        when(userService.getUserProfile(auth)).thenReturn(user.getProfile());
+        when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.of(game));
+
+        assertTrue(gameService.playerHasGame(auth));
+        verify(gameRepository, times(1)).findByUsername(user.getProfile().getUsername());
+        verify(userService, times(1)).getUserProfile(auth);
+    }
+
+    @Test
+    void testPlayerHasGame_NoGameStarted() {
+        User user = createUserWithProfileWithCharDetails();
+        Authentication auth = mock(Authentication.class);
+
+        when(userService.getUserProfile(auth)).thenReturn(user.getProfile());
+        when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.empty());
+
+        assertFalse(gameService.playerHasGame(auth));
+        verify(gameRepository, times(1)).findByUsername(user.getProfile().getUsername());
+        verify(userService, times(1)).getUserProfile(auth);
+    }
+
+
+
+
 
 //---------------
 
@@ -557,7 +628,9 @@ class GameServiceTest {
 
     private User createUserWithProfile() {
         User user = new User();
+        user.setId(1L);
         Profile profile = new Profile();
+        profile.setId(1L);
         profile.setUsername("TestUser");
         CharDetails charDetails = new CharDetails();
         profile.setCharDetails(charDetails);
@@ -567,7 +640,9 @@ class GameServiceTest {
 
     private User createUserWithoutCharDetails() {
         User user = new User();
+        user.setId(1L);
         Profile profile = new Profile();
+        profile.setId(1L);
         profile.setUsername("TestUser");
         user.setProfile(profile);
         return user;
@@ -575,7 +650,9 @@ class GameServiceTest {
 
     private User createUserWithProfileWithCharDetails() {
         User user = new User();
+        user.setId(1L);
         Profile profile = new Profile();
+        profile.setId(1L);
         profile.setUsername("TestUser");
         CharDetails charDetails = new CharDetails();
         profile.setCharDetails(charDetails);

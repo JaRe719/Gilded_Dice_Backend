@@ -707,5 +707,14 @@ public class GameService {
         gameRepository.save(game);
 
     }
+
+    public Game findGameByUsername(Profile userProfile) {
+        return gameRepository.findByUsername(userProfile.getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
+    }
+
+    public Boolean playerHasGame(Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        return gameRepository.findByUsername(userProfile.getUsername()).isPresent();
+    }
 }
 

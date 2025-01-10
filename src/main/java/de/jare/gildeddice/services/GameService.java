@@ -501,7 +501,7 @@ public class GameService {
         switch (choiceResult) {
             case 1: //critical
                 gameLost = charDetailsService.setCharacterStatusLvls(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         game.getPhase(),
                         choice.getCritStressValue(),
                         choice.getCritSatisfactionValue(),
@@ -509,13 +509,13 @@ public class GameService {
                 );
 
                 charDetailsService.setFinancesByChoice(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         choice.getCritIncomeValue(),
                         choice.getCritOutcomeValue(),
                         choice.getCritOneTimePayment()
                 );
                 charDetailsService.setInventoryByChoice(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         choice.getWinStudy(),
                         choice.getCritScholarship(),
                         choice.getWinApprenticeship(),
@@ -529,20 +529,20 @@ public class GameService {
                 break;
             case 0: //win
                 gameLost = charDetailsService.setCharacterStatusLvls(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         game.getPhase(),
                         choice.getWinStressValue(),
                         choice.getWinSatisfactionValue(),
                         choice.getWinHealthValue()
                 );
                 charDetailsService.setFinancesByChoice(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         choice.getWinIncomeValue(),
                         choice.getWinOutcomeValue(),
                         choice.getWinOneTimePayment()
                 );
                 charDetailsService.setInventoryByChoice(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         choice.getWinStudy(),
                         choice.getWinScholarship(),
                         choice.getWinApprenticeship(),
@@ -556,20 +556,20 @@ public class GameService {
 
             case -1: //lose
                 gameLost = charDetailsService.setCharacterStatusLvls(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         game.getPhase(),
                         choice.getLoseStressValue(),
                         choice.getLoseSatisfactionValue(),
                         choice.getLoseHealthValue()
                 );
                 charDetailsService.setFinancesByChoice(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         choice.getLoseIncomeValue(),
                         choice.getLoseOutcomeValue(),
                         choice.getLoseOneTimePayment()
                 );
                 charDetailsService.setInventoryByChoice(
-                        userProfile.getId(),
+                        userProfile.getCharDetails().getId(),
                         choice.getLoseStudy(),
                         choice.getLoseScholarship(),
                         choice.getLoseApprenticeship(),
@@ -706,6 +706,16 @@ public class GameService {
         game.setCurrentGamePhase(null);
         gameRepository.save(game);
 
+    }
+
+    public Game findGameByUsername(String username) {
+        return gameRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Game not found"));
+    }
+
+    public Boolean playerHasGame(Authentication auth) {
+        Profile userProfile = userService.getUserProfile(auth);
+        Game game = gameRepository.findByUsername(userProfile.getUsername()).orElseThrow(() -> new EntityNotFoundException("Game not found"));
+        return (!game.isGameEnd() || !game.isGameLost()) && game.getPhase() > 11;
     }
 }
 

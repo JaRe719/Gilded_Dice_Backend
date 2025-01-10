@@ -19,6 +19,15 @@ public class GameController {
         this.gameService = gameService;
     }
 
+    @GetMapping(value = "/hasGame")
+    public ResponseEntity<Boolean> hasGame(Authentication auth) {
+        try {
+            return ResponseEntity.ok(gameService.playerHasGame(auth));
+        } catch (Exception e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping
     public ResponseEntity<GamePhaseDTO> getGamePhase(Authentication auth) {
         try {

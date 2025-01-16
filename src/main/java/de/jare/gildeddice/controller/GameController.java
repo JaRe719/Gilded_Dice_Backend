@@ -30,11 +30,12 @@ public class GameController {
 
     @GetMapping
     public ResponseEntity<GamePhaseDTO> getGamePhase(Authentication auth) {
-        try {
-            return ResponseEntity.ok(gameService.getGamePhase(auth));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(gameService.getGamePhase(auth));
+//        try {
+//            return ResponseEntity.ok(gameService.getGamePhase(auth));
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().build();
+//        }
 
     }
 

@@ -265,7 +265,8 @@ public class GameService {
         }
         int activeGamePhase = game.getPhase();
 
-        game.setAvailablePlusStories(addNewAvailablePlusStories(user, game));
+        Set<Long> newStoryIds = findNewPlusStoryIds(user, game);
+        game.getAvailablePlusStories().addAll(newStoryIds);
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
 
         if (!game.isPlusStoryRunLastRound() && (game.getPhase() == 12 || (game.getPhase() > 12 && (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))))) {
@@ -326,28 +327,48 @@ public class GameService {
 
 
     private GamePhaseDTO startRandomPlusStory(Game game, User user) {
-        List<PlusStory> plusStories = game.getAvailablePlusStories();
-        if (plusStories.isEmpty()) throw new EmptyStackException();
+        if (game.getAvailablePlusStories().isEmpty()) {
+            throw new EmptyStackException();
+        }
 
-        int randomIndex = ThreadLocalRandom.current().nextInt(0, plusStories.size());
-        PlusStory randomPlusStory = plusStories.get(randomIndex);
+        List<Long> plusStoryIdList = new ArrayList<>(game.getAvailablePlusStories());
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, plusStoryIdList.size());
+
+
+        Long chosenPlusStoryId = plusStoryIdList.get(randomIndex);
+        PlusStory randomPlusStory = plusStoryRepository
+                .findById(chosenPlusStoryId)
+                .orElseThrow(() -> new EntityNotFoundException("PlusStory not found!"));
 
         if (randomPlusStory.isOneTime()) {
-            game.getUsedPlusStories().add(randomPlusStory.getId());
-            plusStories.remove(randomPlusStory);
-        } else game.getAvailablePlusStories().remove(randomPlusStory);
+            game.getUsedPlusStories().add(chosenPlusStoryId);
+            game.getAvailablePlusStories().remove(chosenPlusStoryId);
+        } else {
+            game.getAvailablePlusStories().remove(chosenPlusStoryId);
+        }
 
-        String finalPrompt = createCompletedPrompt(randomPlusStory.getPrompt(), randomPlusStory.getChoices(), randomPlusStory.getPhase(), user);
-//        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
-//        saveHighScoreWhenGameIsEnd(user.getProfile(), game, false);
+        String finalPrompt = createCompletedPrompt(
+                randomPlusStory.getPrompt(),
+                randomPlusStory.getChoices(),
+                randomPlusStory.getPhase(),
+                user
+        );
 
-        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), randomPlusStory.getTitle(), "Test Plus " + game.getPhase() + " " + finalPrompt, randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
-        // return GameMapper.toGamePhaseDTO(randomPlusStory.getCategory(), responseDTO.choices().getFirst().message().content(), randomPlusStory.isSkippable(), false, randomPlusStory.getChoices());
+        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(
+                randomPlusStory.getCategory(),
+                randomPlusStory.getTitle(),
+                "Test Plus " + game.getPhase() + " " + finalPrompt,
+                randomPlusStory.isSkippable(),
+                false,
+                randomPlusStory.getChoices()
+        );
 
         game.setCurrentGamePhase(gamePhaseDTO);
         gameRepository.save(game);
+
         return gamePhaseDTO;
     }
+
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {
         String username = user.getProfile().getUsername();
@@ -394,7 +415,7 @@ public class GameService {
 
     private List<PlusStory> addNewAvailablePlusStories(User user, Game game) {
         CharDetails userCharacter = user.getProfile().getCharDetails();
-        List<PlusStory> availablePlusStories = game.getAvailablePlusStories();
+        Set<Long> availablePlusStories = game.getAvailablePlusStories();
         Set<Long> usedPlusStories = game.getUsedPlusStories();
 
         List<PlusStory> allPlusStory = plusStoryService.getAllPlusStory();
@@ -404,6 +425,23 @@ public class GameService {
                 .filter(ps -> meetsRequirements(ps.getRequirement(), userCharacter))
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private Set<Long> findNewPlusStoryIds(User user, Game game) {
+        CharDetails userCharacter = user.getProfile().getCharDetails();
+        Set<Long> availablePlusStories = game.getAvailablePlusStories();
+        Set<Long> usedPlusStories = game.getUsedPlusStories();
+
+        // Lade alle PlusStory-Entities aus der DB
+        List<PlusStory> allPlusStory = plusStoryService.getAllPlusStory();
+
+        // Filter + Mapping auf IDs
+        return allPlusStory.stream()
+                .filter(ps -> !availablePlusStories.contains(ps.getId()))
+                .filter(ps -> !usedPlusStories.contains(ps.getId()))
+                .filter(ps -> meetsRequirements(ps.getRequirement(), userCharacter))
+                .map(PlusStory::getId)
+                .collect(Collectors.toSet());
     }
 
     private boolean meetsRequirements(Requirement requirement, CharDetails userCharacter) {

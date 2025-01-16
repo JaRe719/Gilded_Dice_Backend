@@ -30,8 +30,13 @@ public class Game {
     @Column(columnDefinition = "text")
     private GamePhaseDTO currentGamePhase;
 
-    @OneToMany
-    private List<PlusStory> availablePlusStories = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(
+            name = "game_available_plus_stories",
+            joinColumns = @JoinColumn(name = "game_id")
+    )
+    @Column(name = "plus_story_id")
+    private Set<Long> availablePlusStories = new HashSet<>();
 
     @ElementCollection
     private Set<Long> usedPlusStories = new HashSet<>();

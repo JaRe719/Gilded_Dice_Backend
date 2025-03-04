@@ -263,7 +263,7 @@ public class GameService {
             gameRepository.save(game);
             return summary;
         }
-        int activeGamePhase = game.getPhase();
+        //int activeGamePhase = game.getPhase(); //LLM bypass
 
         Set<Long> newStoryIds = findNewPlusStoryIds(user, game);
         game.getAvailablePlusStories().addAll(newStoryIds);
@@ -287,12 +287,12 @@ public class GameService {
         }
 
         String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
-        //KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
         setNextGamePhase(story, game);
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story.isGameEnd());
 
-        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(story.getCategory(), story.getTitle(), "Test " +activeGamePhase + " " + finalPrompt , story.isSkippable(), game.isGameEnd(), story.getChoices()); //GameMapper.toGamePhaseDTO(story.getCategory(),story.getTitle(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices());
+        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(story.getCategory(),story.getTitle(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices()); //GameMapper.toGamePhaseDTO(story.getCategory(), story.getTitle(), "Test " +activeGamePhase + " " + finalPrompt , story.isSkippable(), game.isGameEnd(), story.getChoices()); //LLM bypass
         game.setCurrentGamePhase(gamePhaseDTO);
         gameRepository.save(game);
 
@@ -354,10 +354,12 @@ public class GameService {
                 user
         );
 
+        KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
+
         GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(
                 randomPlusStory.getCategory(),
                 randomPlusStory.getTitle(),
-                "Test Plus " + game.getPhase() + " " + finalPrompt,
+                "Test Plus " + game.getPhase() + " " + responseDTO.choices().getFirst().message().content(),
                 randomPlusStory.isSkippable(),
                 false,
                 randomPlusStory.getChoices()
@@ -372,15 +374,15 @@ public class GameService {
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {
         String username = user.getProfile().getUsername();
-        CharDetails charDetails = user.getProfile().getCharDetails();
+        //CharDetails charDetails = user.getProfile().getCharDetails();
 
-        StringBuilder finalPrompt = new StringBuilder("Erstelle ein kurzes (2-3 sätze max) und in deutsch verfasstes, individuellen text für folgendes PnP-Szenarion basierend auf den folgenden informationen: ");
+        StringBuilder finalPrompt = new StringBuilder("Erstelle in 1-3 kurzen sätzen, in deutsch, ein individuellen text für folgendes PnP-Szenarion. basierend auf den folgenden informationen (max 255 zeichen): ");
         finalPrompt.append("charaktername: ").append(username);
         finalPrompt.append(", Szenario: ").append(storyPrompt);
         finalPrompt.append(", Endscheidung: ");
         for (Choice choice : choices) finalPrompt.append(choice.getTitle());
-        finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzt. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und bitte dich nicht zur hilfe an");
-        if (storyPhase != 10) finalPrompt.append("ladde die Begrüßung weg und steig gleich in das Szenario ein");
+        finalPrompt.append(", Ton: Das Szenario ist ein teil einer gesamtgeschichte, es soll realistisch sein. Den Spieler dutzen. gebe kurze tipps für die finanzielle und zeitliche aussicht, halte dich möglichst kurz und biete dich nicht zur hilfe an");
+        if (storyPhase != 10) finalPrompt.append("lasse die Begrüßung weg und steig gleich in das Szenario ein");
         return finalPrompt.toString();
     }
 

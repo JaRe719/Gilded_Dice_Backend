@@ -18,39 +18,46 @@ import java.util.Map;
 @Service
 public class AiService {
 
-    @Value("${llm.product.id}")
-    private String PRODUCT_ID;
+    private static final String ENDPOINT_TEMPLATE = "/1/ai/%s/openai/chat/completions";
+    private static final String MODEL = "mixtral";
+    private static final int MAX_TOKENS = 250;
 
+//    @Value("${llm.product.id}")
+//    private String PRODUCT_ID;
+    private final String PRODUCT_ID;
     private final RestClient restClient;
 
-    public AiService(RestClient restClient) {
+
+    public AiService(@Value("${llm.product.id}") String productId, RestClient restClient) {
+        this.PRODUCT_ID = productId;
         this.restClient = restClient;
     }
-
+    
     public KSuitAiResponseDTO callApi(String prompt) {
-        String endpoint = "/1/ai/" + PRODUCT_ID + "/openai/chat/completions";
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "mixtral");
-        requestBody.put("messages", List.of(
-                Map.of("role", "user", "content", prompt)
-        ));
-        requestBody.put("max_tokens", 250);
-
-
-
         try {
             return restClient.post()
-                    .uri(endpoint)
+                    .uri(buildEndpoint())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
+                    .body(buildRequest(prompt))
                     .retrieve()
                     .body(KSuitAiResponseDTO.class);
         } catch (HttpClientErrorException e) {
             System.err.println("API-Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             throw e;
         }
-
     }
 
+    private String buildEndpoint() {
+        return String.format(ENDPOINT_TEMPLATE, PRODUCT_ID);
+    }
+
+    private Map<String, Object> buildRequest(String prompt) {
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", MODEL);
+        requestBody.put("messages", List.of(
+                Map.of("role", "user", "content", prompt)
+        ));
+        requestBody.put("max_tokens", MAX_TOKENS);
+        return requestBody;
+    }
 }

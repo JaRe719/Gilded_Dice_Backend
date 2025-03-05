@@ -23,9 +23,8 @@ import java.util.Optional;
 public class CharDetailsService {
 
     private final PlusStoryService plusStoryService;
-    private CharDetailsRepository charDetailsRepository;
-
-    private UserService userService;
+    private final CharDetailsRepository charDetailsRepository;
+    private final UserService userService;
 
     public CharDetailsService(PlusStoryService plusStoryService, CharDetailsRepository charDetailsRepository, UserService userService) {
         this.plusStoryService = plusStoryService;
@@ -35,28 +34,17 @@ public class CharDetailsService {
 
     public CharDetailsResponseDTO getCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
-
         return CharMapper.charToResponseDTO(userProfile);
     }
+
 
     @Transactional
     public CharDetailsResponseDTO createOrUpdateCharDetails(CharDetailsRequestDTO dto, Authentication auth) {
         User user = userService.getUser(auth);
         Profile userProfile = user.getProfile();
 
-        CharDetails charDetails = userProfile.getCharDetails();
-        if (charDetails == null) {
-            charDetails = new CharDetails();
-            charDetails.setCharChoices(new CharChoices());
-        }
-
-        charDetails.setIntelligence(dto.intelligence());
-        charDetails.setNegotiate(dto.negotiate());
-        charDetails.setAbility(dto.ability());
-        charDetails.setPlanning(dto.planning());
-        charDetails.setStamina(dto.stamina());
-        charDetails.setAvatar(dto.avatar());
-        charDetails.setUserProfileId(userProfile.getId());
+        CharDetails charDetails = getOrCreateCharDetails(userProfile);
+        updateCharDetailsFromDTO(charDetails, dto, userProfile.getId());
 
         charDetails = charDetailsRepository.save(charDetails);
         userProfile.setCharDetails(charDetails);
@@ -64,6 +52,26 @@ public class CharDetailsService {
 
         return CharMapper.charToResponseDTO(userProfile);
     }
+
+    private CharDetails getOrCreateCharDetails(Profile userProfile) {
+        CharDetails charDetails = userProfile.getCharDetails();
+        if (charDetails == null) {
+            charDetails = new CharDetails();
+            charDetails.setCharChoices(new CharChoices());
+        }
+        return charDetails;
+    }
+
+    private void updateCharDetailsFromDTO(CharDetails charDetails, CharDetailsRequestDTO dto, Long userProfileId) {
+        charDetails.setIntelligence(dto.intelligence());
+        charDetails.setNegotiate(dto.negotiate());
+        charDetails.setAbility(dto.ability());
+        charDetails.setPlanning(dto.planning());
+        charDetails.setStamina(dto.stamina());
+        charDetails.setAvatar(dto.avatar());
+        charDetails.setUserProfileId(userProfileId);
+    }
+
 
     public String getUserAvatar(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);

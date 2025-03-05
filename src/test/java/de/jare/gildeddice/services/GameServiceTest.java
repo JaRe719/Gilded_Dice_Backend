@@ -587,6 +587,7 @@ class GameServiceTest {
         User user = createUserWithProfileWithCharDetails();
         Game game = new Game();
         game.setId(1L);
+        game.setPhase(12);
         game.setUsername(user.getProfile().getUsername());
         Authentication auth = mock(Authentication.class);
 
@@ -606,7 +607,7 @@ class GameServiceTest {
         when(userService.getUserProfile(auth)).thenReturn(user.getProfile());
         when(gameRepository.findByUsername(user.getProfile().getUsername())).thenReturn(Optional.empty());
 
-        assertFalse(gameService.playerHasGame(auth));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> gameService.playerHasGame(auth));
         verify(gameRepository, times(1)).findByUsername(user.getProfile().getUsername());
         verify(userService, times(1)).getUserProfile(auth);
     }

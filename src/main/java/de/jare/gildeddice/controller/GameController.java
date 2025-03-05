@@ -30,13 +30,11 @@ public class GameController {
 
     @GetMapping
     public ResponseEntity<GamePhaseDTO> getGamePhase(Authentication auth) {
-        return ResponseEntity.ok(gameService.getGamePhase(auth));
-//        try {
-//            return ResponseEntity.ok(gameService.getGamePhase(auth));
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().build();
-//        }
-
+        try {
+            return ResponseEntity.ok(gameService.getGamePhase(auth));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping
@@ -60,7 +58,6 @@ public class GameController {
 
     @PostMapping(value = "/choice/{choiceId}")
     public ResponseEntity<GameChoiceResultDTO> playChoice(@PathVariable long choiceId, @RequestParam int diceResult, Authentication auth) {
-
         try {
             return ResponseEntity.ok(gameService.playChoice(choiceId, diceResult, auth));
         } catch (EntityNotFoundException en) {

@@ -43,7 +43,7 @@ public class AuthController {
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<Void> deleteUser(Authentication auth) {
-        charDetailsService.delete(auth);
+        charDetailsService.deleteCharDetails(auth);
         userService.deleteUser(auth);
         return ResponseEntity.ok().build();
     }

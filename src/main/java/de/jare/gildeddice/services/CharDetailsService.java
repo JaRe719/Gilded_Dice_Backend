@@ -275,7 +275,7 @@ public class CharDetailsService {
         charDetailsRepository.save(charDetails);
     }
 
-    public void delete(Authentication auth) {
+    public void deleteCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         Optional<CharDetails> existingUserChar = charDetailsRepository.findById(userProfile.getId());
         existingUserChar.ifPresent(charDetails -> charDetailsRepository.delete(charDetails));

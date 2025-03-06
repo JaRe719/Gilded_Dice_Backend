@@ -682,7 +682,7 @@ class CharDetailsServiceTest {
     }
 
     @Test
-    void testDelete_Success() {
+    void testDelete_CharDetails_Success() {
         // Arrange
         Authentication auth = mock(Authentication.class);
         Profile userProfile = new Profile();
@@ -696,14 +696,14 @@ class CharDetailsServiceTest {
                 .thenReturn(Optional.of(existingCharDetails));
 
         // Act
-        charDetailsService.delete(auth);
+        charDetailsService.deleteCharDetails(auth);
 
         // Assert
         verify(charDetailsRepository, times(1)).delete(existingCharDetails);
     }
 
     @Test
-    void testDelete_CharDetailsNotFound() {
+    void testDelete_CharDetails_CharDetailsNotFound() {
         // Arrange
         Authentication auth = mock(Authentication.class);
         Profile userProfile = new Profile();
@@ -714,7 +714,7 @@ class CharDetailsServiceTest {
                 .thenReturn(Optional.empty());
 
         // Act
-        charDetailsService.delete(auth);
+        charDetailsService.deleteCharDetails(auth);
 
         // Assert
         verify(charDetailsRepository, never()).delete(any(CharDetails.class));

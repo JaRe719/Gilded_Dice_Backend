@@ -883,15 +883,8 @@ public class GameService {
     }
 
 
-
-
-
-
-
-    public void createNpcFromList(List<NpcCreateListDTO> dto) {
-        for (NpcCreateListDTO newNpc : dto) {
-            createNpc(newNpc.npcName(), newNpc.filename());
-        }
+    public void createNpcFromList(List<NpcCreateListDTO> dtoList) {
+        dtoList.forEach(newNpc -> createNpc(newNpc.npcName(), newNpc.filename()));
     }
 
     public void skipGame(Authentication auth) {

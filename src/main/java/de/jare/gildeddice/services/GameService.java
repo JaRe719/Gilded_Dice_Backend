@@ -790,7 +790,7 @@ public class GameService {
                 + " - Handicap: " + handicap + " = " + finalMinResult
                 + " Würfelwert: " + diceResult;
     }
-    
+
 
     public void createPlusStory(PlusStoryCreateDTO dto) {
         PlusStory plusStory = mapToPlusStory(dto);
@@ -838,14 +838,16 @@ public class GameService {
     }
 
 
-
-
-
-
-
-
     public void updatePlusStory(PlusStoryUpdateDTO dto) {
-        PlusStory plusStory = plusStoryRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Story not found!"));
+        PlusStory plusStory = plusStoryRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Story not found!"));
+
+        applyPlusStoryUpdates(plusStory, dto);
+
+        plusStoryRepository.save(plusStory);
+    }
+
+    private void applyPlusStoryUpdates(PlusStory plusStory, PlusStoryUpdateDTO dto) {
         plusStory.setCategory(Category.valueOf(dto.category()));
         plusStory.setTitle(dto.title());
         plusStory.setPrompt(dto.prompt());
@@ -853,6 +855,12 @@ public class GameService {
         plusStory.setOneTime(dto.oneTime());
 
         Requirement requirement = plusStory.getRequirement();
+
+        applyRequirementUpdates(requirement, dto);
+        plusStory.setRequirement(requirement);
+    }
+
+    private void applyRequirementUpdates(Requirement requirement, PlusStoryUpdateDTO dto) {
         requirement.setHasStudie(dto.requirement().hasStudie());
         requirement.setHasScholarship(dto.requirement().hasScholarship());
         requirement.setHasApprenticeship(dto.requirement().hasApprenticeship());
@@ -872,10 +880,13 @@ public class GameService {
         requirement.setHasInvested(dto.requirement().hasInvested());
         requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());
         requirement.setHealthStatusLvl(dto.requirement().healthStatusLvl());
-        plusStory.setRequirement(requirement);
-
-        plusStoryRepository.save(plusStory);
     }
+
+
+
+
+
+
 
     public void createNpcFromList(List<NpcCreateListDTO> dto) {
         for (NpcCreateListDTO newNpc : dto) {

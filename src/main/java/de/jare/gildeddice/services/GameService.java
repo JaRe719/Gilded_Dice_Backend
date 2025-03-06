@@ -34,16 +34,16 @@ public class GameService {
 
     private final ProfileRepository profileRepository;
     private final CharDetailsRepository charDetailsRepository;
-    private GameRepository gameRepository;
-    private StoryRepository storyRepository;
-    private ChoiceRepository choiceRepository;
-    private NpcRepository npcRepository;
-    private PlusStoryRepository plusStoryRepository;
-    private AiService aiService;
-    private UserService userService;
-    private CharDetailsService charDetailsService;
-    private PlusStoryService plusStoryService;
-    private HighScoreService highScoreService;
+    private final GameRepository gameRepository;
+    private final StoryRepository storyRepository;
+    private final ChoiceRepository choiceRepository;
+    private final NpcRepository npcRepository;
+    private final PlusStoryRepository plusStoryRepository;
+    private final AiService aiService;
+    private final UserService userService;
+    private final CharDetailsService charDetailsService;
+    private final PlusStoryService plusStoryService;
+    private final HighScoreService highScoreService;
 
     public GameService(AiService aiService, CharDetailsService charDetailsService, ChoiceRepository choiceRepository, GameRepository gameRepository, HighScoreService highScoreService, NpcRepository npcRepository, PlusStoryRepository plusStoryRepository, PlusStoryService plusStoryService, StoryRepository storyRepository, UserService userService, ProfileRepository profileRepository, CharDetailsRepository charDetailsRepository) {
         this.aiService = aiService;
@@ -60,7 +60,7 @@ public class GameService {
         this.charDetailsRepository = charDetailsRepository;
     }
 
-    public Iterable<Story> getAllStorys() {
+    public Iterable<Story> getAllStories() {
         return storyRepository.findAll();
     }
 
@@ -369,11 +369,6 @@ public class GameService {
     }
 
 
-
-
-
-
-
     private GamePhaseDTO getGameSummary(Game game) {
         Profile profile = Optional.ofNullable(profileRepository.findByUsername(game.getUsername()))
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user: " + game.getUsername()));
@@ -519,19 +514,19 @@ public class GameService {
         }
     }
 
-    private List<PlusStory> addNewAvailablePlusStories(User user, Game game) {
-        CharDetails userCharacter = user.getProfile().getCharDetails();
-        Set<Long> availablePlusStories = game.getAvailablePlusStories();
-        Set<Long> usedPlusStories = game.getUsedPlusStories();
-
-        List<PlusStory> allPlusStory = plusStoryService.getAllPlusStory();
-        return allPlusStory.stream()
-                .filter(ps -> !availablePlusStories.contains(ps.getId()))
-                .filter(ps -> !usedPlusStories.contains(ps.getId()))
-                .filter(ps -> meetsRequirements(ps.getRequirement(), userCharacter))
-                .distinct()
-                .collect(Collectors.toList());
-    }
+//    private List<PlusStory> addNewAvailablePlusStories(User user, Game game) {
+//        CharDetails userCharacter = user.getProfile().getCharDetails();
+//        Set<Long> availablePlusStories = game.getAvailablePlusStories();
+//        Set<Long> usedPlusStories = game.getUsedPlusStories();
+//
+//        List<PlusStory> allPlusStory = plusStoryService.getAllPlusStory();
+//        return allPlusStory.stream()
+//                .filter(ps -> !availablePlusStories.contains(ps.getId()))
+//                .filter(ps -> !usedPlusStories.contains(ps.getId()))
+//                .filter(ps -> meetsRequirements(ps.getRequirement(), userCharacter))
+//                .distinct()
+//                .collect(Collectors.toList());
+//    }
 
     private Set<Long> findNewPlusStoryIds(User user, Game game) {
         CharDetails userCharacter = user.getProfile().getCharDetails();

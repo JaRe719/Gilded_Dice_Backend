@@ -790,8 +790,14 @@ public class GameService {
                 + " - Handicap: " + handicap + " = " + finalMinResult
                 + " Würfelwert: " + diceResult;
     }
+    
 
     public void createPlusStory(PlusStoryCreateDTO dto) {
+        PlusStory plusStory = mapToPlusStory(dto);
+        plusStoryRepository.save(plusStory);
+    }
+
+    private PlusStory mapToPlusStory(PlusStoryCreateDTO dto) {
         PlusStory plusStory = new PlusStory();
         plusStory.setCategory(Category.valueOf(dto.category()));
         plusStory.setTitle(dto.title());
@@ -799,6 +805,15 @@ public class GameService {
         plusStory.setSkippable(dto.skippable());
         plusStory.setOneTime(dto.oneTime());
 
+        Requirement requirement = mapToRequirement(dto);
+        plusStory.setRequirement(requirement);
+
+        plusStory.setChoices(createChoiceList(dto.choices()));
+
+        return plusStory;
+    }
+
+    private Requirement mapToRequirement(PlusStoryCreateDTO dto) {
         Requirement requirement = new Requirement();
         requirement.setHasStudie(dto.requirement().hasStudie());
         requirement.setHasScholarship(dto.requirement().hasScholarship());
@@ -807,7 +822,6 @@ public class GameService {
         requirement.setHasJob(dto.requirement().hasJob());
 
         requirement.setInsurance(dto.requirement().insurance());
-
         requirement.setHasHomeByParents(dto.requirement().hasHomeByParents());
         requirement.setHasSharedApartment(dto.requirement().hasSharedApartment());
         requirement.setHasRentedApartment(dto.requirement().hasRentedApartment());
@@ -819,11 +833,16 @@ public class GameService {
         requirement.setHasInvested(dto.requirement().hasInvested());
         requirement.setStressStatusLvl(dto.requirement().satisfactionStatusLvl());
         requirement.setHealthStatusLvl(dto.requirement().healthStatusLvl());
-        plusStory.setRequirement(requirement);
-        plusStory.setChoices(createChoiceList(dto.choices()));
 
-        plusStoryRepository.save(plusStory);
+        return requirement;
     }
+
+
+
+
+
+
+
 
     public void updatePlusStory(PlusStoryUpdateDTO dto) {
         PlusStory plusStory = plusStoryRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Story not found!"));

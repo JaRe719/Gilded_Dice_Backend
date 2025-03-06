@@ -378,12 +378,22 @@ public class GameService {
 
 
     private GamePhaseDTO getGameSummary(Game game) {
-        Profile profile = profileRepository.findByUsername(game.getUsername());
+        Profile profile = Optional.ofNullable(profileRepository.findByUsername(game.getUsername()))
+                .orElseThrow(() -> new EntityNotFoundException("Profile not found for user: " + game.getUsername()));
+
+        // Prompt vorbereiten
         String finalPrompt = generateFinalPrompt(profile, game);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
-        return GameMapper.toGamePhaseDTO(Category.FATE, "GAMEEND", responseDTO.choices().getFirst().message().content(), false, game.isGameEnd(), new ArrayList<>());
+        // Ausgelagert in eine kleine Methode, wenn du's öfter brauchst.
+        return buildGameEndPhaseDTO(responseDTO, game.isGameEnd());
     }
+
+    private GamePhaseDTO buildGameEndPhaseDTO(KSuitAiResponseDTO response, boolean isGameEnd) {
+        String content = response.choices().getFirst().message().content();
+        return GameMapper.toGamePhaseDTO(Category.FATE, "GAMEEND", content, false, isGameEnd, new ArrayList<>());
+    }
+
 
     private String generateFinalPrompt(Profile profile, Game game) {
         String username = profile.getUsername();

@@ -8,6 +8,8 @@ import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.RequirenentDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
@@ -28,7 +30,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.*;
 
@@ -45,6 +46,9 @@ class GameServiceTest {
 
     @Mock
     private StoryRepository storyRepository;
+
+    @Mock
+    private PlusStoryRepository plusStoryRepository;
 
     @Mock
     private ChoiceRepository choiceRepository;
@@ -133,14 +137,14 @@ class GameServiceTest {
 
 
     @Test
-    void testGetAllStorys() {
+    void testGetAllStories() {
         // Arrange
         List<Story> stories = new ArrayList<>();
         stories.add(new Story());
         when(storyRepository.findAll()).thenReturn(stories);
 
         // Act
-        Iterable<Story> result = gameService.getAllStorys();
+        Iterable<Story> result = gameService.getAllStories();
 
         // Assert
         assertNotNull(result);
@@ -582,6 +586,51 @@ class GameServiceTest {
         verify(gameRepository, never()).save(any(Game.class));
     }
 
+
+
+    @Test
+    void testCreatePlusStory_Success() {
+        // Arrange
+        PlusStoryCreateDTO dto = mockPlusStoryCreateDTO();
+        Npc npcMock = new Npc();
+        npcMock.setId(42L);
+        when(npcRepository.findById(anyLong())).thenReturn(Optional.of(npcMock));
+        when(choiceRepository.save(any(Choice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Damit wir am Ende das PlusStory-Objekt auch "speichern"
+        when(plusStoryRepository.save(any(PlusStory.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        gameService.createPlusStory(dto);
+
+        // Assert
+        // Wir überprüfen, ob plusStoryRepository.save(...) mindestens einmal aufgerufen wurde
+        verify(plusStoryRepository, times(1)).save(any(PlusStory.class));
+        // Ebenfalls sollte choiceRepository.save(...) für jede Choice aufgerufen werden
+        verify(choiceRepository, atLeastOnce()).save(any(Choice.class));
+    }
+
+    @Test
+    void testCreatePlusStory_NpcNotFound() {
+        // Wenn einer der Choices ein npcId hat, aber im Repo nicht existiert
+        PlusStoryCreateDTO dto = mockPlusStoryCreateDTO();
+        // NPC ist nicht gefunden
+        when(npcRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                gameService.createPlusStory(dto)
+        );
+        assertEquals("npc not found!", ex.getMessage());
+        verify(plusStoryRepository, never()).save(any(PlusStory.class));
+    }
+
+
+
+
+
+
+
     @Test
     void testPlayerHasGame_Success() {
         User user = createUserWithProfileWithCharDetails();
@@ -672,6 +721,146 @@ class GameServiceTest {
         story.setChoices(choices);
         story.setPhaseEnd(false);
         return story;
+    }
+
+    private PlusStoryCreateDTO mockPlusStoryCreateDTO() {
+        return new PlusStoryCreateDTO(
+                "EXTRA",                     // category
+                "An Evening to Remember",        // title
+                "You receive an invitation...",  // prompt
+                true,                            // skippable
+                false,                           // oneTime
+                new RequirenentDTO(
+                        true,   // hasStudie
+                        false,  // hasScholarship
+                        false,  // hasApprenticeship
+                        true,   // hasSecondJob
+                        true,   // hasJob
+                        true,   // insurance
+                        false,  // hasHomeByParents
+                        false,  // hasSharedApartment
+                        true,   // hasRentedApartment
+                        false,  // hasProperty
+                        true,   // hasCar
+                        true,   // hasDriverLicense
+                        false,  // hasInvested
+                        2,      // stressStatusLvl
+                        5,      // satisfactionStatusLvl
+                        4       // healthStatusLvl
+                ),
+                List.of(
+                        new ChoiceCreateDTO(
+                                "Attend the Gala",     // title
+                                "INTELLIGENCE",            // skill
+                                4,                     // minDiceValue
+                                200,                   // cost
+                                false,                 // returning
+                                "You step onto the red carpet...",  // startMessage
+
+                                "You shine in the crowd!", // winMessage
+                                500,                      // winIncomeValue
+                                0,                        // winOutcomeValue
+                                10,                       // winInvestmentPercent
+                                0,                        // winOneTimePayment
+                                null,                     // winStudy
+                                true,                     // winScholarship
+                                null,                     // winApprenticeship
+                                true,                     // winJob
+                                false,                    // winProperty
+                                null,                     // winRentApartment
+                                false,                    // winCar
+                                null,                     // winDriverLicense
+                                -1,                       // winStressValue
+                                3,                        // winSatisfactionValue
+                                2,                        // winHealthValue
+
+                                "You feel out of place...", // loseMessage
+                                -100,                        // loseIncomeValue
+                                50,                          // loseOutcomeValue
+                                0,                           // loseInvestmentPercent
+                                0,                           // loseOneTimePayment
+                                false,                       // loseStudy
+                                false,                       // loseScholarship
+                                false,                       // loseApprenticeship
+                                false,                       // loseJob
+                                false,                       // loseProperty
+                                false,                       // loseRentApartment
+                                false,                       // loseCar
+                                false,                       // loseDriverLicense
+                                3,                           // loseStressValue
+                                -2,                          // loseSatisfactionValue
+                                -1,                          // loseHealthValue
+
+                                "Crit success! The spotlight is all yours!",  // critMessage
+                                1000,                                           // critIncomeValue
+                                0,                                              // critOutcomeValue
+                                25,                                             // critInvestmentPercent
+                                500,                                            // critOneTimePayment
+                                true,                                           // critScholarship
+                                -5,                                             // critStressValue
+                                5,                                              // critSatisfactionValue
+                                5,                                              // critHealthValue
+
+                                42L,   // npcId
+                                false  // phaseEnd
+                        ),
+                        new ChoiceCreateDTO(
+                                "Stay Home",        // title
+                                "NEGOTIATE",        // skill
+                                0,                  // minDiceValue
+                                null,               // cost
+                                true,               // returning
+                                "You decide to stay in...", // startMessage
+
+                                "You have a relaxing evening.", // winMessage
+                                0,                              // winIncomeValue
+                                0,                              // winOutcomeValue
+                                0,                              // winInvestmentPercent
+                                0,                              // winOneTimePayment
+                                false,                          // winStudy
+                                false,                          // winScholarship
+                                false,                          // winApprenticeship
+                                false,                          // winJob
+                                false,                          // winProperty
+                                false,                          // winRentApartment
+                                false,                          // winCar
+                                false,                          // winDriverLicense
+                                -2,                             // winStressValue
+                                2,                              // winSatisfactionValue
+                                3,                              // winHealthValue
+
+                                "You regret not going...", // loseMessage
+                                0,                         // loseIncomeValue
+                                0,                         // loseOutcomeValue
+                                0,                         // loseInvestmentPercent
+                                0,                         // loseOneTimePayment
+                                false,                     // loseStudy
+                                false,                     // loseScholarship
+                                false,                     // loseApprenticeship
+                                false,                     // loseJob
+                                false,                     // loseProperty
+                                false,                     // loseRentApartment
+                                false,                     // loseCar
+                                false,                     // loseDriverLicense
+                                1,                         // loseStressValue
+                                -1,                        // loseSatisfactionValue
+                                0,                         // loseHealthValue
+
+                                "Crit outcome: Best nap ever!",  // critMessage
+                                0,                                // critIncomeValue
+                                0,                                // critOutcomeValue
+                                0,                                // critInvestmentPercent
+                                0,                                // critOneTimePayment
+                                false,                            // critScholarship
+                                -2,                               // critStressValue
+                                5,                                // critSatisfactionValue
+                                5,                                // critHealthValue
+
+                                42L,    // npcId
+                                true   // phaseEnd
+                        )
+                )
+        );
     }
 
 

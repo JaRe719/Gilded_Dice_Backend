@@ -469,15 +469,11 @@ public class GameService {
                 plusStory.getChoices()
         );
     }
-    
+
     private void setCurrentGamePhase(Game game, GamePhaseDTO gamePhaseDTO) {
         game.setCurrentGamePhase(gamePhaseDTO);
         gameRepository.save(game);
     }
-
-
-
-
 
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {
@@ -500,18 +496,18 @@ public class GameService {
         else game.setPhase(game.getPhase() + 1);
     }
 
-    private Game getGame(User user) {
-        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
-        Game game = new Game();
-        if (existingGame.isPresent()) {
-            game = existingGame.get();
-            return game;
-        } else {
-            game.setUsername(user.getProfile().getUsername());
-            game.setPhase(10);
-            return game;
-        }
-    }
+//    private Game getGame(User user) {
+//        Optional<Game> existingGame = gameRepository.findByUsername(user.getProfile().getUsername());
+//        Game game = new Game();
+//        if (existingGame.isPresent()) {
+//            game = existingGame.get();
+//            return game;
+//        } else {
+//            game.setUsername(user.getProfile().getUsername());
+//            game.setPhase(10);
+//            return game;
+//        }
+//    }
 
     private void saveHighScoreWhenGameIsEnd(Profile profile, Game game, boolean gameEnd) {
         if (game.isGameLost() || gameEnd) {
@@ -642,96 +638,113 @@ public class GameService {
         );
     }
 
+
     private boolean executeChoiceResult(Choice choice, int choiceResult, Profile userProfile) {
-        Game game = gameRepository.findByUsername(userProfile.getUsername()).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
-        boolean gameLost = false;
+        Game game = gameRepository.findByUsername(userProfile.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
 
-        switch (choiceResult) {
-            case 1: //critical
-                gameLost = charDetailsService.setCharacterStatusLvls(
-                        userProfile.getCharDetails().getId(),
-                        game.getPhase(),
-                        choice.getCritStressValue(),
-                        choice.getCritSatisfactionValue(),
-                        choice.getCritHealthValue()
-                );
+        return switch (choiceResult) {
+            case 1 ->  // critical
+                    handleCriticalChoice(choice, userProfile, game);
+            case 0 ->  // win
+                    handleWinChoice(choice, userProfile, game);
+            case -1 -> // lose
+                    handleLoseChoice(choice, userProfile, game);
+            default -> throw new IllegalArgumentException("Invalid choiceResult: " + choiceResult);
+        };
+    }
 
-                charDetailsService.setFinancesByChoice(
-                        userProfile.getCharDetails().getId(),
-                        choice.getCritIncomeValue(),
-                        choice.getCritOutcomeValue(),
-                        choice.getCritOneTimePayment()
-                );
-                charDetailsService.setInventoryByChoice(
-                        userProfile.getCharDetails().getId(),
-                        choice.getWinStudy(),
-                        choice.getCritScholarship(),
-                        choice.getWinApprenticeship(),
-                        choice.getWinJob(),
-                        choice.getWinProperty(),
-                        choice.getWinRentApartment(),
-                        choice.getWinCar(),
-                        choice.getWinDriverLicense()
-                );
+    private boolean handleCriticalChoice(Choice choice, Profile userProfile, Game game) {
+        boolean gameLost = charDetailsService.setCharacterStatusLvls(
+                userProfile.getCharDetails().getId(),
+                game.getPhase(),
+                choice.getCritStressValue(),
+                choice.getCritSatisfactionValue(),
+                choice.getCritHealthValue()
+        );
 
-                break;
-            case 0: //win
-                gameLost = charDetailsService.setCharacterStatusLvls(
-                        userProfile.getCharDetails().getId(),
-                        game.getPhase(),
-                        choice.getWinStressValue(),
-                        choice.getWinSatisfactionValue(),
-                        choice.getWinHealthValue()
-                );
-                charDetailsService.setFinancesByChoice(
-                        userProfile.getCharDetails().getId(),
-                        choice.getWinIncomeValue(),
-                        choice.getWinOutcomeValue(),
-                        choice.getWinOneTimePayment()
-                );
-                charDetailsService.setInventoryByChoice(
-                        userProfile.getCharDetails().getId(),
-                        choice.getWinStudy(),
-                        choice.getWinScholarship(),
-                        choice.getWinApprenticeship(),
-                        choice.getWinJob(),
-                        choice.getWinProperty(),
-                        choice.getWinRentApartment(),
-                        choice.getWinCar(),
-                        choice.getWinDriverLicense()
-                );
-                break;
+        charDetailsService.setFinancesByChoice(
+                userProfile.getCharDetails().getId(),
+                choice.getCritIncomeValue(),
+                choice.getCritOutcomeValue(),
+                choice.getCritOneTimePayment()
+        );
 
-            case -1: //lose
-                gameLost = charDetailsService.setCharacterStatusLvls(
-                        userProfile.getCharDetails().getId(),
-                        game.getPhase(),
-                        choice.getLoseStressValue(),
-                        choice.getLoseSatisfactionValue(),
-                        choice.getLoseHealthValue()
-                );
-                charDetailsService.setFinancesByChoice(
-                        userProfile.getCharDetails().getId(),
-                        choice.getLoseIncomeValue(),
-                        choice.getLoseOutcomeValue(),
-                        choice.getLoseOneTimePayment()
-                );
-                charDetailsService.setInventoryByChoice(
-                        userProfile.getCharDetails().getId(),
-                        choice.getLoseStudy(),
-                        choice.getLoseScholarship(),
-                        choice.getLoseApprenticeship(),
-                        choice.getLoseJob(),
-                        choice.getLoseProperty(),
-                        choice.getLoseRentApartment(),
-                        choice.getLoseCar(),
-                        choice.getWinDriverLicense()
-                );
-                break;
-        }
+        charDetailsService.setInventoryByChoice(
+                userProfile.getCharDetails().getId(),
+                choice.getWinStudy(),
+                choice.getCritScholarship(),
+                choice.getWinApprenticeship(),
+                choice.getWinJob(),
+                choice.getWinProperty(),
+                choice.getWinRentApartment(),
+                choice.getWinCar(),
+                choice.getWinDriverLicense()
+        );
+        return gameLost;
+    }
+
+    private boolean handleWinChoice(Choice choice, Profile userProfile, Game game) {
+        boolean gameLost = charDetailsService.setCharacterStatusLvls(
+                userProfile.getCharDetails().getId(),
+                game.getPhase(),
+                choice.getWinStressValue(),
+                choice.getWinSatisfactionValue(),
+                choice.getWinHealthValue()
+        );
+
+        charDetailsService.setFinancesByChoice(
+                userProfile.getCharDetails().getId(),
+                choice.getWinIncomeValue(),
+                choice.getWinOutcomeValue(),
+                choice.getWinOneTimePayment()
+        );
+
+        charDetailsService.setInventoryByChoice(
+                userProfile.getCharDetails().getId(),
+                choice.getWinStudy(),
+                choice.getWinScholarship(),
+                choice.getWinApprenticeship(),
+                choice.getWinJob(),
+                choice.getWinProperty(),
+                choice.getWinRentApartment(),
+                choice.getWinCar(),
+                choice.getWinDriverLicense()
+        );
+        return gameLost;
+    }
+
+    private boolean handleLoseChoice(Choice choice, Profile userProfile, Game game) {
+        boolean gameLost = charDetailsService.setCharacterStatusLvls(
+                userProfile.getCharDetails().getId(),
+                game.getPhase(),
+                choice.getLoseStressValue(),
+                choice.getLoseSatisfactionValue(),
+                choice.getLoseHealthValue()
+        );
+
+        charDetailsService.setFinancesByChoice(
+                userProfile.getCharDetails().getId(),
+                choice.getLoseIncomeValue(),
+                choice.getLoseOutcomeValue(),
+                choice.getLoseOneTimePayment()
+        );
+
+        charDetailsService.setInventoryByChoice(
+                userProfile.getCharDetails().getId(),
+                choice.getLoseStudy(),
+                choice.getLoseScholarship(),
+                choice.getLoseApprenticeship(),
+                choice.getLoseJob(),
+                choice.getLoseProperty(),
+                choice.getLoseRentApartment(),
+                choice.getLoseCar(),
+                choice.getLoseDriverLicense()
+        );
 
         return gameLost;
     }
+
 
 
     private String compareResultForMessage(int choiceResult, Choice choice) {

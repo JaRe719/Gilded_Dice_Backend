@@ -336,8 +336,7 @@ class GameServiceTest {
         User user = createUserWithProfileWithCharDetails();
         Story story = createStoryWithChoices();
         story.setCategory(Category.FATE);
-
-        // Mocking des PlusStoryService
+        
         List<PlusStory> mockPlusStories = List.of(new PlusStory());
         when(plusStoryService.getAllPlusStory()).thenReturn(mockPlusStories);
 
@@ -499,7 +498,7 @@ class GameServiceTest {
     void testPlayChoice_GameLost() {
         // Arrange
         long choiceId = 1L;
-        int diceResult = 5; // Niedriger Würfelwert, damit die Chance hoch ist, zu verlieren
+        int diceResult = 5;
         Authentication auth = mock(Authentication.class);
 
         User user = createUserWithProfileWithCharDetails();
@@ -599,24 +598,19 @@ class GameServiceTest {
         when(npcRepository.findById(anyLong())).thenReturn(Optional.of(npcMock));
         when(choiceRepository.save(any(Choice.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // Damit wir am Ende das PlusStory-Objekt auch "speichern"
         when(plusStoryRepository.save(any(PlusStory.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // Act
         gameService.createPlusStory(dto);
 
         // Assert
-        // Wir überprüfen, ob plusStoryRepository.save(...) mindestens einmal aufgerufen wurde
         verify(plusStoryRepository, times(1)).save(any(PlusStory.class));
-        // Ebenfalls sollte choiceRepository.save(...) für jede Choice aufgerufen werden
         verify(choiceRepository, atLeastOnce()).save(any(Choice.class));
     }
 
     @Test
     void testCreatePlusStory_NpcNotFound() {
-        // Wenn einer der Choices ein npcId hat, aber im Repo nicht existiert
         PlusStoryCreateDTO dto = mockPlusStoryCreateDTO();
-        // NPC ist nicht gefunden
         when(npcRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -631,7 +625,7 @@ class GameServiceTest {
     void testUpdatePlusStory_Success() {
         // Arrange
         long plusStoryId = 1L;
-        PlusStoryUpdateDTO dto = mockPlusStoryUpdateDTO(plusStoryId); 
+        PlusStoryUpdateDTO dto = mockPlusStoryUpdateDTO(plusStoryId);
         PlusStory existingPlusStory = new PlusStory();
         existingPlusStory.setId(plusStoryId);
 

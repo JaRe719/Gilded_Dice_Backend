@@ -8,6 +8,7 @@ import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
+import de.jare.gildeddice.dtos.games.game.NpcCreateListDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.RequirenentDTO;
@@ -336,7 +337,7 @@ class GameServiceTest {
         User user = createUserWithProfileWithCharDetails();
         Story story = createStoryWithChoices();
         story.setCategory(Category.FATE);
-        
+
         List<PlusStory> mockPlusStories = List.of(new PlusStory());
         when(plusStoryService.getAllPlusStory()).thenReturn(mockPlusStories);
 
@@ -660,11 +661,33 @@ class GameServiceTest {
         verify(plusStoryRepository, never()).save(any(PlusStory.class));
     }
 
+    @Test
+    void testCreateNpcFromList_Success() {
+        // Arrange
+        NpcCreateListDTO npc1 = new NpcCreateListDTO("NPC1", "file1.png");
+        NpcCreateListDTO npc2 = new NpcCreateListDTO("NPC2", "file2.png");
+        List<NpcCreateListDTO> npcList = List.of(npc1, npc2);
 
+        // Act
+        gameService.createNpcFromList(npcList);
 
+        // Assert
+        verify(npcRepository, times(2)).save(any(Npc.class));
+    }
 
+    @Test
+    void testCreateNpcFromList_EmptyList() {
+        // Arrange
+        List<NpcCreateListDTO> emptyList = Collections.emptyList();
 
+        // Act
+        gameService.createNpcFromList(emptyList);
 
+        // Assert
+        verify(npcRepository, never()).save(any(Npc.class));
+    }
+
+    
     @Test
     void testPlayerHasGame_Success() {
         User user = createUserWithProfileWithCharDetails();

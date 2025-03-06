@@ -68,6 +68,11 @@ public class GameService {
     }
 
     public void createStory(StoryCreateDTO dto) {
+        Story story = mapDtoToStory(dto);
+        storyRepository.save(story);
+    }
+
+    private Story mapDtoToStory(StoryCreateDTO dto) {
         Story story = new Story();
         story.setCategory(Category.valueOf(dto.category()));
         story.setTitle(dto.title());
@@ -77,77 +82,74 @@ public class GameService {
         story.setPhaseEnd(dto.phaseEnd());
         story.setGameEnd(dto.gameEnd());
         story.setChoices(createChoiceList(dto.choices()));
-        storyRepository.save(story);
+
+        return story;
     }
 
+
     private List<Choice> createChoiceList(List<ChoiceCreateDTO> choices) {
-        List<Choice> choiceEntities = new ArrayList<>();
-        for (ChoiceCreateDTO choice : choices) {
-            Choice choiceEntity = new Choice();
-            choiceEntity.setTitle(choice.title());
-            choiceEntity.setSkill(Skill.valueOf(choice.skill()));
-            choiceEntity.setMinDiceValue(choice.minDiceValue());
-            choiceEntity.setCost(choice.cost());
-            choiceEntity.setReturning(choice.returning());
-            choiceEntity.setStartMessage(choice.startMessage());
+        return choices.stream()
+                .map(this::mapDtoToChoice)          // 1) DTO -> Entity
+                .map(choiceRepository::save)        // 2) Speichern
+                .collect(Collectors.toList());
+    }
 
-            choiceEntity.setWinMessage(choice.winMessage());
-            choiceEntity.setWinIncomeValue(choice.winIncomeValue());
-            choiceEntity.setWinOutcomeValue(choice.winOutcomeValue());
-            choiceEntity.setWinOneTimePayment(choice.winOneTimePayment());
+    private Choice mapDtoToChoice(ChoiceCreateDTO dto) {
+        Choice entity = new Choice();
+        entity.setTitle(dto.title());
+        entity.setSkill(Skill.valueOf(dto.skill()));
+        entity.setMinDiceValue(dto.minDiceValue());
+        entity.setCost(dto.cost());
+        entity.setReturning(dto.returning());
+        entity.setStartMessage(dto.startMessage());
 
-            choiceEntity.setWinStudy(choice.winStudy());
-            choiceEntity.setWinScholarship(choice.winScholarship());
-            choiceEntity.setWinApprenticeship(choice.winApprenticeship());
-            choiceEntity.setWinJob(choice.winJob());
-            choiceEntity.setWinProperty(choice.winProperty());
-            choiceEntity.setWinRentApartment(choice.winRentApartment());
-            choiceEntity.setWinCar(choice.winCar());
-            choiceEntity.setWinDriverLicense(choice.winDriverLicense());
+        entity.setWinMessage(dto.winMessage());
+        entity.setWinIncomeValue(dto.winIncomeValue());
+        entity.setWinOutcomeValue(dto.winOutcomeValue());
+        entity.setWinOneTimePayment(dto.winOneTimePayment());
 
-            choiceEntity.setWinStressValue(choice.winStressValue());
-            choiceEntity.setWinSatisfactionValue(choice.winSatisfactionValue());
-            choiceEntity.setWinHealthValue(choice.winHealthValue());
+        entity.setWinStudy(dto.winStudy());
+        entity.setWinScholarship(dto.winScholarship());
+        entity.setWinApprenticeship(dto.winApprenticeship());
+        entity.setWinJob(dto.winJob());
+        entity.setWinProperty(dto.winProperty());
+        entity.setWinRentApartment(dto.winRentApartment());
+        entity.setWinCar(dto.winCar());
+        entity.setWinDriverLicense(dto.winDriverLicense());
 
+        entity.setWinStressValue(dto.winStressValue());
+        entity.setWinSatisfactionValue(dto.winSatisfactionValue());
+        entity.setWinHealthValue(dto.winHealthValue());
 
-            choiceEntity.setLoseMessage(choice.loseMessage());
-            choiceEntity.setLoseIncomeValue(choice.loseIncomeValue());
-            choiceEntity.setLoseOutcomeValue(choice.loseOutcomeValue());
-            choiceEntity.setLoseOneTimePayment(choice.loseOneTimePayment());
+        entity.setLoseMessage(dto.loseMessage());
+        entity.setLoseIncomeValue(dto.loseIncomeValue());
+        entity.setLoseOutcomeValue(dto.loseOutcomeValue());
+        entity.setLoseOneTimePayment(dto.loseOneTimePayment());
 
-            choiceEntity.setLoseStudy(choice.loseStudy());
-            choiceEntity.setLoseScholarship(choice.loseScholarship());
-            choiceEntity.setLoseApprenticeship(choice.loseApprenticeship());
-            choiceEntity.setLoseJob(choice.loseJob());
-            choiceEntity.setLoseProperty(choice.loseProperty());
-            choiceEntity.setLoseRentApartment(choice.loseRentApartment());
-            choiceEntity.setLoseCar(choice.loseCar());
-            choiceEntity.setLoseDriverLicense(choice.loseDriverLicense());
+        entity.setLoseStudy(dto.loseStudy());
+        entity.setLoseScholarship(dto.loseScholarship());
+        entity.setLoseApprenticeship(dto.loseApprenticeship());
+        entity.setLoseJob(dto.loseJob());
+        entity.setLoseProperty(dto.loseProperty());
+        entity.setLoseRentApartment(dto.loseRentApartment());
+        entity.setLoseCar(dto.loseCar());
+        entity.setLoseDriverLicense(dto.loseDriverLicense());
 
-            choiceEntity.setLoseStressValue(choice.loseStressValue());
-            choiceEntity.setLoseSatisfactionValue(choice.loseSatisfactionValue());
-            choiceEntity.setLoseHealthValue(choice.loseHealthValue());
+        entity.setLoseStressValue(dto.loseStressValue());
+        entity.setLoseSatisfactionValue(dto.loseSatisfactionValue());
+        entity.setLoseHealthValue(dto.loseHealthValue());
 
+        entity.setCritMessage(dto.critMessage());
+        entity.setCritIncomeValue(dto.critIncomeValue());
+        entity.setCritOutcomeValue(dto.critOutcomeValue());
+        entity.setCritOneTimePayment(dto.critOneTimePayment());
+        entity.setCritScholarship(dto.critScholarship());
+        entity.setCritStressValue(dto.critStressValue());
+        entity.setCritSatisfactionValue(dto.critSatisfactionValue());
+        entity.setCritHealthValue(dto.critHealthValue());
 
-            choiceEntity.setCritMessage(choice.critMessage());
-            choiceEntity.setCritIncomeValue(choice.critIncomeValue());
-            choiceEntity.setCritOutcomeValue(choice.critOutcomeValue());
-            choiceEntity.setCritOneTimePayment(choice.critOneTimePayment());
-
-            choiceEntity.setCritScholarship(choice.critScholarship());
-
-            choiceEntity.setCritStressValue(choice.critStressValue());
-            choiceEntity.setCritSatisfactionValue(choice.critSatisfactionValue());
-            choiceEntity.setCritHealthValue(choice.critHealthValue());
-
-
-            choiceEntity.setNpc(npcRepository.findById(choice.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
-
-            choiceEntity = choiceRepository.save(choiceEntity);
-            choiceEntities.add(choiceEntity);
-        }
-
-        return choiceEntities;
+        entity.setNpc(npcRepository.findById(dto.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
+        return entity;
     }
 
     public void updateStory(StoryUpdateDTO dto) {

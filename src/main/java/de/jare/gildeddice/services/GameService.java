@@ -373,10 +373,11 @@ public class GameService {
 
 
 
+
     private GamePhaseDTO getGameSummary(Game game) {
         Profile profile = Optional.ofNullable(profileRepository.findByUsername(game.getUsername()))
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user: " + game.getUsername()));
-        
+
         String finalPrompt = generateFinalPrompt(profile, game);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
@@ -409,25 +410,12 @@ public class GameService {
 
 
     private GamePhaseDTO startRandomPlusStory(Game game, User user) {
-        if (game.getAvailablePlusStories().isEmpty()) {
-            throw new EmptyStackException();
-        }
+        ensurePlusStoriesAvailable(game);
 
-        List<Long> plusStoryIdList = new ArrayList<>(game.getAvailablePlusStories());
-        int randomIndex = ThreadLocalRandom.current().nextInt(0, plusStoryIdList.size());
+        Long chosenPlusStoryId = pickRandomPlusStoryId(game);
+        PlusStory randomPlusStory = loadPlusStoryById(chosenPlusStoryId);
 
-
-        Long chosenPlusStoryId = plusStoryIdList.get(randomIndex);
-        PlusStory randomPlusStory = plusStoryRepository
-                .findById(chosenPlusStoryId)
-                .orElseThrow(() -> new EntityNotFoundException("PlusStory not found!"));
-
-        if (randomPlusStory.isOneTime()) {
-            game.getUsedPlusStories().add(chosenPlusStoryId);
-            game.getAvailablePlusStories().remove(chosenPlusStoryId);
-        } else {
-            game.getAvailablePlusStories().remove(chosenPlusStoryId);
-        }
+        markPlusStoryAsUsedIfOneTime(game, chosenPlusStoryId, randomPlusStory);
 
         String finalPrompt = createCompletedPrompt(
                 randomPlusStory.getPrompt(),
@@ -438,20 +426,58 @@ public class GameService {
 
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
-        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(
-                randomPlusStory.getCategory(),
-                randomPlusStory.getTitle(),
-                "Test Plus " + game.getPhase() + " " + responseDTO.choices().getFirst().message().content(),
-                randomPlusStory.isSkippable(),
-                false,
-                randomPlusStory.getChoices()
-        );
-
-        game.setCurrentGamePhase(gamePhaseDTO);
-        gameRepository.save(game);
+        GamePhaseDTO gamePhaseDTO = buildPlusStoryPhaseDTO(game, randomPlusStory, responseDTO);
+        setCurrentGamePhase(game, gamePhaseDTO);
 
         return gamePhaseDTO;
     }
+
+    private void ensurePlusStoriesAvailable(Game game) {
+        if (game.getAvailablePlusStories().isEmpty()) {
+            throw new EmptyStackException();
+        }
+    }
+
+    private Long pickRandomPlusStoryId(Game game) {
+        List<Long> plusStoryIdList = new ArrayList<>(game.getAvailablePlusStories());
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, plusStoryIdList.size());
+        return plusStoryIdList.get(randomIndex);
+    }
+
+    private PlusStory loadPlusStoryById(Long plusStoryId) {
+        return plusStoryRepository.findById(plusStoryId)
+                .orElseThrow(() -> new EntityNotFoundException("PlusStory not found!"));
+    }
+
+    private void markPlusStoryAsUsedIfOneTime(Game game, Long chosenPlusStoryId, PlusStory plusStory) {
+        if (plusStory.isOneTime()) {
+            game.getUsedPlusStories().add(chosenPlusStoryId);
+        }
+        game.getAvailablePlusStories().remove(chosenPlusStoryId);
+    }
+
+    private GamePhaseDTO buildPlusStoryPhaseDTO(Game game, PlusStory plusStory, KSuitAiResponseDTO responseDTO) {
+        String finalMessage = "Test Plus " + game.getPhase() + " "
+                + responseDTO.choices().getFirst().message().content();
+
+        return GameMapper.toGamePhaseDTO(
+                plusStory.getCategory(),
+                plusStory.getTitle(),
+                finalMessage,
+                plusStory.isSkippable(),
+                false,
+                plusStory.getChoices()
+        );
+    }
+    
+    private void setCurrentGamePhase(Game game, GamePhaseDTO gamePhaseDTO) {
+        game.setCurrentGamePhase(gamePhaseDTO);
+        gameRepository.save(game);
+    }
+
+
+
+
 
 
     private String createCompletedPrompt(String storyPrompt, List<Choice> choices, int storyPhase , User user) {

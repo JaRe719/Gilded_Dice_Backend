@@ -182,8 +182,16 @@ public class GameService {
     }
 
     public void updateChoice(ChoiceUpdateDTO dto) {
-        Choice choiceEntity = choiceRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
+        Choice choiceEntity = choiceRepository
+                .findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Choice not found!"));
 
+        applyChoiceUpdates(choiceEntity, dto);
+
+        choiceRepository.save(choiceEntity);
+    }
+    
+    private void applyChoiceUpdates(Choice choiceEntity, ChoiceUpdateDTO dto) {
         choiceEntity.setTitle(dto.title());
         choiceEntity.setSkill(Skill.valueOf(dto.skill()));
         choiceEntity.setMinDiceValue(dto.minDiceValue());
@@ -196,7 +204,6 @@ public class GameService {
         choiceEntity.setWinOutcomeValue(dto.winOutcomeValue());
         choiceEntity.setWinOneTimePayment(dto.winOneTimePayment());
         choiceEntity.setWinInvestmentPercent(dto.winInvestmentPercent());
-
         choiceEntity.setWinStudy(dto.winStudy());
         choiceEntity.setWinScholarship(dto.winScholarship());
         choiceEntity.setWinApprenticeship(dto.winApprenticeship());
@@ -205,18 +212,15 @@ public class GameService {
         choiceEntity.setWinRentApartment(dto.winRentApartment());
         choiceEntity.setWinCar(dto.winCar());
         choiceEntity.setWinDriverLicense(dto.winDriverLicense());
-
         choiceEntity.setWinStressValue(dto.winStressValue());
         choiceEntity.setWinSatisfactionValue(dto.winSatisfactionValue());
         choiceEntity.setWinHealthValue(dto.winHealthValue());
-
 
         choiceEntity.setLoseMessage(dto.loseMessage());
         choiceEntity.setLoseIncomeValue(dto.loseIncomeValue());
         choiceEntity.setLoseOutcomeValue(dto.loseOutcomeValue());
         choiceEntity.setLoseOneTimePayment(dto.loseOneTimePayment());
         choiceEntity.setLoseInvestmentPercent(dto.loseInvestmentPercent());
-
         choiceEntity.setLoseStudy(dto.loseStudy());
         choiceEntity.setLoseScholarship(dto.loseScholarship());
         choiceEntity.setLoseApprenticeship(dto.loseApprenticeship());
@@ -225,29 +229,24 @@ public class GameService {
         choiceEntity.setLoseRentApartment(dto.loseRentApartment());
         choiceEntity.setLoseCar(dto.loseCar());
         choiceEntity.setLoseDriverLicense(dto.loseDriverLicense());
-
         choiceEntity.setLoseStressValue(dto.loseStressValue());
         choiceEntity.setLoseSatisfactionValue(dto.loseSatisfactionValue());
         choiceEntity.setLoseHealthValue(dto.loseHealthValue());
-
 
         choiceEntity.setCritMessage(dto.critMessage());
         choiceEntity.setCritIncomeValue(dto.critIncomeValue());
         choiceEntity.setCritOutcomeValue(dto.critOutcomeValue());
         choiceEntity.setCritOneTimePayment(dto.critOneTimePayment());
         choiceEntity.setCritInvestmentPercent(dto.critInvestmentPercent());
-
         choiceEntity.setCritScholarship(dto.critScholarship());
-
         choiceEntity.setCritStressValue(dto.critStressValue());
         choiceEntity.setCritSatisfactionValue(dto.critSatisfactionValue());
         choiceEntity.setCritHealthValue(dto.critHealthValue());
 
-
+        // NPC-Check
         choiceEntity.setNpc(npcRepository.findById(dto.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
-
-        choiceRepository.save(choiceEntity);
     }
+
 
 
 

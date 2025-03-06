@@ -39,13 +39,10 @@ public class GameService {
     private ChoiceRepository choiceRepository;
     private NpcRepository npcRepository;
     private PlusStoryRepository plusStoryRepository;
-
     private AiService aiService;
     private UserService userService;
     private CharDetailsService charDetailsService;
-
     private PlusStoryService plusStoryService;
-
     private HighScoreService highScoreService;
 
     public GameService(AiService aiService, CharDetailsService charDetailsService, ChoiceRepository choiceRepository, GameRepository gameRepository, HighScoreService highScoreService, NpcRepository npcRepository, PlusStoryRepository plusStoryRepository, PlusStoryService plusStoryService, StoryRepository storyRepository, UserService userService, ProfileRepository profileRepository, CharDetailsRepository charDetailsRepository) {
@@ -86,7 +83,6 @@ public class GameService {
         return story;
     }
 
-
     private List<Choice> createChoiceList(List<ChoiceCreateDTO> choices) {
         return choices.stream()
                 .map(this::mapDtoToChoice)          // 1) DTO -> Entity
@@ -107,7 +103,6 @@ public class GameService {
         entity.setWinIncomeValue(dto.winIncomeValue());
         entity.setWinOutcomeValue(dto.winOutcomeValue());
         entity.setWinOneTimePayment(dto.winOneTimePayment());
-
         entity.setWinStudy(dto.winStudy());
         entity.setWinScholarship(dto.winScholarship());
         entity.setWinApprenticeship(dto.winApprenticeship());
@@ -116,7 +111,6 @@ public class GameService {
         entity.setWinRentApartment(dto.winRentApartment());
         entity.setWinCar(dto.winCar());
         entity.setWinDriverLicense(dto.winDriverLicense());
-
         entity.setWinStressValue(dto.winStressValue());
         entity.setWinSatisfactionValue(dto.winSatisfactionValue());
         entity.setWinHealthValue(dto.winHealthValue());
@@ -125,7 +119,6 @@ public class GameService {
         entity.setLoseIncomeValue(dto.loseIncomeValue());
         entity.setLoseOutcomeValue(dto.loseOutcomeValue());
         entity.setLoseOneTimePayment(dto.loseOneTimePayment());
-
         entity.setLoseStudy(dto.loseStudy());
         entity.setLoseScholarship(dto.loseScholarship());
         entity.setLoseApprenticeship(dto.loseApprenticeship());
@@ -134,7 +127,6 @@ public class GameService {
         entity.setLoseRentApartment(dto.loseRentApartment());
         entity.setLoseCar(dto.loseCar());
         entity.setLoseDriverLicense(dto.loseDriverLicense());
-
         entity.setLoseStressValue(dto.loseStressValue());
         entity.setLoseSatisfactionValue(dto.loseSatisfactionValue());
         entity.setLoseHealthValue(dto.loseHealthValue());
@@ -152,8 +144,19 @@ public class GameService {
         return entity;
     }
 
+
+
+
     public void updateStory(StoryUpdateDTO dto) {
-        Story story = storyRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Story not found!"));
+        Story story = storyRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Story not found!"));
+
+        applyStoryUpdates(story, dto);
+
+        storyRepository.save(story);
+    }
+
+    private void applyStoryUpdates(Story story, StoryUpdateDTO dto) {
         story.setCategory(Category.valueOf(dto.category()));
         story.setTitle(dto.title());
         story.setPhase(dto.phase());
@@ -161,7 +164,6 @@ public class GameService {
         story.setPhaseEnd(dto.phaseEnd());
         story.setPrompt(dto.prompt());
         story.setGameEnd(dto.gameEnd());
-        storyRepository.save(story);
     }
 
     public Iterable<Npc> getAllNpc() {

@@ -4,6 +4,7 @@ import de.jare.gildeddice.dtos.characters.CharDetailsRequestDTO;
 import de.jare.gildeddice.dtos.characters.CharDetailsResponseDTO;
 import de.jare.gildeddice.dtos.characters.MoneyResponseDTO;
 import de.jare.gildeddice.entities.enums.Category;
+import de.jare.gildeddice.entities.games.Game;
 import de.jare.gildeddice.entities.games.storys.PlusStory;
 import de.jare.gildeddice.entities.users.character.CharChoices;
 import de.jare.gildeddice.entities.users.character.CharDetails;
@@ -247,6 +248,61 @@ class CharDetailsServiceTest {
 
         verify(charDetailsRepository, times(1)).save(charDetails);
     }
+
+    @Test
+    void testSetFinancesByPhaseEnd_CharDetailsNotFound() {
+        // Arrange
+        long charDetailsId = 1L;
+        Game game = mock(Game.class);
+
+        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+                () -> charDetailsService.setFinancesByPhaseEnd(charDetailsId, game));
+        assertEquals("CharDetails not found!", ex.getMessage());
+        verify(charDetailsRepository, never()).save(any(CharDetails.class));
+    }
+
+    @Test
+    void testSetFinancesByPhaseEnd_PhaseMultipleOf10_Investing() {
+        // Arrange
+        long charDetailsId = 1L;
+
+        // Example values:
+        // - Phase = 20 => (20 != 10 && 20 % 10 == 0) => Special block is executed
+        // - playedPhase = 18 => skippedPhases = (10 - (18 % 10)) % 10 = (10 - 8) % 10 = 2
+        // => "2 * 12" is included in the calculation
+        Game game = new Game();
+        game.setPhase(20);
+        game.setPlayedPhase(18);
+
+        CharDetails charDetails = new CharDetails();
+        charDetails.setId(charDetailsId);
+        charDetails.setMoney(1000);          // Start value
+        charDetails.setIncome(100);          // +100 per Phase
+        charDetails.setOutcome(-50);         // -50 per Phase
+        charDetails.setInvest(500);          // Invested capital
+        charDetails.setInvestmentPercent(10); // 10%
+
+        when(charDetailsRepository.findById(charDetailsId)).thenReturn(Optional.of(charDetails));
+
+        // Act
+        charDetailsService.setFinancesByPhaseEnd(charDetailsId, game);
+
+        // Assert
+        // calc (Invest > 0):
+        // 1) skippedPhases = 2 => (Income + Outcome) = 50 => 50 * (2*12) = 50 * 24 = 1200
+        // 2) Yield: (500 * 10 / 100.0) * 120 = (50) * 120 = 6000
+        // 3) + invest = 500
+        // => 1000 (Start) + 1200 + 6000 + 500 = 8700
+        assertEquals(8700, charDetails.getMoney());
+        assertEquals(0, charDetails.getInvest());             // reset
+        assertEquals(0, charDetails.getInvestmentPercent());  // reset
+
+        verify(charDetailsRepository, times(1)).save(charDetails);
+    }
+
 
     @Test
     void testSetFinancesByChoice_CharDetailsNotFound() {
@@ -625,6 +681,44 @@ class CharDetailsServiceTest {
         verify(charDetailsRepository, never()).save(any());
     }
 
+    @Test
+    void testDelete_Success() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile userProfile = new Profile();
+        userProfile.setId(1L);
+
+        CharDetails existingCharDetails = new CharDetails();
+        existingCharDetails.setId(1L);
+
+        when(userService.getUserProfile(auth)).thenReturn(userProfile);
+        when(charDetailsRepository.findById(userProfile.getId()))
+                .thenReturn(Optional.of(existingCharDetails));
+
+        // Act
+        charDetailsService.delete(auth);
+
+        // Assert
+        verify(charDetailsRepository, times(1)).delete(existingCharDetails);
+    }
+
+    @Test
+    void testDelete_CharDetailsNotFound() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile userProfile = new Profile();
+        userProfile.setId(1L);
+
+        when(userService.getUserProfile(auth)).thenReturn(userProfile);
+        when(charDetailsRepository.findById(userProfile.getId()))
+                .thenReturn(Optional.empty());
+
+        // Act
+        charDetailsService.delete(auth);
+
+        // Assert
+        verify(charDetailsRepository, never()).delete(any(CharDetails.class));
+    }
 
 
 

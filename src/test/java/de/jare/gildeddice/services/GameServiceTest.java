@@ -761,6 +761,42 @@ class GameServiceTest {
         verify(gameRepository, never()).save(any(Game.class));
     }
 
+    @Test
+    void testGetAllChoice_Success() {
+        // Arrange
+        List<Choice> mockChoices = new ArrayList<>();
+        mockChoices.add(new Choice());
+        mockChoices.add(new Choice());
+        when(choiceRepository.findAll()).thenReturn(mockChoices);
+
+        // Act
+        Iterable<Choice> result = gameService.getAllChoice();
+
+        // Assert
+        // Du kannst prüfen, ob result dieselben Elemente enthält
+        assertNotNull(result);
+        // Konvertiere in List und prüfe Größe
+        List<Choice> resultList = new ArrayList<>();
+        result.forEach(resultList::add);
+        assertEquals(2, resultList.size());
+        verify(choiceRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testGetAllChoice_Empty() {
+        // Arrange
+        when(choiceRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        Iterable<Choice> result = gameService.getAllChoice();
+
+        // Assert
+        assertNotNull(result);
+        List<Choice> resultList = new ArrayList<>();
+        result.forEach(resultList::add);
+        assertTrue(resultList.isEmpty());
+        verify(choiceRepository, times(1)).findAll();
+    }
 
 
 

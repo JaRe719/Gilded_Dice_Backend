@@ -9,11 +9,13 @@ import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
 import de.jare.gildeddice.dtos.games.plusstorys.RequirenentDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
 import de.jare.gildeddice.entities.games.storys.PlusStory;
+import de.jare.gildeddice.entities.games.storys.Requirement;
 import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
@@ -625,6 +627,44 @@ class GameServiceTest {
         verify(plusStoryRepository, never()).save(any(PlusStory.class));
     }
 
+    @Test
+    void testUpdatePlusStory_Success() {
+        // Arrange
+        long plusStoryId = 1L;
+        PlusStoryUpdateDTO dto = mockPlusStoryUpdateDTO(plusStoryId); 
+        PlusStory existingPlusStory = new PlusStory();
+        existingPlusStory.setId(plusStoryId);
+
+        Requirement requirement = new Requirement();
+        existingPlusStory.setRequirement(requirement);
+
+        when(plusStoryRepository.findById(plusStoryId))
+                .thenReturn(Optional.of(existingPlusStory));
+
+        // Act
+        gameService.updatePlusStory(dto);
+
+        // Assert
+
+        verify(plusStoryRepository, times(1)).save(existingPlusStory);
+        assertEquals(dto.title(), existingPlusStory.getTitle());
+    }
+
+    @Test
+    void testUpdatePlusStory_PlusStoryNotFound() {
+        // Arrange
+        long plusStoryId = 99L;
+        PlusStoryUpdateDTO dto = mockPlusStoryUpdateDTO(plusStoryId);
+
+        when(plusStoryRepository.findById(plusStoryId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                gameService.updatePlusStory(dto)
+        );
+        assertEquals("Story not found!", ex.getMessage());
+        verify(plusStoryRepository, never()).save(any(PlusStory.class));
+    }
 
 
 
@@ -859,6 +899,36 @@ class GameServiceTest {
                                 42L,    // npcId
                                 true   // phaseEnd
                         )
+                )
+        );
+    }
+
+
+    private PlusStoryUpdateDTO mockPlusStoryUpdateDTO(long id) {
+        return new PlusStoryUpdateDTO(
+                id,                              // id
+                "EXTRA",                        // category
+                "Level Up Your Life",            // title
+                "You are offered a new job opportunity that could shape your future.", // prompt
+                true,                            // skippable
+                false,                           // oneTime
+                new RequirenentDTO(
+                        false,   // hasStudie
+                        false,   // hasScholarship
+                        true,    // hasApprenticeship
+                        false,   // hasSecondJob
+                        true,    // hasJob
+                        true,    // insurance
+                        false,   // hasHomeByParents
+                        true,    // hasSharedApartment
+                        false,   // hasRentedApartment
+                        false,   // hasProperty
+                        false,   // hasCar
+                        true,    // hasDriverLicense
+                        false,   // hasInvested
+                        3,       // stressStatusLvl
+                        2,       // satisfactionStatusLvl
+                        4        // healthStatusLvl
                 )
         );
     }

@@ -246,33 +246,86 @@ public class GameService {
         // NPC-Check
         choiceEntity.setNpc(npcRepository.findById(dto.npcId()).orElseThrow(() -> new EntityNotFoundException("npc not found!")));
     }
-
-
-
+    
 
     public GamePhaseDTO getGamePhase(Authentication auth) {
         User user = userService.getUser(auth);
-        if (user.getProfile().getCharDetails() == null) throw new IllegalStateException("no Char");
+        validateCharacterOrThrow(user);
 
-        Game game = getGame(user);
+        Game game = getOrCreateGame(user);
 
-        if (game.getCurrentGamePhase() != null) {
+        if (alreadyHasGamePhase(game)) {
             return game.getCurrentGamePhase();
-        } else charDetailsService.setFinancesByPhaseEnd(user.getProfile().getCharDetails().getId(), game);
+        }
 
+        // Falls noch keine Phase vorhanden, erst mal Finanzen aktualisieren
+        charDetailsService.setFinancesByPhaseEnd(user.getProfile().getCharDetails().getId(), game);
+
+        if (handleGameEndIfAny(game)) {
+            return game.getCurrentGamePhase(); // Das fasst ggf. schon Game-End-Phase zusammen.
+        }
+
+        // Neue PlusStory-IDs hinzufügen
+        addNewPlusStories(game, user);
+
+        // Prüfen, ob wir eine PlusStory starten sollen
+        GamePhaseDTO plusStoryPhase = maybeStartRandomPlusStory(game, user);
+        if (plusStoryPhase != null) {
+            return plusStoryPhase; // Falls eine PlusStory gestartet wurde
+        }
+
+        // Sonst normale Story starten
+        Story story = storyRepository.findByPhase(game.getPhase());
+        if (story == null) {
+            return handleMissingStory(game);
+        }
+
+        return proceedWithStory(game, story, user);
+    }
+
+    private void validateCharacterOrThrow(User user) {
+        if (user.getProfile().getCharDetails() == null) {
+            throw new IllegalStateException("no Char");
+        }
+    }
+
+    private Game getOrCreateGame(User user) {
+        return gameRepository.findByUsername(user.getProfile().getUsername())
+                .orElseGet(() -> {
+                    Game newGame = new Game();
+                    newGame.setUsername(user.getProfile().getUsername());
+                    newGame.setPhase(10);
+                    return newGame;
+                });
+    }
+
+    private boolean alreadyHasGamePhase(Game game) {
+        return game.getCurrentGamePhase() != null;
+    }
+
+    private boolean handleGameEndIfAny(Game game) {
         if (game.isGameEnd() || game.isGameLost()) {
             GamePhaseDTO summary = getGameSummary(game);
             game.setCurrentGamePhase(summary);
             gameRepository.save(game);
-            return summary;
+            return true;
         }
-        //int activeGamePhase = game.getPhase(); //LLM bypass
+        return false;
+    }
 
+    private void addNewPlusStories(Game game, User user) {
         Set<Long> newStoryIds = findNewPlusStoryIds(user, game);
         game.getAvailablePlusStories().addAll(newStoryIds);
+    }
+
+    private GamePhaseDTO maybeStartRandomPlusStory(Game game, User user) {
         int randomIndex = ThreadLocalRandom.current().nextInt(0, 10);
 
-        if (!game.isPlusStoryRunLastRound() && (game.getPhase() == 12 || (game.getPhase() > 12 && (game.getPhase() % 2 == 0 && (randomIndex >= 0 && randomIndex < 5))))) {
+        boolean canStartPlusStory = !game.isPlusStoryRunLastRound()
+                && (game.getPhase() == 12
+                || (game.getPhase() > 12 && (game.getPhase() % 2 == 0) && (randomIndex >= 0 && randomIndex < 5)));
+
+        if (canStartPlusStory) {
             game.setPlusStoryRunLastRound(true);
             try {
                 return startRandomPlusStory(game, user);
@@ -283,24 +336,46 @@ public class GameService {
             game.setPlusStoryRunLastRound(false);
         }
 
-        Story story = storyRepository.findByPhase(game.getPhase());
-        if (story == null) {
-            gameRepository.save(game);
-            return new GamePhaseDTO("null", "error", "Story not found for phase " + game.getPhase(), true, true, new ArrayList<>());
-        }
+        return null; // Keine PlusStory gestartet
+    }
 
+    private GamePhaseDTO handleMissingStory(Game game) {
+        gameRepository.save(game);
+        return new GamePhaseDTO(
+                "null",
+                "error",
+                "Story not found for phase " + game.getPhase(),
+                true,
+                true,
+                new ArrayList<>()
+        );
+    }
+
+    private GamePhaseDTO proceedWithStory(Game game, Story story, User user) {
         String finalPrompt = createCompletedPrompt(story.getPrompt(), story.getChoices(), story.getPhase(), user);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
         setNextGamePhase(story, game);
         saveHighScoreWhenGameIsEnd(user.getProfile(), game, story.isGameEnd());
 
-        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(story.getCategory(),story.getTitle(), responseDTO.choices().getFirst().message().content(), story.isSkippable(), game.isGameEnd(), story.getChoices()); //GameMapper.toGamePhaseDTO(story.getCategory(), story.getTitle(), "Test " +activeGamePhase + " " + finalPrompt , story.isSkippable(), game.isGameEnd(), story.getChoices()); //LLM bypass
+        GamePhaseDTO gamePhaseDTO = GameMapper.toGamePhaseDTO(
+                story.getCategory(),
+                story.getTitle(),
+                responseDTO.choices().getFirst().message().content(),
+                story.isSkippable(),
+                game.isGameEnd(),
+                story.getChoices()
+        );
         game.setCurrentGamePhase(gamePhaseDTO);
         gameRepository.save(game);
 
         return gamePhaseDTO;
     }
+
+
+
+
+
 
     private GamePhaseDTO getGameSummary(Game game) {
         Profile profile = profileRepository.findByUsername(game.getUsername());

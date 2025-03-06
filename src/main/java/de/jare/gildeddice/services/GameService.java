@@ -258,23 +258,19 @@ public class GameService {
             return game.getCurrentGamePhase();
         }
 
-        // Falls noch keine Phase vorhanden, erst mal Finanzen aktualisieren
         charDetailsService.setFinancesByPhaseEnd(user.getProfile().getCharDetails().getId(), game);
 
         if (handleGameEndIfAny(game)) {
-            return game.getCurrentGamePhase(); // Das fasst ggf. schon Game-End-Phase zusammen.
+            return game.getCurrentGamePhase();
         }
 
-        // Neue PlusStory-IDs hinzufügen
         addNewPlusStories(game, user);
 
-        // Prüfen, ob wir eine PlusStory starten sollen
         GamePhaseDTO plusStoryPhase = maybeStartRandomPlusStory(game, user);
         if (plusStoryPhase != null) {
-            return plusStoryPhase; // Falls eine PlusStory gestartet wurde
+            return plusStoryPhase;
         }
 
-        // Sonst normale Story starten
         Story story = storyRepository.findByPhase(game.getPhase());
         if (story == null) {
             return handleMissingStory(game);
@@ -336,7 +332,7 @@ public class GameService {
             game.setPlusStoryRunLastRound(false);
         }
 
-        return null; // Keine PlusStory gestartet
+        return null;
     }
 
     private GamePhaseDTO handleMissingStory(Game game) {
@@ -380,12 +376,10 @@ public class GameService {
     private GamePhaseDTO getGameSummary(Game game) {
         Profile profile = Optional.ofNullable(profileRepository.findByUsername(game.getUsername()))
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user: " + game.getUsername()));
-
-        // Prompt vorbereiten
+        
         String finalPrompt = generateFinalPrompt(profile, game);
         KSuitAiResponseDTO responseDTO = aiService.callApi(finalPrompt);
 
-        // Ausgelagert in eine kleine Methode, wenn du's öfter brauchst.
         return buildGameEndPhaseDTO(responseDTO, game.isGameEnd());
     }
 

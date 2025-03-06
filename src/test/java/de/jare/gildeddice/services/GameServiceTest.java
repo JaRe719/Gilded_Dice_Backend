@@ -687,7 +687,7 @@ class GameServiceTest {
         verify(npcRepository, never()).save(any(Npc.class));
     }
 
-    
+
     @Test
     void testPlayerHasGame_Success() {
         User user = createUserWithProfileWithCharDetails();
@@ -718,6 +718,48 @@ class GameServiceTest {
         verify(userService, times(1)).getUserProfile(auth);
     }
 
+    @Test
+    void testSkipGame_Success() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile profile = new Profile();
+        profile.setUsername("TestUser");
+        User user = new User();
+        user.setProfile(profile);
+
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+
+        Game existingGame = new Game();
+        existingGame.setUsername("TestUser");
+        when(gameRepository.findByUsername("TestUser"))
+                .thenReturn(Optional.of(existingGame));
+
+        // Act
+        gameService.skipGame(auth);
+
+        // Assert
+        assertNull(existingGame.getCurrentGamePhase());
+        verify(gameRepository, times(1)).save(existingGame);
+    }
+
+    @Test
+    void testSkipGame_GameNotFound() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile profile = new Profile();
+        profile.setUsername("TestUser");
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+
+        when(gameRepository.findByUsername("TestUser"))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                gameService.skipGame(auth)
+        );
+        assertEquals("Game not found", ex.getMessage());
+        verify(gameRepository, never()).save(any(Game.class));
+    }
 
 
 

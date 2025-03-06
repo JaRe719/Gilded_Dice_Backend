@@ -766,26 +766,29 @@ public class GameService {
     }
 
     private MinValueToWinDTO calculateFinalMinResultToWin(Choice choice, int diceResult, CharDetails character) {
-        int finalMinResultToWin = choice.getMinDiceValue();
+        int skillValue = getSkillValue(choice, character);
+        int finalMinResult = choice.getMinDiceValue() - skillValue - character.getHandicap();
 
-        int handicap = character.getHandicap();
+        String calcPathGoal = buildCalculationExplanation(choice, skillValue, character.getHandicap(), finalMinResult, diceResult);
 
-        int skillValue = switch (choice.getSkill()) {
+        return new MinValueToWinDTO(finalMinResult, calcPathGoal);
+    }
+
+    private int getSkillValue(Choice choice, CharDetails character) {
+        return switch (choice.getSkill()) {
             case INTELLIGENCE -> character.getIntelligence();
             case NEGOTIATE -> character.getNegotiate();
             case ABILITY -> character.getAbility();
             case PLANNING -> character.getPlanning();
             case STAMINA -> character.getStamina();
         };
+    }
 
-        finalMinResultToWin = finalMinResultToWin - skillValue - handicap;
-
-        String calcPathGoal = "eigentliche Gewinnschwelle: " + choice.getMinDiceValue()
+    private String buildCalculationExplanation(Choice choice, int skillValue, int handicap, int finalMinResult, int diceResult) {
+        return "Eigentliche Gewinnschwelle: " + choice.getMinDiceValue()
                 + " - " + choice.getSkill().getSkillname() + ": " + skillValue
-                + " - Handicap: " + handicap + " = " + finalMinResultToWin
+                + " - Handicap: " + handicap + " = " + finalMinResult
                 + " Würfelwert: " + diceResult;
-
-        return new MinValueToWinDTO(finalMinResultToWin, calcPathGoal);
     }
 
     public void createPlusStory(PlusStoryCreateDTO dto) {

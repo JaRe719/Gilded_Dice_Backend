@@ -78,35 +78,85 @@ public class CharDetailsService {
         return userProfile.getCharDetails().getAvatar();
     }
 
+
     public MoneyResponseDTO getAllFinancial(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
     }
 
-    public void setFinancesByPhaseEnd(long charId, Game game) {
-        int gamePhase = game.getPhase();
-        CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
 
-        int totalMoney = charDetails.getMoney();
-        if (gamePhase != 10 && gamePhase % 10 == 0) {
-            if (charDetails.getInvest() > 0) {
-                int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
-                totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12));
-                totalMoney += (int) ((charDetails.getInvest() * charDetails.getInvestmentPercent()) / 100.0f) * 120;
-                totalMoney += charDetails.getInvest();
-                charDetails.setInvest(0);
-                charDetails.setInvestmentPercent(0);
-            } else {
-                charDetails.setInvestmentPercent(0);
-                int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
-                totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12));
-            }
-        } else {
-            totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * 12);
-        }
-            charDetails.setMoney(totalMoney);
-            charDetailsRepository.save(charDetails);
+    public void setFinancesByPhaseEnd(long charId, Game game) {
+        CharDetails charDetails = charDetailsRepository.findById(charId)
+                .orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+
+        int currentMoney = charDetails.getMoney();
+        int moneyToAdd = calculatePhaseEndPayout(game, charDetails);
+        charDetails.setMoney(currentMoney + moneyToAdd);
+
+        charDetailsRepository.save(charDetails);
     }
+
+    private int calculatePhaseEndPayout(Game game, CharDetails charDetails) {
+        int gamePhase = game.getPhase();
+
+        if (gamePhase != 10 && gamePhase % 10 == 0) {
+            return handleEndOfPhase(game, charDetails);
+        }
+        return standardPayout(charDetails);
+    }
+
+
+    private int handleEndOfPhase(Game game, CharDetails charDetails) {
+        int total = 0;
+
+        // calculate how much Game-Phases will be skipped?
+        // For example: on Phase 20 => (10 - (20 % 10)) % 10 = 0; on Phase 30 => 0 etc.
+        int skippedPhases = calculateSkippedPhases(game);
+
+        // Basic income/expenditure for the skipped phases
+        int baseIncome = (charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12);
+        total += baseIncome;
+
+        if (charDetails.getInvest() > 0) {
+            total += calculateInvestmentGain(charDetails);
+            resetInvestment(charDetails);
+        } else {
+            charDetails.setInvestmentPercent(0);
+        }
+        return total;
+    }
+
+    private int standardPayout(CharDetails charDetails) {
+        return (charDetails.getIncome() + charDetails.getOutcome()) * 12;
+    }
+
+
+    private int calculateInvestmentGain(CharDetails charDetails) {
+        int invest = charDetails.getInvest();
+        int interest = (int) ((invest * charDetails.getInvestmentPercent()) / 100.0f);
+        int interestTotal = interest * 120;
+
+        return interestTotal + invest;
+    }
+
+
+    private void resetInvestment(CharDetails charDetails) {
+        charDetails.setInvest(0);
+        charDetails.setInvestmentPercent(0);
+    }
+
+
+    private int calculateSkippedPhases(Game game) {
+        return (10 - (game.getPlayedPhase() % 10)) % 10;
+    }
+
+
+
+
+
+
+
+
 
     public void setFinancesByChoice(long charId, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment) {
         CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));

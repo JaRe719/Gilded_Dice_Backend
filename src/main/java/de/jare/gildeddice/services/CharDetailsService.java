@@ -178,61 +178,6 @@ public class CharDetailsService {
     }
 
 
-//
-//    public boolean setCharacterStatusLvls(long id, int gamePhase, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
-//        CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
-//
-//        int handicap = 0;
-//        int stresslvl = 0;
-//        int satisfactionlvl = 0;
-//        int healthlvl = 0;
-//        boolean gameEnd = false;
-//
-//        if (stressValue != null) {
-//            stresslvl += stressValue;
-//        }
-//        charDetails.adjustStressLvl(stresslvl);
-//
-//        //-- Stress
-//        if (charDetails.getStressLvl() == 10) gameEnd = true;
-//        else if (charDetails.getStressLvl() >= 8 && charDetails.getStressLvl() < 10) {
-//            handicap -= 2;
-//            if (gamePhase % 10 == 0) healthlvl -= 1;
-//        }
-//        else if (charDetails.getStressLvl() >= 5 && charDetails.getStressLvl() < 8) handicap -= 1;
-//
-//
-//        //-- Satisfaction
-//        if (satisfactionValue != null) {
-//            satisfactionlvl +=  satisfactionValue;
-//        }
-//        charDetails.adjustSatisfactionLvl(satisfactionlvl);
-//
-//        if (charDetails.getSatisfactionLvl() <= 2) {
-//            handicap -= 2;
-//            if (gamePhase % 10 == 0) healthlvl -= 1;
-//        }
-//        else if (charDetails.getSatisfactionLvl() == 3) handicap -= 1;
-//        else if (charDetails.getSatisfactionLvl() > 5) handicap += 1;
-//
-//
-//        //-- health
-//        if (healthValue != null) {
-//            healthlvl += healthValue;
-//        }
-//        charDetails.adjustHealthLvl(healthlvl);
-//
-//        if (charDetails.getHealthLvl() == 0) gameEnd = true;
-//
-//
-//        //-----
-//        charDetails.setHandicap(handicap);
-//        charDetailsRepository.save(charDetails);
-//        return gameEnd;
-//    }
-
-
-
     public boolean setCharacterStatusLvls(long id, int gamePhase, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
         CharDetails charDetails = getCharDetailsOrThrow(id);
 

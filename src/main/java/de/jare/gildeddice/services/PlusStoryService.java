@@ -11,7 +11,7 @@ import java.util.Optional;
 @Service
 public class PlusStoryService {
 
-    private PlusStoryRepository plusStoryRepository;
+    private final PlusStoryRepository plusStoryRepository;
 
     public PlusStoryService(PlusStoryRepository plusStoryRepository) {
         this.plusStoryRepository = plusStoryRepository;

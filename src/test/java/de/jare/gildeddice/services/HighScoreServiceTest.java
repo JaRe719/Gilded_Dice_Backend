@@ -174,7 +174,7 @@ class HighScoreServiceTest {
         int existingValue = 5000;
         Profile profile = new Profile();
         profile.setUsername("tester");
-        profile.setHighScore(existingValue);  // Neuer Score == existierender Score
+        profile.setHighScore(existingValue);
 
         HighScore existingScore = new HighScore("tester", existingValue);
 
@@ -182,8 +182,6 @@ class HighScoreServiceTest {
                 .thenReturn(Optional.of(existingScore));
 
         // Act & Assert
-        // Der Code wirft 'IllegalStateException', weil
-        // existingHighScore.getScore() < newScore NICHT erfüllt ist.
         IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
             highScoreService.saveHighScore(profile);
         });
@@ -196,7 +194,7 @@ class HighScoreServiceTest {
         // Arrange
         Profile profile = new Profile();
         profile.setUsername("negativeUser");
-        profile.setHighScore(-100); // Negativer Score
+        profile.setHighScore(-100); // Negativ Score
 
         when(highScoreRepository.findByUsername("negativeUser"))
                 .thenReturn(Optional.empty());
@@ -205,9 +203,7 @@ class HighScoreServiceTest {
         highScoreService.saveHighScore(profile);
 
         // Assert
-        // Aktuell wird einfach ein neuer Eintrag angelegt.
-        // Wenn das so gewollt ist, sollte es klappen.
         verify(highScoreRepository, times(1)).save(any(HighScore.class));
     }
-    
+
 }

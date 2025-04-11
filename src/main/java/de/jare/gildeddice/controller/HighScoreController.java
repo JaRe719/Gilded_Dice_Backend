@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping(value ="/api/v1/highscore")
 public class HighScoreController {
 
-    private HighScoreService highScoreService;
+    private final HighScoreService highScoreService;
 
 
     public HighScoreController(HighScoreService highScoreService) {

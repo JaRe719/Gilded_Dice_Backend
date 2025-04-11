@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/v1/char")
 public class CharController {
 
-    private CharDetailsService charDetailsService;
+    private final CharDetailsService charDetailsService;
 
     public CharController(CharDetailsService charDetailsService) {
         this.charDetailsService = charDetailsService;

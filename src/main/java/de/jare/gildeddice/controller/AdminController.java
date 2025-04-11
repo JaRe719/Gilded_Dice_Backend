@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/admin")
 public class AdminController {
 
-    private GameService gameService;
+    private final GameService gameService;
 
     public AdminController(GameService gameService) {
         this.gameService = gameService;

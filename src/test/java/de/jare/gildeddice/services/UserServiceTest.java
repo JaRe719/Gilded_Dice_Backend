@@ -45,7 +45,7 @@ class UserServiceTest {
 
 
     @Test
-    void testNewUserRegister_Success() {
+    void testRegisterNewUser_Success() {
         // Arrange
         UserRegisterRequestDTO dto = new UserRegisterRequestDTO("test@example.com", "password", "testuser");
         when(userRepository.findByEmail(dto.email())).thenReturn(Optional.empty());
@@ -57,7 +57,7 @@ class UserServiceTest {
         when(profileRepository.save(any(Profile.class))).thenReturn(profileMock);
 
         // Act
-        assertDoesNotThrow(() -> userService.newUserRegister(dto));
+        assertDoesNotThrow(() -> userService.registerNewUser(dto));
 
         // Assert
         verify(userRepository, times(1)).findByEmail(dto.email());
@@ -67,13 +67,13 @@ class UserServiceTest {
     }
 
     @Test
-    void testNewUserRegister_EmailAlreadyExists() {
+    void testRegisterNewUser_EmailAlreadyExists() {
         // Arrange
         UserRegisterRequestDTO dto = new UserRegisterRequestDTO("test@example.com", "password", "testuser");
         when(userRepository.findByEmail(dto.email())).thenReturn(Optional.of(new User()));
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.newUserRegister(dto));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.registerNewUser(dto));
         assertEquals("Email already exists", exception.getMessage());
 
         verify(userRepository, times(1)).findByEmail(dto.email());

@@ -168,4 +168,42 @@ class HighScoreServiceTest {
         verify(highScoreRepository, never()).save(any(HighScore.class));
     }
 
+    @Test
+    void testSaveHighscore_NewScoreEqualsExistingScore() {
+        // Arrange
+        int existingValue = 5000;
+        Profile profile = new Profile();
+        profile.setUsername("tester");
+        profile.setHighScore(existingValue);
+
+        HighScore existingScore = new HighScore("tester", existingValue);
+
+        when(highScoreRepository.findByUsername("tester"))
+                .thenReturn(Optional.of(existingScore));
+
+        // Act & Assert
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+            highScoreService.saveHighScore(profile);
+        });
+        assertEquals("HighScore has a Higher Score", ex.getMessage());
+        verify(highScoreRepository, never()).save(any(HighScore.class));
+    }
+
+    @Test
+    void testSaveHighscore_NegativeScore() {
+        // Arrange
+        Profile profile = new Profile();
+        profile.setUsername("negativeUser");
+        profile.setHighScore(-100); // Negativ Score
+
+        when(highScoreRepository.findByUsername("negativeUser"))
+                .thenReturn(Optional.empty());
+
+        // Act
+        highScoreService.saveHighScore(profile);
+
+        // Assert
+        verify(highScoreRepository, times(1)).save(any(HighScore.class));
+    }
+
 }

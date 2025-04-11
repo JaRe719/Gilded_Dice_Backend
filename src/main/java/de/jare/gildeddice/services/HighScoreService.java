@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
 @Service
 public class HighScoreService {
 
-    private HighScoreRepository highScoreRepository;
+    private final HighScoreRepository highScoreRepository;
 
     public HighScoreService(HighScoreRepository highScoreRepository) {
         this.highScoreRepository = highScoreRepository;
@@ -32,13 +32,21 @@ public class HighScoreService {
                 .collect(Collectors.toList());
     }
 
+
     public void saveHighScore(Profile profile) {
-        Optional<HighScore> existingHighScore = highScoreRepository.findByUsername(profile.getUsername());
-        if (existingHighScore.isPresent()) {
-            if (existingHighScore.get().getScore() < profile.getHighScore()) {
-                existingHighScore.get().setScore(profile.getHighScore());
-                highScoreRepository.save(existingHighScore.get());
-            } else throw new IllegalStateException("HighScore has a Higher Score");
-        } else highScoreRepository.save(new HighScore(profile.getUsername(), profile.getHighScore()));
+        Optional<HighScore> existingHighScoreOpt = highScoreRepository.findByUsername(profile.getUsername());
+        int newScore = profile.getHighScore();
+
+        if (existingHighScoreOpt.isPresent()) {
+            HighScore existingHighScore = existingHighScoreOpt.get();
+            if (existingHighScore.getScore() < newScore) {
+                existingHighScore.setScore(newScore);
+                highScoreRepository.save(existingHighScore);
+            } else {
+                throw new IllegalStateException("HighScore has a Higher Score");
+            }
+        } else {
+            highScoreRepository.save(new HighScore(profile.getUsername(), newScore));
+        }
     }
 }

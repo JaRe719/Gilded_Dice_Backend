@@ -28,7 +28,7 @@ public class AuthController {
     @PostMapping(value = "/register")
     public ResponseEntity<Void> newUserRegister(@RequestBody @Valid UserRegisterRequestDTO dto) {
         try {
-            userService.newUserRegister(dto);
+            userService.registerNewUser(dto);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -42,7 +42,7 @@ public class AuthController {
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<Void> deleteUser(Authentication auth) {
-        charDetailsService.delete(auth);
+        charDetailsService.deleteCharDetails(auth);
         userService.deleteUser(auth);
         return ResponseEntity.ok().build();
     }

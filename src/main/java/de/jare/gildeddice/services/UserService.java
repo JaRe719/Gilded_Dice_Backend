@@ -16,9 +16,9 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
 
-    private UserRepository userRepository;
-    private ProfileRepository profileRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(PasswordEncoder passwordEncoder, ProfileRepository profileRepository, UserRepository userRepository) {
         this.passwordEncoder = passwordEncoder;
@@ -27,8 +27,7 @@ public class UserService {
     }
 
     public User getUser(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return user;
+        return userRepository.findByEmail(auth.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     public Profile getUserProfile(Authentication auth) {
@@ -37,23 +36,32 @@ public class UserService {
     }
 
 
-
     @Transactional
-    public void newUserRegister(UserRegisterRequestDTO dto) {
+    public void registerNewUser(UserRegisterRequestDTO dto) {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
-        User user = new User();
-        Profile profile = new Profile();
-        user.setEmail(dto.email());
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        profile.setUsername(dto.username());
+
+        User user = createUser(dto);
+        Profile profile = createProfile(dto);
 
         profile = profileRepository.save(profile);
         user.setProfile(profile);
         userRepository.save(user);
     }
 
+    private User createUser(UserRegisterRequestDTO dto) {
+        User user = new User();
+        user.setEmail(dto.email());
+        user.setPassword(passwordEncoder.encode(dto.password()));
+        return user;
+    }
+
+    private Profile createProfile(UserRegisterRequestDTO dto) {
+        Profile profile = new Profile();
+        profile.setUsername(dto.username());
+        return profile;
+    }
 
     public void deleteUser(Authentication auth) {
         User existingUser = getUser(auth);

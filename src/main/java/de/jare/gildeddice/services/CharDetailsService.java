@@ -23,9 +23,8 @@ import java.util.Optional;
 public class CharDetailsService {
 
     private final PlusStoryService plusStoryService;
-    private CharDetailsRepository charDetailsRepository;
-
-    private UserService userService;
+    private final CharDetailsRepository charDetailsRepository;
+    private final UserService userService;
 
     public CharDetailsService(PlusStoryService plusStoryService, CharDetailsRepository charDetailsRepository, UserService userService) {
         this.plusStoryService = plusStoryService;
@@ -35,28 +34,17 @@ public class CharDetailsService {
 
     public CharDetailsResponseDTO getCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
-
         return CharMapper.charToResponseDTO(userProfile);
     }
+
 
     @Transactional
     public CharDetailsResponseDTO createOrUpdateCharDetails(CharDetailsRequestDTO dto, Authentication auth) {
         User user = userService.getUser(auth);
         Profile userProfile = user.getProfile();
 
-        CharDetails charDetails = userProfile.getCharDetails();
-        if (charDetails == null) {
-            charDetails = new CharDetails();
-            charDetails.setCharChoices(new CharChoices());
-        }
-
-        charDetails.setIntelligence(dto.intelligence());
-        charDetails.setNegotiate(dto.negotiate());
-        charDetails.setAbility(dto.ability());
-        charDetails.setPlanning(dto.planning());
-        charDetails.setStamina(dto.stamina());
-        charDetails.setAvatar(dto.avatar());
-        charDetails.setUserProfileId(userProfile.getId());
+        CharDetails charDetails = getOrCreateCharDetails(userProfile);
+        updateCharDetailsFromDTO(charDetails, dto, userProfile.getId());
 
         charDetails = charDetailsRepository.save(charDetails);
         userProfile.setCharDetails(charDetails);
@@ -65,40 +53,103 @@ public class CharDetailsService {
         return CharMapper.charToResponseDTO(userProfile);
     }
 
+    private CharDetails getOrCreateCharDetails(Profile userProfile) {
+        CharDetails charDetails = userProfile.getCharDetails();
+        if (charDetails == null) {
+            charDetails = new CharDetails();
+            charDetails.setCharChoices(new CharChoices());
+        }
+        return charDetails;
+    }
+
+    private void updateCharDetailsFromDTO(CharDetails charDetails, CharDetailsRequestDTO dto, Long userProfileId) {
+        charDetails.setIntelligence(dto.intelligence());
+        charDetails.setNegotiate(dto.negotiate());
+        charDetails.setAbility(dto.ability());
+        charDetails.setPlanning(dto.planning());
+        charDetails.setStamina(dto.stamina());
+        charDetails.setAvatar(dto.avatar());
+        charDetails.setUserProfileId(userProfileId);
+    }
+
+
     public String getUserAvatar(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         return userProfile.getCharDetails().getAvatar();
     }
+
 
     public MoneyResponseDTO getAllFinancial(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         return CharMapper.moneyToResponseDTO(userProfile.getCharDetails());
     }
 
-    public void setFinancesByPhaseEnd(long charId, Game game) {
-        int gamePhase = game.getPhase();
-        CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
 
-        int totalMoney = charDetails.getMoney();
-        if (gamePhase != 10 && gamePhase % 10 == 0) {
-            if (charDetails.getInvest() > 0) {
-                int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
-                totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12));
-                totalMoney += (int) ((charDetails.getInvest() * charDetails.getInvestmentPercent()) / 100.0f) * 120;
-                totalMoney += charDetails.getInvest();
-                charDetails.setInvest(0);
-                charDetails.setInvestmentPercent(0);
-            } else {
-                charDetails.setInvestmentPercent(0);
-                int skippedPhases = (10 - (game.getPlayedPhase() % 10)) % 10;
-                totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12));
-            }
-        } else {
-            totalMoney += ((charDetails.getIncome() + charDetails.getOutcome()) * 12);
-        }
-            charDetails.setMoney(totalMoney);
-            charDetailsRepository.save(charDetails);
+    public void setFinancesByPhaseEnd(long charId, Game game) {
+        CharDetails charDetails = charDetailsRepository.findById(charId)
+                .orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+
+        int currentMoney = charDetails.getMoney();
+        int moneyToAdd = calculatePhaseEndPayout(game, charDetails);
+        charDetails.setMoney(currentMoney + moneyToAdd);
+
+        charDetailsRepository.save(charDetails);
     }
+
+    private int calculatePhaseEndPayout(Game game, CharDetails charDetails) {
+        int gamePhase = game.getPhase();
+
+        if (gamePhase != 10 && gamePhase % 10 == 0) {
+            return handleEndOfPhase(game, charDetails);
+        }
+        return standardPayout(charDetails);
+    }
+
+
+    private int handleEndOfPhase(Game game, CharDetails charDetails) {
+        int total = 0;
+
+        // calculate how much Game-Phases will be skipped?
+        // For example: on Phase 20 => (10 - (20 % 10)) % 10 = 0; on Phase 30 => 0 etc.
+        int skippedPhases = calculateSkippedPhases(game);
+
+        // Basic income/expenditure for the skipped phases
+        int baseIncome = (charDetails.getIncome() + charDetails.getOutcome()) * (skippedPhases * 12);
+        total += baseIncome;
+
+        if (charDetails.getInvest() > 0) {
+            total += calculateInvestmentGain(charDetails);
+            resetInvestment(charDetails);
+        } else {
+            charDetails.setInvestmentPercent(0);
+        }
+        return total;
+    }
+
+    private int standardPayout(CharDetails charDetails) {
+        return (charDetails.getIncome() + charDetails.getOutcome()) * 12;
+    }
+
+
+    private int calculateInvestmentGain(CharDetails charDetails) {
+        int invest = charDetails.getInvest();
+        int interest = (int) ((invest * charDetails.getInvestmentPercent()) / 100.0f);
+        int interestTotal = interest * 120;
+
+        return interestTotal + invest;
+    }
+
+
+    private void resetInvestment(CharDetails charDetails) {
+        charDetails.setInvest(0);
+        charDetails.setInvestmentPercent(0);
+    }
+
+
+    private int calculateSkippedPhases(Game game) {
+        return (10 - (game.getPlayedPhase() % 10)) % 10;
+    }
+
 
     public void setFinancesByChoice(long charId, Integer incomeValue, Integer outcomeValue, Integer oneTimePayment) {
         CharDetails charDetails = charDetailsRepository.findById(charId).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
@@ -126,57 +177,73 @@ public class CharDetailsService {
         charDetailsRepository.save(charDetails);
     }
 
+
     public boolean setCharacterStatusLvls(long id, int gamePhase, Integer stressValue, Integer satisfactionValue, Integer healthValue) {
-        CharDetails charDetails = charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+        CharDetails charDetails = getCharDetailsOrThrow(id);
 
-        int handicap = 0;
-        int stresslvl = 0;
-        int satisfactionlvl = 0;
-        int healthlvl = 0;
-        boolean gameEnd = false;
+        applyStressValue(charDetails, stressValue);
+        boolean gameEnd = handleStressThresholds(charDetails, gamePhase);
 
-        if (stressValue != null) {
-            stresslvl += stressValue;
+        applySatisfactionValue(charDetails, satisfactionValue);
+        handleSatisfactionThresholds(charDetails, gamePhase);
+
+        applyHealthValue(charDetails, healthValue);
+        if (charDetails.getHealthLvl() == 0) {
+            gameEnd = true;
         }
-        charDetails.adjustStressLvl(stresslvl);
 
-        //-- Stress
-        if (charDetails.getStressLvl() == 10) gameEnd = true;
-        else if (charDetails.getStressLvl() >= 8 && charDetails.getStressLvl() < 10) {
-            handicap -= 2;
-            if (gamePhase % 10 == 0) healthlvl -= 1;
-        }
-        else if (charDetails.getStressLvl() >= 5 && charDetails.getStressLvl() < 8) handicap -= 1;
-
-
-        //-- Satisfaction
-        if (satisfactionValue != null) {
-            satisfactionlvl +=  satisfactionValue;
-        }
-        charDetails.adjustSatisfactionLvl(satisfactionlvl);
-
-        if (charDetails.getSatisfactionLvl() <= 2) {
-            handicap -= 2;
-            if (gamePhase % 10 == 0) healthlvl -= 1;
-        }
-        else if (charDetails.getSatisfactionLvl() == 3) handicap -= 1;
-        else if (charDetails.getSatisfactionLvl() > 5) handicap += 1;
-
-
-        //-- health
-        if (healthValue != null) {
-            healthlvl += healthValue;
-        }
-        charDetails.adjustHealthLvl(healthlvl);
-
-        if (charDetails.getHealthLvl() == 0) gameEnd = true;
-
-
-        //-----
-        charDetails.setHandicap(handicap);
         charDetailsRepository.save(charDetails);
         return gameEnd;
     }
+
+    private CharDetails getCharDetailsOrThrow(long id) {
+        return charDetailsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("CharDetails not found!"));
+    }
+
+    private void applyStressValue(CharDetails charDetails, Integer stressValue) {
+        int stressChange = (stressValue != null) ? stressValue : 0;
+        charDetails.adjustStressLvl(stressChange);
+    }
+
+    private boolean handleStressThresholds(CharDetails charDetails, int gamePhase) {
+        int stressLvl = charDetails.getStressLvl();
+        if (stressLvl == 10) {
+            return true;
+        } else if (stressLvl >= 8) {
+            charDetails.setHandicap(charDetails.getHandicap() - 2);
+            if (gamePhase % 10 == 0) {
+                charDetails.adjustHealthLvl(-1);
+            }
+        } else if (stressLvl >= 5) {
+            charDetails.setHandicap(charDetails.getHandicap() - 1);
+        }
+        return false;
+    }
+
+    private void applySatisfactionValue(CharDetails charDetails, Integer satisfactionValue) {
+        int satisfactionChange = (satisfactionValue != null) ? satisfactionValue : 0;
+        charDetails.adjustSatisfactionLvl(satisfactionChange);
+    }
+
+    private void handleSatisfactionThresholds(CharDetails charDetails, int gamePhase) {
+        int satisfactionLvl = charDetails.getSatisfactionLvl();
+        if (satisfactionLvl <= 2) {
+            charDetails.setHandicap(charDetails.getHandicap() - 2);
+            if (gamePhase % 10 == 0) {
+                charDetails.adjustHealthLvl(-1);
+            }
+        } else if (satisfactionLvl == 3) {
+            charDetails.setHandicap(charDetails.getHandicap() - 1);
+        } else if (satisfactionLvl > 5) {
+            charDetails.setHandicap(charDetails.getHandicap() + 1);
+        }
+    }
+
+    private void applyHealthValue(CharDetails charDetails, Integer healthValue) {
+        int healthChange = (healthValue != null) ? healthValue : 0;
+        charDetails.adjustHealthLvl(healthChange);
+    }
+
 
     public void resetChar(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
@@ -208,7 +275,7 @@ public class CharDetailsService {
         charDetailsRepository.save(charDetails);
     }
 
-    public void delete(Authentication auth) {
+    public void deleteCharDetails(Authentication auth) {
         Profile userProfile = userService.getUserProfile(auth);
         Optional<CharDetails> existingUserChar = charDetailsRepository.findById(userProfile.getId());
         existingUserChar.ifPresent(charDetails -> charDetailsRepository.delete(charDetails));

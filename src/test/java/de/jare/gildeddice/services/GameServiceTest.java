@@ -8,10 +8,15 @@ import de.jare.gildeddice.dtos.games.choice.ChoiceUpdateDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceDTO;
 import de.jare.gildeddice.dtos.games.choice.GameChoiceResultDTO;
 import de.jare.gildeddice.dtos.games.game.GamePhaseDTO;
+import de.jare.gildeddice.dtos.games.game.NpcCreateListDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryCreateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.PlusStoryUpdateDTO;
+import de.jare.gildeddice.dtos.games.plusstorys.RequirenentDTO;
 import de.jare.gildeddice.dtos.games.story.StoryCreateDTO;
 import de.jare.gildeddice.dtos.games.story.StoryUpdateDTO;
 import de.jare.gildeddice.entities.games.storys.Npc;
 import de.jare.gildeddice.entities.games.storys.PlusStory;
+import de.jare.gildeddice.entities.games.storys.Requirement;
 import de.jare.gildeddice.entities.users.character.CharDetails;
 import de.jare.gildeddice.entities.enums.Category;
 import de.jare.gildeddice.entities.enums.Skill;
@@ -28,7 +33,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.*;
 
@@ -45,6 +49,9 @@ class GameServiceTest {
 
     @Mock
     private StoryRepository storyRepository;
+
+    @Mock
+    private PlusStoryRepository plusStoryRepository;
 
     @Mock
     private ChoiceRepository choiceRepository;
@@ -133,14 +140,14 @@ class GameServiceTest {
 
 
     @Test
-    void testGetAllStorys() {
+    void testGetAllStories() {
         // Arrange
         List<Story> stories = new ArrayList<>();
         stories.add(new Story());
         when(storyRepository.findAll()).thenReturn(stories);
 
         // Act
-        Iterable<Story> result = gameService.getAllStorys();
+        Iterable<Story> result = gameService.getAllStories();
 
         // Assert
         assertNotNull(result);
@@ -331,7 +338,6 @@ class GameServiceTest {
         Story story = createStoryWithChoices();
         story.setCategory(Category.FATE);
 
-        // Mocking des PlusStoryService
         List<PlusStory> mockPlusStories = List.of(new PlusStory());
         when(plusStoryService.getAllPlusStory()).thenReturn(mockPlusStories);
 
@@ -493,7 +499,7 @@ class GameServiceTest {
     void testPlayChoice_GameLost() {
         // Arrange
         long choiceId = 1L;
-        int diceResult = 5; // Niedriger Würfelwert, damit die Chance hoch ist, zu verlieren
+        int diceResult = 5;
         Authentication auth = mock(Authentication.class);
 
         User user = createUserWithProfileWithCharDetails();
@@ -582,6 +588,106 @@ class GameServiceTest {
         verify(gameRepository, never()).save(any(Game.class));
     }
 
+
+
+    @Test
+    void testCreatePlusStory_Success() {
+        // Arrange
+        PlusStoryCreateDTO dto = mockPlusStoryCreateDTO();
+        Npc npcMock = new Npc();
+        npcMock.setId(42L);
+        when(npcRepository.findById(anyLong())).thenReturn(Optional.of(npcMock));
+        when(choiceRepository.save(any(Choice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        when(plusStoryRepository.save(any(PlusStory.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        gameService.createPlusStory(dto);
+
+        // Assert
+        verify(plusStoryRepository, times(1)).save(any(PlusStory.class));
+        verify(choiceRepository, atLeastOnce()).save(any(Choice.class));
+    }
+
+    @Test
+    void testCreatePlusStory_NpcNotFound() {
+        PlusStoryCreateDTO dto = mockPlusStoryCreateDTO();
+        when(npcRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                gameService.createPlusStory(dto)
+        );
+        assertEquals("npc not found!", ex.getMessage());
+        verify(plusStoryRepository, never()).save(any(PlusStory.class));
+    }
+
+    @Test
+    void testUpdatePlusStory_Success() {
+        // Arrange
+        long plusStoryId = 1L;
+        PlusStoryUpdateDTO dto = mockPlusStoryUpdateDTO(plusStoryId);
+        PlusStory existingPlusStory = new PlusStory();
+        existingPlusStory.setId(plusStoryId);
+
+        Requirement requirement = new Requirement();
+        existingPlusStory.setRequirement(requirement);
+
+        when(plusStoryRepository.findById(plusStoryId))
+                .thenReturn(Optional.of(existingPlusStory));
+
+        // Act
+        gameService.updatePlusStory(dto);
+
+        // Assert
+
+        verify(plusStoryRepository, times(1)).save(existingPlusStory);
+        assertEquals(dto.title(), existingPlusStory.getTitle());
+    }
+
+    @Test
+    void testUpdatePlusStory_PlusStoryNotFound() {
+        // Arrange
+        long plusStoryId = 99L;
+        PlusStoryUpdateDTO dto = mockPlusStoryUpdateDTO(plusStoryId);
+
+        when(plusStoryRepository.findById(plusStoryId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                gameService.updatePlusStory(dto)
+        );
+        assertEquals("Story not found!", ex.getMessage());
+        verify(plusStoryRepository, never()).save(any(PlusStory.class));
+    }
+
+    @Test
+    void testCreateNpcFromList_Success() {
+        // Arrange
+        NpcCreateListDTO npc1 = new NpcCreateListDTO("NPC1", "file1.png");
+        NpcCreateListDTO npc2 = new NpcCreateListDTO("NPC2", "file2.png");
+        List<NpcCreateListDTO> npcList = List.of(npc1, npc2);
+
+        // Act
+        gameService.createNpcFromList(npcList);
+
+        // Assert
+        verify(npcRepository, times(2)).save(any(Npc.class));
+    }
+
+    @Test
+    void testCreateNpcFromList_EmptyList() {
+        // Arrange
+        List<NpcCreateListDTO> emptyList = Collections.emptyList();
+
+        // Act
+        gameService.createNpcFromList(emptyList);
+
+        // Assert
+        verify(npcRepository, never()).save(any(Npc.class));
+    }
+
+
     @Test
     void testPlayerHasGame_Success() {
         User user = createUserWithProfileWithCharDetails();
@@ -612,7 +718,85 @@ class GameServiceTest {
         verify(userService, times(1)).getUserProfile(auth);
     }
 
+    @Test
+    void testSkipGame_Success() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile profile = new Profile();
+        profile.setUsername("TestUser");
+        User user = new User();
+        user.setProfile(profile);
 
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+
+        Game existingGame = new Game();
+        existingGame.setUsername("TestUser");
+        when(gameRepository.findByUsername("TestUser"))
+                .thenReturn(Optional.of(existingGame));
+
+        // Act
+        gameService.skipGame(auth);
+
+        // Assert
+        assertNull(existingGame.getCurrentGamePhase());
+        verify(gameRepository, times(1)).save(existingGame);
+    }
+
+    @Test
+    void testSkipGame_GameNotFound() {
+        // Arrange
+        Authentication auth = mock(Authentication.class);
+        Profile profile = new Profile();
+        profile.setUsername("TestUser");
+        when(userService.getUserProfile(auth)).thenReturn(profile);
+
+        when(gameRepository.findByUsername("TestUser"))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                gameService.skipGame(auth)
+        );
+        assertEquals("Game not found", ex.getMessage());
+        verify(gameRepository, never()).save(any(Game.class));
+    }
+
+    @Test
+    void testGetAllChoice_Success() {
+        // Arrange
+        List<Choice> mockChoices = new ArrayList<>();
+        mockChoices.add(new Choice());
+        mockChoices.add(new Choice());
+        when(choiceRepository.findAll()).thenReturn(mockChoices);
+
+        // Act
+        Iterable<Choice> result = gameService.getAllChoice();
+
+        // Assert
+        // Du kannst prüfen, ob result dieselben Elemente enthält
+        assertNotNull(result);
+        // Konvertiere in List und prüfe Größe
+        List<Choice> resultList = new ArrayList<>();
+        result.forEach(resultList::add);
+        assertEquals(2, resultList.size());
+        verify(choiceRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testGetAllChoice_Empty() {
+        // Arrange
+        when(choiceRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        Iterable<Choice> result = gameService.getAllChoice();
+
+        // Assert
+        assertNotNull(result);
+        List<Choice> resultList = new ArrayList<>();
+        result.forEach(resultList::add);
+        assertTrue(resultList.isEmpty());
+        verify(choiceRepository, times(1)).findAll();
+    }
 
 
 
@@ -672,6 +856,176 @@ class GameServiceTest {
         story.setChoices(choices);
         story.setPhaseEnd(false);
         return story;
+    }
+
+    private PlusStoryCreateDTO mockPlusStoryCreateDTO() {
+        return new PlusStoryCreateDTO(
+                "EXTRA",                     // category
+                "An Evening to Remember",        // title
+                "You receive an invitation...",  // prompt
+                true,                            // skippable
+                false,                           // oneTime
+                new RequirenentDTO(
+                        true,   // hasStudie
+                        false,  // hasScholarship
+                        false,  // hasApprenticeship
+                        true,   // hasSecondJob
+                        true,   // hasJob
+                        true,   // insurance
+                        false,  // hasHomeByParents
+                        false,  // hasSharedApartment
+                        true,   // hasRentedApartment
+                        false,  // hasProperty
+                        true,   // hasCar
+                        true,   // hasDriverLicense
+                        false,  // hasInvested
+                        2,      // stressStatusLvl
+                        5,      // satisfactionStatusLvl
+                        4       // healthStatusLvl
+                ),
+                List.of(
+                        new ChoiceCreateDTO(
+                                "Attend the Gala",     // title
+                                "INTELLIGENCE",            // skill
+                                4,                     // minDiceValue
+                                200,                   // cost
+                                false,                 // returning
+                                "You step onto the red carpet...",  // startMessage
+
+                                "You shine in the crowd!", // winMessage
+                                500,                      // winIncomeValue
+                                0,                        // winOutcomeValue
+                                10,                       // winInvestmentPercent
+                                0,                        // winOneTimePayment
+                                null,                     // winStudy
+                                true,                     // winScholarship
+                                null,                     // winApprenticeship
+                                true,                     // winJob
+                                false,                    // winProperty
+                                null,                     // winRentApartment
+                                false,                    // winCar
+                                null,                     // winDriverLicense
+                                -1,                       // winStressValue
+                                3,                        // winSatisfactionValue
+                                2,                        // winHealthValue
+
+                                "You feel out of place...", // loseMessage
+                                -100,                        // loseIncomeValue
+                                50,                          // loseOutcomeValue
+                                0,                           // loseInvestmentPercent
+                                0,                           // loseOneTimePayment
+                                false,                       // loseStudy
+                                false,                       // loseScholarship
+                                false,                       // loseApprenticeship
+                                false,                       // loseJob
+                                false,                       // loseProperty
+                                false,                       // loseRentApartment
+                                false,                       // loseCar
+                                false,                       // loseDriverLicense
+                                3,                           // loseStressValue
+                                -2,                          // loseSatisfactionValue
+                                -1,                          // loseHealthValue
+
+                                "Crit success! The spotlight is all yours!",  // critMessage
+                                1000,                                           // critIncomeValue
+                                0,                                              // critOutcomeValue
+                                25,                                             // critInvestmentPercent
+                                500,                                            // critOneTimePayment
+                                true,                                           // critScholarship
+                                -5,                                             // critStressValue
+                                5,                                              // critSatisfactionValue
+                                5,                                              // critHealthValue
+
+                                42L,   // npcId
+                                false  // phaseEnd
+                        ),
+                        new ChoiceCreateDTO(
+                                "Stay Home",        // title
+                                "NEGOTIATE",        // skill
+                                0,                  // minDiceValue
+                                null,               // cost
+                                true,               // returning
+                                "You decide to stay in...", // startMessage
+
+                                "You have a relaxing evening.", // winMessage
+                                0,                              // winIncomeValue
+                                0,                              // winOutcomeValue
+                                0,                              // winInvestmentPercent
+                                0,                              // winOneTimePayment
+                                false,                          // winStudy
+                                false,                          // winScholarship
+                                false,                          // winApprenticeship
+                                false,                          // winJob
+                                false,                          // winProperty
+                                false,                          // winRentApartment
+                                false,                          // winCar
+                                false,                          // winDriverLicense
+                                -2,                             // winStressValue
+                                2,                              // winSatisfactionValue
+                                3,                              // winHealthValue
+
+                                "You regret not going...", // loseMessage
+                                0,                         // loseIncomeValue
+                                0,                         // loseOutcomeValue
+                                0,                         // loseInvestmentPercent
+                                0,                         // loseOneTimePayment
+                                false,                     // loseStudy
+                                false,                     // loseScholarship
+                                false,                     // loseApprenticeship
+                                false,                     // loseJob
+                                false,                     // loseProperty
+                                false,                     // loseRentApartment
+                                false,                     // loseCar
+                                false,                     // loseDriverLicense
+                                1,                         // loseStressValue
+                                -1,                        // loseSatisfactionValue
+                                0,                         // loseHealthValue
+
+                                "Crit outcome: Best nap ever!",  // critMessage
+                                0,                                // critIncomeValue
+                                0,                                // critOutcomeValue
+                                0,                                // critInvestmentPercent
+                                0,                                // critOneTimePayment
+                                false,                            // critScholarship
+                                -2,                               // critStressValue
+                                5,                                // critSatisfactionValue
+                                5,                                // critHealthValue
+
+                                42L,    // npcId
+                                true   // phaseEnd
+                        )
+                )
+        );
+    }
+
+
+    private PlusStoryUpdateDTO mockPlusStoryUpdateDTO(long id) {
+        return new PlusStoryUpdateDTO(
+                id,                              // id
+                "EXTRA",                        // category
+                "Level Up Your Life",            // title
+                "You are offered a new job opportunity that could shape your future.", // prompt
+                true,                            // skippable
+                false,                           // oneTime
+                new RequirenentDTO(
+                        false,   // hasStudie
+                        false,   // hasScholarship
+                        true,    // hasApprenticeship
+                        false,   // hasSecondJob
+                        true,    // hasJob
+                        true,    // insurance
+                        false,   // hasHomeByParents
+                        true,    // hasSharedApartment
+                        false,   // hasRentedApartment
+                        false,   // hasProperty
+                        false,   // hasCar
+                        true,    // hasDriverLicense
+                        false,   // hasInvested
+                        3,       // stressStatusLvl
+                        2,       // satisfactionStatusLvl
+                        4        // healthStatusLvl
+                )
+        );
     }
 
 

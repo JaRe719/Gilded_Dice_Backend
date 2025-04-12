@@ -452,13 +452,11 @@ public class GameService {
     }
 
     private GamePhaseDTO buildPlusStoryPhaseDTO(Game game, PlusStory plusStory, KSuitAiResponseDTO responseDTO) {
-        String finalMessage = "Test Plus " + game.getPhase() + " "
-                + responseDTO.choices().getFirst().message().content();
 
         return GameMapper.toGamePhaseDTO(
                 plusStory.getCategory(),
                 plusStory.getTitle(),
-                finalMessage,
+                responseDTO.choices().getFirst().message().content(),
                 plusStory.isSkippable(),
                 false,
                 plusStory.getChoices()
